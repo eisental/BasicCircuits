@@ -1,17 +1,11 @@
 package org.tal.basiccircuits;
 
-
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 import org.tal.redstonechips.parsing.UnitParser;
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /**
  *

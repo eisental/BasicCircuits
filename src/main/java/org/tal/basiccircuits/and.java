@@ -4,11 +4,6 @@ package org.tal.basiccircuits;
 import java.util.BitSet;
 import org.tal.redstonechips.BitSetCircuit;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
  * @author Tal Eisenberg
