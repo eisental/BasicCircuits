@@ -47,7 +47,7 @@ public class pisoregister extends Circuit {
             player.sendMessage("Expecting at least 3 inputs.");
             return false;
         } if (outputs.length!=1) {
-            player.sendMessage("Expecting exactly 1 input. ");
+            player.sendMessage("Expecting exactly 1 output. ");
             return false;
         }
 
