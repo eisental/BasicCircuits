@@ -1,4 +1,4 @@
-BasicCircuits 0.1
+BasicCircuits 0.2
 ==================
 
 The basic circuit package for [RedstoneChips](http://github.com/eisental/RedstoneChips). 
@@ -8,6 +8,13 @@ Check the [wiki](https://github.com/eisental/BasicCircuits/wiki/BasicCircuits-) 
 
 Installation
 -------------
+   * install [RedstoneChips](http://github.com/eisental/RedstoneChips) 0.4
    * copy the jar file to your craftbukkit plugins folder
 
+Changelog
+---------
+
+##### 20/01/11 0.2
+* fixed bug in decoder circuit.
+* removed unnecessary log messages.
 

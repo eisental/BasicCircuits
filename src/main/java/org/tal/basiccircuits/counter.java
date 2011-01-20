@@ -26,6 +26,7 @@ public class counter extends Circuit {
                 this.sendInt(0, outputs.length, count);
             }
         }
+
     }
 
     @Override

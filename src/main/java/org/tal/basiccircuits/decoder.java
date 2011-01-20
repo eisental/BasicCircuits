@@ -11,7 +11,7 @@ public class decoder extends Circuit {
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
-        if (inIdx==0) {
+        if (inIdx==0 && newLevel) {
             int i = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
             outputBits.clear();
             outputBits.set(i);

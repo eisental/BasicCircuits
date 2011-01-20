@@ -42,12 +42,10 @@ public class transmitter extends Circuit {
     }
 
     public void addReceiver(receiver r) { 
-        System.out.println("adding receiver: " + r + " (" + r.getChannel() + ")");
         receivers.add(r);
     }
 
     public void removeReceiver(receiver r) {
-        System.out.println("removing receiver: " + r + " (" + r.getChannel() + ")");
         receivers.remove(r);
     }
 
