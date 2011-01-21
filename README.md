@@ -6,6 +6,10 @@ Currently consists of 19 types of digital integrated circuits that can handle bi
 
 Check the [wiki](https://github.com/eisental/BasicCircuits/wiki/BasicCircuits-) for more info on creating the circuits.
 
+__If you like this, please__
+
+[![Donate](/eisental/RedstoneChips/raw/master/images/btn_donate_LG.gif")](http://sites.google.com/site/eisental/home/donate)
+
 Installation
 -------------
    * install [RedstoneChips](http://github.com/eisental/RedstoneChips) 0.4
@@ -15,6 +19,6 @@ Changelog
 ---------
 
 ##### 20/01/11 0.2
-* fixed bug in decoder circuit.
+* fixed a bug in decoder circuit.
 * removed unnecessary log messages.
 
