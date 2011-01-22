@@ -2,6 +2,7 @@ package org.tal.basiccircuits;
 
 
 import java.util.BitSet;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -24,7 +25,7 @@ public class shiftregister extends Circuit {
     @Override
     protected boolean init(Player player, String[] args) {
         if (inputs.length!=2) {
-            player.sendMessage("Expecting two inputs. ");
+            error(player, "Expecting two inputs. ");
             return false;
         }
 

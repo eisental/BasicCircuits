@@ -2,6 +2,7 @@ package org.tal.basiccircuits;
 
 
 import java.util.BitSet;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -30,7 +31,7 @@ public class receiver extends Circuit {
 
             return true;
         } else {
-            player.sendMessage("Channel name is missing.");
+            error(player, "Channel name is missing.");
             return false;
         }
 

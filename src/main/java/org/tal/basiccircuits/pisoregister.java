@@ -2,6 +2,7 @@ package org.tal.basiccircuits;
 
 
 import java.util.BitSet;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -44,10 +45,10 @@ public class pisoregister extends Circuit {
     @Override
     protected boolean init(Player player, String[] args) {
         if (inputs.length<3) {
-            player.sendMessage("Expecting at least 3 inputs.");
+            error(player, "Expecting at least 3 inputs.");
             return false;
         } if (outputs.length!=1) {
-            player.sendMessage("Expecting exactly 1 output. ");
+            error(player, "Expecting exactly 1 output. ");
             return false;
         }
 

@@ -1,5 +1,7 @@
 package org.tal.basiccircuits;
 
+import org.bukkit.ChatColor;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
@@ -28,8 +30,9 @@ public class print extends Circuit {
     }
 
     private void updateSign() {
-        if (outputBlock.getState() instanceof Sign) {
-            Sign outputSign = (Sign)outputBlock.getState();
+        BlockState state = outputBlock.getState();
+        if (state instanceof Sign) {
+            Sign outputSign = (Sign)state;
 
             if (firstUpdate) { // clear the sign of any text left overs.
                 outputSign.setLine(0, "");
@@ -56,7 +59,7 @@ public class print extends Circuit {
             } else s = "err";
 
             if (add) {
-                if (curText.length()==0) {
+                if (curText.isEmpty()) {
                     outputSign.setLine(0, "");
                     outputSign.setLine(1, "");
                     outputSign.setLine(2, "");
@@ -68,7 +71,7 @@ public class print extends Circuit {
                 } else
                     s = curText + " " + s;
             }
-            
+
             if (s.length()>36) {
                 outputSign.setLine(0, s.substring(0, 12));
                 outputSign.setLine(1, s.substring(12, 24));
@@ -89,12 +92,20 @@ public class print extends Circuit {
 
             if (s.length()>48) curText = "";
             else curText = s;
-            outputSign.update();
+
+            // DOESN'T WORK!
+            outputSign.update(true);
+
         }
     }
 
     @Override
     public boolean init(Player player, String[] args) {
+        if (inputs.length<2) {
+            error(player, "Expecting at least 2 inputs are required. Input 0 is clock input.");
+            return false;
+        }
+
         if (args.length>0) {
             Type arg = null;
             for (Type t : Type.values()) {
@@ -111,7 +122,7 @@ public class print extends Circuit {
             }
 
             if (arg==null) {
-                if (player!=null) player.sendMessage("Bad argument: " + args[0]);
+                error(player, "Bad argument: " + args[0]);
                 return false;
             } else type = arg;
         }

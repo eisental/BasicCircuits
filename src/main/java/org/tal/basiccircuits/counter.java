@@ -1,5 +1,6 @@
 package org.tal.basiccircuits;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -31,12 +32,15 @@ public class counter extends Circuit {
 
     @Override
     public boolean init(Player player, String[] args) {
+        if (inputs.length==0) {
+            error(player, "Expecting at least 1 input.");
+            return false;
+        }
         if (args.length>0) {
             try {
                 count = Integer.decode(args[0]);
             } catch (NumberFormatException ne) {
-                if (player!=null)
-                    player.sendMessage("Invalid count init argument: " + args[0]);
+                error(player, "Invalid count init argument: " + args[0]);
                 return false;
             }
         }

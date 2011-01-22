@@ -4,7 +4,7 @@
   <groupId>org.tal</groupId>
   <artifactId>BasicCircuits</artifactId>
   <packaging>jar</packaging>
-  <version>0.1</version>
+  <version>0.2</version>
   <name>BasicCircuits</name>
   <url>http://maven.apache.org</url>
     <build>
@@ -46,6 +46,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>RedstoneChips</artifactId>
             <version>0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>RedstoneChips</artifactId>
+            <version>0.4</version>
         </dependency>
     </dependencies>
 </project>

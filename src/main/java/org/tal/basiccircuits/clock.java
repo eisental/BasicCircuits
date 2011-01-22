@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 import org.tal.redstonechips.parsing.UnitParser;
@@ -20,9 +21,9 @@ public class clock extends Circuit {
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
         // if not running any change from low to high will start it.
+
         if (newLevel) { // change from low to high
             if (!running) startClock();
-
         } else {
             if (running && inputBits.isEmpty()) stopClock();
         }
@@ -35,7 +36,7 @@ public class clock extends Circuit {
         else freq = Math.round(UnitParser.parse(args[0])/2);
 
         if (inputs.length!=outputs.length) {
-            player.sendMessage("Clock must have the same amount of inputs and outputs.");
+            error(player, "Expecting the same amount of inputs and outputs.");
             return false;
         }
 
@@ -44,7 +45,7 @@ public class clock extends Circuit {
 
         onBits.set(0, inputs.length);
         offBits.clear();
-        if (player!=null) player.sendMessage("Clock will tick every " + freq*2 + " milliseconds.");
+        if (player!=null) player.sendMessage(ChatColor.GREEN + "Clock will tick every " + freq*2 + " milliseconds.");
 
         return true;
     }
@@ -101,9 +102,13 @@ public class clock extends Circuit {
             if (state) { // turn on any output whose input is on
                 BitSet out = (BitSet)inputBits.clone();
                 out.and(onBits);
-                sendBitSet(0, outputs.length, out);
+                synchronized(this) {
+                    sendBitSet(0, outputs.length, out);
+                }
             } else { // just clear everything
-                sendBitSet(0, outputs.length, offBits);
+                synchronized(this) {
+                    sendBitSet(0, outputs.length, offBits);
+                }
             }
         }
 

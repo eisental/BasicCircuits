@@ -67,6 +67,7 @@ public class BasicCircuits extends JavaPlugin {
         plugin.addCircuitClass(xor.class);
         plugin.addCircuitClass(decoder.class);
         plugin.addCircuitClass(encoder.class);
+        plugin.addCircuitClass(pixel.class);
         
         log.info(pdf.getName() + " " + pdf.getVersion() + " enabled.");
     }

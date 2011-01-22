@@ -2,6 +2,7 @@ package org.tal.basiccircuits;
 
 
 import java.util.BitSet;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.BitSetCircuit;
 import org.tal.redstonechips.Circuit;
@@ -50,7 +51,7 @@ public class adder extends BitSetCircuit {
                 constant = Circuit.intToBitSet(c, wordlength); // TODO: support two's complement
                 return true;
             } catch (NumberFormatException ne) {
-                player.sendMessage("Bad argument: " + args[0] + " expected a number.");
+                error(player, "Bad argument: " + args[0] + " expected a number.");
                 return false;
             }
         }

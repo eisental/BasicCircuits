@@ -4,6 +4,7 @@ package org.tal.basiccircuits;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -20,7 +21,7 @@ public class demultiplexer extends Circuit {
     @Override
     public boolean init(Player player, String[] args) {
         if (args.length==0) {
-            player.sendMessage("Syntax for multiplexer is 'multiplexer <no. of output sets>.");
+            error(player, "Syntax for multiplexer is 'multiplexer <no. of output sets>.");
             return false;
         }
 
@@ -31,7 +32,7 @@ public class demultiplexer extends Circuit {
             int expectedInputs = bitCount + selectSize;
 
             if (inputs.length!=expectedInputs) {
-                player.sendMessage("Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
+                error(player, "Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
                 return false;
             }
 
@@ -40,7 +41,7 @@ public class demultiplexer extends Circuit {
             
             return true;
         } catch (NumberFormatException ne) {
-            player.sendMessage("Not a number: " + args[0]);
+            error(player, "Bad argument: " + args[0] + " expecting a number.");
             return false;
         }
     }

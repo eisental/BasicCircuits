@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -36,7 +37,7 @@ public class transmitter extends Circuit {
 
             return true;
         } else {
-            player.sendMessage("Channel name is missing.");
+            error(player, "Channel sign argument is missing.");
             return false;
         }
     }

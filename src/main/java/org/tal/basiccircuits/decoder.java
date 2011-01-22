@@ -1,5 +1,6 @@
 package org.tal.basiccircuits;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -22,11 +23,11 @@ public class decoder extends Circuit {
     @Override
     protected boolean init(Player player, String[] args) {
         if (inputs.length<2) {
-            if (player!=null) player.sendMessage("Expecting at least 2 inputs.");
+            error(player, "Expecting at least 2 inputs.");
             return false;
         }
         if (outputs.length!=Math.pow(2, inputs.length-1)) {
-            if (player!=null) player.sendMessage("Bad number of outputs. Expecting " + Math.pow(2, inputs.length-1));
+            error(player, "Bad number of outputs. Expecting " + Math.pow(2, inputs.length-1));
             return false;
         }
 

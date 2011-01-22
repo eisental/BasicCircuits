@@ -1,5 +1,6 @@
 package org.tal.basiccircuits;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -20,7 +21,7 @@ public class encoder extends Circuit {
     @Override
     protected boolean init(Player player, String[] args) {
         if (inputs.length!=Math.pow(2, outputs.length)) {
-            if (player!=null) player.sendMessage("Number of inputs must be 2 to the power of number of outputs.");
+            error(player, "Number of inputs must be 2 to the power of number of outputs.");
             return false;
         }
 

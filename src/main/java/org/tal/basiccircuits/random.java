@@ -2,6 +2,7 @@ package org.tal.basiccircuits;
 
 
 import java.util.Random;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -38,7 +39,7 @@ public class random extends Circuit {
         } else if (inputs.length==outputs.length) {
             setAll = false;
         } else {
-            player.sendMessage("random must have either the same amount of inputs and outputs, or exactly 1 input.");
+            error(player, "Expecting either the same amount of inputs and outputs, or exactly 1 input.");
             return false;
         }
         

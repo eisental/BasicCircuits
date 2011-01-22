@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 
 import java.util.BitSet;
 import java.util.Map;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.BitSetCircuit;
 import org.tal.redstonechips.Circuit;
@@ -36,11 +37,11 @@ public class divider extends BitSetCircuit {
             try {
                 constant = Integer.decode(args[0]);
                 if (constant == 0) {
-                    player.sendMessage("Can't divide by zero.");
+                    error(player, "Bad argument: " + args[0] + ". Can't divide by zero.");
                     return false;
                 } else return true;
             } catch (NumberFormatException ne) {
-                player.sendMessage("Bad argument: " + args[0] + " expected a number.");
+                error(player, "Bad argument: " + args[0] + ". Expecting a number.");
                 return false;
             }
         } else constant = 1;

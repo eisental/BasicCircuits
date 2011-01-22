@@ -1,5 +1,6 @@
 package org.tal.basiccircuits;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -20,7 +21,7 @@ public class flipflop extends Circuit {
     @Override
     public boolean init(Player player, String[] args) {
         if (outputs.length!=inputs.length) {
-            player.sendMessage("flipflop number of outputs must match number of inputs.");
+            error(player, "Expecting the same number of inputs and outputs.");
             return false;
         } else return true;
     }
