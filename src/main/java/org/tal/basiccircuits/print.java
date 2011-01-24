@@ -1,6 +1,7 @@
 package org.tal.basiccircuits;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -32,13 +33,13 @@ public class print extends Circuit {
     private void updateSign() {
         BlockState state = outputBlock.getState();
         if (state instanceof Sign) {
-            Sign outputSign = (Sign)state;
+            Sign sign = (Sign)state;
 
             if (firstUpdate) { // clear the sign of any text left overs.
-                outputSign.setLine(0, "");
-                outputSign.setLine(1, "");
-                outputSign.setLine(2, "");
-                outputSign.setLine(3, "");
+                sign.setLine(0, "");
+                sign.setLine(1, "");
+                sign.setLine(2, "");
+                sign.setLine(3, "");
                 firstUpdate = false;
             }
 
@@ -60,10 +61,10 @@ public class print extends Circuit {
 
             if (add) {
                 if (curText.isEmpty()) {
-                    outputSign.setLine(0, "");
-                    outputSign.setLine(1, "");
-                    outputSign.setLine(2, "");
-                    outputSign.setLine(3, "");
+                    sign.setLine(0, "");
+                    sign.setLine(1, "");
+                    sign.setLine(2, "");
+                    sign.setLine(3, "");
                 }
 
                 if (type==Type.bin || type==Type.ascii || curText.length()==0) {
@@ -73,36 +74,40 @@ public class print extends Circuit {
             }
 
             if (s.length()>36) {
-                outputSign.setLine(0, s.substring(0, 12));
-                outputSign.setLine(1, s.substring(12, 24));
-                outputSign.setLine(2, s.substring(24, 36));
-                outputSign.setLine(3, s.substring(36));
+                sign.setLine(0, s.substring(0, 12));
+                sign.setLine(1, s.substring(12, 24));
+                sign.setLine(2, s.substring(24, 36));
+                sign.setLine(3, s.substring(36));
             } else if (s.length()>24) {
-                outputSign.setLine(1, s.substring(0, 12));
-                outputSign.setLine(2, s.substring(12, 24));
-                outputSign.setLine(3, s.substring(24));
+                sign.setLine(1, s.substring(0, 12));
+                sign.setLine(2, s.substring(12, 24));
+                sign.setLine(3, s.substring(24));
             } else if (s.length()>12) {
-                outputSign.setLine(0, "");
-                outputSign.setLine(1, s.substring(0,12));
-                outputSign.setLine(2, s.substring(12));
+                sign.setLine(0, "");
+                sign.setLine(1, s.substring(0,12));
+                sign.setLine(2, s.substring(12));
             } else {
-                outputSign.setLine(0, "");
-                outputSign.setLine(1, s);
+                sign.setLine(0, "");
+                sign.setLine(1, s);
             }
+            if (hasDebuggers()) {
+                debug("printing:");
+                debug(sign.getLine(0));
+                debug(sign.getLine(1));
+                debug(sign.getLine(2));
+                debug(sign.getLine(3));
+            }
+            sign.update();
 
             if (s.length()>48) curText = "";
             else curText = s;
-
-            // DOESN'T WORK!
-            outputSign.update(true);
-
         }
     }
 
     @Override
     public boolean init(Player player, String[] args) {
         if (inputs.length<2) {
-            error(player, "Expecting at least 2 inputs are required. Input 0 is clock input.");
+            error(player, "Expecting at least 2 inputs. Input 0 is clock input.");
             return false;
         }
 
@@ -122,7 +127,7 @@ public class print extends Circuit {
             }
 
             if (arg==null) {
-                error(player, "Bad argument: " + args[0]);
+                error(player, "Unknown type: " + args[0]);
                 return false;
             } else type = arg;
         }

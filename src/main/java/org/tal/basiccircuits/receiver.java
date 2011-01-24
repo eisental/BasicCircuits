@@ -1,10 +1,9 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
@@ -37,7 +36,7 @@ public class receiver extends Circuit {
 
     }
 
-    public void receive(BitSet bits) {
+    public void receive(BitSet7 bits) {
         this.sendBitSet(bits);
     }
 

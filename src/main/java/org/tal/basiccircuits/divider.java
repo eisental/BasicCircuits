@@ -1,12 +1,11 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
 import java.util.Map;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.BitSetCircuit;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
@@ -16,7 +15,7 @@ public class divider extends BitSetCircuit {
     int constant = 0;
 
     @Override
-    protected void bitSetChanged(int bitSetIdx, BitSet set) {
+    protected void bitSetChanged(int bitSetIdx, BitSet7 set) {
         int div = Circuit.bitSetToUnsignedInt(inputBitSets[0], 0, wordlength);
         if (inputBitSets.length>1) {
             for (int i=1; i<inputBitSets.length; i++) {

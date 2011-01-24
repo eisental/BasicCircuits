@@ -2,7 +2,6 @@ package org.tal.basiccircuits;
 
 
 import java.util.BitSet;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 

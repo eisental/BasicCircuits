@@ -1,38 +1,37 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.BitSetCircuit;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
  * @author Tal Eisenberg
  */
 public class adder extends BitSetCircuit {
-    BitSet constant;
+    BitSet7 constant;
 
     @Override
-    protected void bitSetChanged(int bitSetIdx, BitSet set) {
-        BitSet output = (BitSet)constant.clone();
-        for (BitSet s : this.inputBitSets) {
+    protected void bitSetChanged(int bitSetIdx, BitSet7 set) {
+        BitSet7 output = (BitSet7)constant.clone();
+        for (BitSet7 s : this.inputBitSets) {
             output = addBitSets(output, s, wordlength);
         }
 
         this.sendBitSet(output);
     }
 
-    public static BitSet addBitSets(BitSet aSet, BitSet bSet, int length) {
-        BitSet s = (BitSet)aSet.clone();
+    public static BitSet7 addBitSets(BitSet7 aSet, BitSet7 bSet, int length) {
+        BitSet7 s = (BitSet7)aSet.clone();
         s.xor(bSet);
-        BitSet c = (BitSet)aSet.clone();
+        BitSet7 c = (BitSet7)aSet.clone();
         c.and(bSet);
 
         while (!c.isEmpty()) {
             shiftLeft(c, length);
-            BitSet oldS = (BitSet)s.clone();
+            BitSet7 oldS = (BitSet7)s.clone();
             s.xor(c);
             c.and(oldS);
         }

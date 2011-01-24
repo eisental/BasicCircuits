@@ -1,12 +1,11 @@
 package org.tal.basiccircuits;
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
-import org.tal.redstonechips.parsing.UnitParser;
+import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.UnitParser;
 
 /**
  *
@@ -14,8 +13,10 @@ import org.tal.redstonechips.parsing.UnitParser;
  */
 public class clock extends Circuit {
     private long freq;
+    private long onInterval, offInterval;
+
     private boolean running = false;
-    private BitSet onBits, offBits;
+    private BitSet7 onBits, offBits;
     private TickThread thread = new TickThread();
 
     @Override
@@ -32,20 +33,30 @@ public class clock extends Circuit {
     @Override
     public boolean init(Player player, String[] args) {
         // one argument for duration. number of inputs should match number of outputs.
-        if (args.length==0) freq = 500; // 1 sec default
-        else freq = Math.round(UnitParser.parse(args[0])/2);
+        double pulseWidth = 0.5;
+        if (args.length==0) setFreq(1000, pulseWidth); // 1 sec default, 50% pulse width
+        else {            
+            if (args.length>1) {
+                try {
+                    pulseWidth = Double.parseDouble(args[1]);
+                } catch (NumberFormatException ne) {
+                    error(player, "Bad floating-point number: " + pulseWidth);
+                }
+            }
+            setFreq(Math.round(UnitParser.parse(args[0])), pulseWidth);
+        }
 
         if (inputs.length!=outputs.length) {
             error(player, "Expecting the same amount of inputs and outputs.");
             return false;
         }
 
-        onBits = new BitSet(inputs.length);
-        offBits = new BitSet(inputs.length);
+        onBits = new BitSet7(inputs.length);
+        offBits = new BitSet7(inputs.length);
 
         onBits.set(0, inputs.length);
         offBits.clear();
-        if (player!=null) player.sendMessage(ChatColor.GREEN + "Clock will tick every " + freq*2 + " milliseconds.");
+        info(player, "Clock will tick every " + freq + " milliseconds for " + onInterval + " milliseconds.");
 
         return true;
     }
@@ -68,6 +79,12 @@ public class clock extends Circuit {
         running = false;
     }
 
+    private void setFreq(long freq, double pulseWidth) {
+        this.freq = freq;
+        this.onInterval = Math.round(freq*pulseWidth);
+        this.offInterval = freq - onInterval;
+    }
+
     @Override
     public void loadState(Map<String, String> state) {
         inputBits = Circuit.loadBitSet(state, "inputBits", inputs.length);
@@ -86,13 +103,16 @@ public class clock extends Circuit {
         @Override
         public void run() {
             state = true;
+            if (hasDebuggers()) debug("Starting clock.");
             try {
                 while(true) {
                     update();
-                    Thread.sleep(freq);
+                    if (state) Thread.sleep(onInterval);
+                    else Thread.sleep(offInterval);
                     state = !state;
                 }
             } catch (InterruptedException ie) {
+                if (hasDebuggers()) debug("Stopping clock.");
                 state = false;
                 update();
             }
@@ -100,7 +120,7 @@ public class clock extends Circuit {
 
         private void update() {
             if (state) { // turn on any output whose input is on
-                BitSet out = (BitSet)inputBits.clone();
+                BitSet7 out = (BitSet7)inputBits.clone();
                 out.and(onBits);
                 synchronized(this) {
                     sendBitSet(0, outputs.length, out);

@@ -1,22 +1,23 @@
 package org.tal.basiccircuits;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
  * @author Tal Eisenberg
  */
 public class decoder extends Circuit {
+    BitSet7 register;
 
     @Override
-    public void inputChange(int inIdx, boolean newLevel) {
-        if (inIdx==0 && newLevel) {
+    public void inputChange(int inIdx, boolean on) {
+        if (inIdx==0 && on) {
             int i = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
-            outputBits.clear();
-            outputBits.set(i);
-            this.sendBitSet(0, outputs.length, outputBits);
+            register.clear();
+            register.set(i);
+            this.sendBitSet(0, outputs.length, register);
         }
     }
 
@@ -31,6 +32,7 @@ public class decoder extends Circuit {
             return false;
         }
 
+        register = new BitSet7(outputs.length);
         return true;
     }
 

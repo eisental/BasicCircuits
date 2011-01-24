@@ -1,12 +1,11 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
@@ -14,8 +13,8 @@ import org.tal.redstonechips.Circuit;
  */
 public class demultiplexer extends Circuit {
     private int selectSize, bitCount, outcount, selection = -1;
-    private BitSet select;
-    private BitSet inputBitSet;
+    private BitSet7 select;
+    private BitSet7 inputBitSet;
 
 
     @Override
@@ -36,8 +35,8 @@ public class demultiplexer extends Circuit {
                 return false;
             }
 
-            select = new BitSet(selectSize);
-            inputBitSet = new BitSet(bitCount);
+            select = new BitSet7(selectSize);
+            inputBitSet = new BitSet7(bitCount);
             
             return true;
         } catch (NumberFormatException ne) {

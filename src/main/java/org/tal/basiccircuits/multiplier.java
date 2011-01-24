@@ -1,11 +1,10 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.BitSetCircuit;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 
 
@@ -17,9 +16,9 @@ public class multiplier extends BitSetCircuit {
     int constant = 0;
 
     @Override
-    protected void bitSetChanged(int bitSetIdx, BitSet set) {
+    protected void bitSetChanged(int bitSetIdx, BitSet7 set) {
         int mul = constant;
-        for (BitSet s : this.inputBitSets) {
+        for (BitSet7 s : this.inputBitSets) {
             mul = mul * Circuit.bitSetToUnsignedInt(s, 0, wordlength);
         }
 

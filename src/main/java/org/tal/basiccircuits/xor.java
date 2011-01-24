@@ -1,8 +1,7 @@
 package org.tal.basiccircuits;
 
-
-import java.util.BitSet;
 import org.tal.redstonechips.BitSetCircuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
@@ -11,8 +10,8 @@ import org.tal.redstonechips.BitSetCircuit;
 public class xor extends BitSetCircuit {
 
     @Override
-    protected void bitSetChanged(int bitSetIdx, BitSet set) {
-        BitSet out = (BitSet)inputBitSets[0].clone();
+    protected void bitSetChanged(int bitSetIdx, BitSet7 set) {
+        BitSet7 out = (BitSet7)inputBitSets[0].clone();
         for (int i=1; i<this.inputBitSets.length; i++) {
             out.xor(inputBitSets[i]);
         }

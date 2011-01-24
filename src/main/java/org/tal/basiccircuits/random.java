@@ -2,7 +2,6 @@ package org.tal.basiccircuits;
 
 
 import java.util.Random;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -16,8 +15,8 @@ public class random extends Circuit {
     private boolean setAll = false;
 
     @Override
-    public void inputChange(int inIdx, boolean newLevel) {
-        if (newLevel) { // to high. set matching output pin to random value.
+    public void inputChange(int inIdx, boolean high) {
+        if (high) { // to high. set matching output pin to random value.
             if (inIdx==0 && setAll) {
                 for (int i=0; i<outputs.length; i++)
                     sendOutput(i, randomGen.nextBoolean());

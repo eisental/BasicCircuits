@@ -1,6 +1,5 @@
 package org.tal.basiccircuits;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
@@ -15,14 +14,14 @@ public class counter extends Circuit {
     int count = 0;
 
     @Override
-    public void inputChange(int inIdx, boolean newLevel) {
+    public void inputChange(int inIdx, boolean on) {
         if (inIdx==inputPin) {
-            if (newLevel) { // high from low
+            if (on) { // high from low
                 count++;
                 this.sendInt(0, outputs.length, count);
             }
         } else if (inIdx==resetPin) {
-            if (newLevel) { // high from low
+            if (on) { // high from low
                 count = 0;
                 this.sendInt(0, outputs.length, count);
             }

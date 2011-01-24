@@ -1,12 +1,11 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
@@ -15,8 +14,8 @@ import org.tal.redstonechips.Circuit;
 public class multiplexer extends Circuit {
     int selectSize, bitCount;
     int selection = -1;
-    BitSet select;
-    BitSet[] inputBitSets;
+    BitSet7 select;
+    BitSet7[] inputBitSets;
 
     @Override
     public boolean init(Player player, String[] args) {
@@ -35,10 +34,10 @@ public class multiplexer extends Circuit {
                 return false;
             }
 
-            select = new BitSet(selectSize);
-            inputBitSets = new BitSet[incount];
+            select = new BitSet7(selectSize);
+            inputBitSets = new BitSet7[incount];
             for (int i=0; i<incount; i++) {
-                inputBitSets[i] = new BitSet(outputs.length);
+                inputBitSets[i] = new BitSet7(outputs.length);
                 inputBitSets[i].clear();
             }
 
@@ -79,7 +78,7 @@ public class multiplexer extends Circuit {
             select.set(i, inputBits.get(i));
         }
 
-        for (BitSet s : this.inputBitSets) {
+        for (BitSet7 s : this.inputBitSets) {
             for (int i=0; i<bitCount; i++) {
                 s.set(i, inputBits.get(curBit+i+selectSize));
             }

@@ -1,21 +1,20 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
  * @author Tal Eisenberg
  */
 public class shiftregister extends Circuit {
-    private BitSet register;
+    private BitSet7 register;
 
     @Override
-    public void inputChange(int inIdx, boolean newLevel) {
-        if (inIdx==0) { // clock
+    public void inputChange(int inIdx, boolean high) {
+        if (inIdx==0 && high) { // clock
             Circuit.shiftLeft(register, outputs.length);
             register.set(0, inputBits.get(1));
             sendBitSet(register);
@@ -30,7 +29,7 @@ public class shiftregister extends Circuit {
         }
 
 
-        register = new BitSet(outputs.length);
+        register = new BitSet7(outputs.length);
         return true;
 
     }

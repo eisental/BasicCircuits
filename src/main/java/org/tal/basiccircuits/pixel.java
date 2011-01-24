@@ -22,8 +22,8 @@ public class pixel extends Circuit {
     private byte[] colorIndex;
 
     @Override
-    public void inputChange(int inIdx, boolean newLevel) {
-        if (inIdx==0) { // clock pin
+    public void inputChange(int inIdx, boolean on) {
+        if (inIdx==0 && on) { // clock pin
             if (!newInput) return;
             if (outputBlock.getType()==Material.WOOL) {
                 updatePixel(outputBlock);
