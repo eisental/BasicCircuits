@@ -4,7 +4,7 @@ BasicCircuits 0.6
 The basic circuit package for [RedstoneChips](http://github.com/eisental/RedstoneChips). 
 Includes many different kinds of chips that can handle binary numbers of any length (although sometimes limited to 32bit integers).
 
-Check the [wiki](https://github.com/eisental/BasicCircuits/wiki/BasicCircuits-) for more info on building and activating circuits, and a full list.
+#### Check the [wiki](https://github.com/eisental/BasicCircuits/wiki) for more info on building and activating circuits, and a full list.
 
 __If you like this, please__
 
