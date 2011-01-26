@@ -6,11 +6,6 @@ import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
  * @author Tal Eisenberg

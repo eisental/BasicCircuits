@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.tal.basiccircuits;
 
 import java.io.File;
@@ -26,8 +21,8 @@ import org.tal.redstonechips.RedstoneChips;
  * @author Tal Eisenberg
  */
 public class BasicCircuits extends JavaPlugin {
-    RedstoneChips plugin;
-    PluginDescriptionFile pdf;
+    private RedstoneChips rc;
+
 
     public static List<transmitter> transmitters = new ArrayList<transmitter>();
     public static List<receiver> receivers = new ArrayList<receiver>();
@@ -36,49 +31,27 @@ public class BasicCircuits extends JavaPlugin {
 
     public BasicCircuits(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin, ClassLoader cLoader) {
         super(pluginLoader, instance, desc, folder, plugin, cLoader);
-        this.pdf = desc;
     }
 
     @Override
     public void onDisable() {
-        log.info(pdf.getName() + " " + pdf.getVersion() + " disabled.");
+        log.info(getDescription().getName() + " " + getDescription().getVersion() + " disabled.");
     }
 
     @Override
     public void onEnable() {
         Plugin p = getServer().getPluginManager().getPlugin(rcName);
         if (p==null) {
-            log.warning(pdf.getName() + " " + pdf.getVersion() + ": Required plugin " + rcName + " is missing.");
+            log.warning(getDescription().getName() + " " + getDescription().getVersion() + ": Required plugin " + rcName + " is missing.");
         }
 
-        plugin = (RedstoneChips)p;
-
-        plugin.addCircuitClass(adder.class);
-        plugin.addCircuitClass(and.class);
-        plugin.addCircuitClass(clock.class);
-        plugin.addCircuitClass(counter.class);
-        plugin.addCircuitClass(demultiplexer.class);
-        plugin.addCircuitClass(divider.class);
-        plugin.addCircuitClass(flipflop.class);
-        plugin.addCircuitClass(multiplexer.class);
-        plugin.addCircuitClass(multiplier.class);
-        plugin.addCircuitClass(or.class);
-        plugin.addCircuitClass(pisoregister.class);
-        plugin.addCircuitClass(print.class);
-        plugin.addCircuitClass(random.class);
-        plugin.addCircuitClass(receiver.class);
-        plugin.addCircuitClass(shiftregister.class);
-        plugin.addCircuitClass(transmitter.class);
-        plugin.addCircuitClass(xor.class);
-        plugin.addCircuitClass(decoder.class);
-        plugin.addCircuitClass(encoder.class);
-        plugin.addCircuitClass(pixel.class);
-        plugin.addCircuitClass(iptransmitter.class);
-        plugin.addCircuitClass(ipreceiver.class);
-        plugin.addCircuitClass(pulse.class);
-        plugin.addCircuitClass(not.class);
-
-        log.info(pdf.getName() + " " + pdf.getVersion() + " enabled.");
+        rc = (RedstoneChips)p;
+        rc.addCircuitClasses(adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
+                multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
+                shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, iptransmitter.class,
+                ipreceiver.class, pulse.class, not.class, synth.class);
+        
+        log.info(getDescription().getName() + " " + getDescription().getVersion() + " circuit package enabled.");
     }
 
     @Override
@@ -88,11 +61,11 @@ public class BasicCircuits extends JavaPlugin {
             for (transmitter t : transmitters) channels.add(t.getChannel());
             for (receiver r : receivers) channels.add(r.getChannel());
             if (channels.isEmpty()) {
-                player.sendMessage(RedstoneChips.infoColor + "There are no registered channels.");
+                player.sendMessage(rc.getPrefsManager().getInfoColor() + "There are no registered channels.");
             } else {
                 player.sendMessage("");
-                player.sendMessage(RedstoneChips.infoColor + "Currently used broadcast channels:");
-                player.sendMessage(RedstoneChips.infoColor + "------------------------------");
+                player.sendMessage(rc.getPrefsManager().getInfoColor() + "Currently used broadcast channels:");
+                player.sendMessage(rc.getPrefsManager().getInfoColor() + "------------------------------");
                 String list = "";
                 ChatColor color = ChatColor.WHITE;
                 for (String channel : channels) {
@@ -106,8 +79,8 @@ public class BasicCircuits extends JavaPlugin {
                     else color = ChatColor.WHITE;
                 }
                 if (!list.isEmpty()) player.sendMessage(list.substring(0, list.length()-2));
-                player.sendMessage(RedstoneChips.infoColor + "Used by " + transmitters.size() + " transmitter(s) and " + receivers.size() + " receiver(s).");
-                player.sendMessage(RedstoneChips.infoColor + "------------------------------");
+                player.sendMessage(rc.getPrefsManager().getInfoColor() + "Used by " + transmitters.size() + " transmitter(s) and " + receivers.size() + " receiver(s).");
+                player.sendMessage(rc.getPrefsManager().getInfoColor() + "------------------------------");
                 player.sendMessage("");
             }
             

@@ -1,12 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.tal.basiccircuits;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.Circuit;
 import org.tal.redstonechips.util.UnitParser;

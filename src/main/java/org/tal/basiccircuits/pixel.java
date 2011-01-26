@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.tal.basiccircuits;
 
 import org.bukkit.DyeColor;
@@ -17,19 +12,16 @@ import org.tal.redstonechips.Circuit;
  * @author Tal Eisenberg
  */
 public class pixel extends Circuit {
-    private boolean newInput = true;
     private boolean indexedColor = false;
     private byte[] colorIndex;
 
     @Override
     public void inputChange(int inIdx, boolean on) {
-        if (inIdx==0 && on) { // clock pin
-            if (!newInput) return;
-            if (outputBlock.getType()==Material.WOOL) {
-                updatePixel(outputBlock);
-                newInput = false;
-            }
-        } else newInput = true;
+        if (inputs.length==1) {
+            updatePixel();
+        } else if (inIdx==0 && on) { // clock pin
+            updatePixel();
+        }
     }
 
     @Override
@@ -55,29 +47,36 @@ public class pixel extends Circuit {
             }
         }
 
-        if (indexedColor) {
-            int exp = (int)Math.ceil(Math.log(colorIndex.length)/Math.log(2)) + 1;
-            if (inputs.length!=exp) {
-                error(player, "Expecting " + exp + " inputs for " + colorIndex.length + " colors. 1 clock pin and " + (exp-1) + " data pins.");
-                return false;
-            }
-        } else if(inputs.length != 5) {
-            error(player, "Expecting 5 inputs. 1 clock pin and 4 data pins.");
+        if (inputs.length>5) {
+            error(player, "Too many inputs. Requires 1 clock pin and no more than 4 data pins.");
             return false;
         }
 
         return true;
     }
 
-    private void updatePixel(Block block) {
-        byte color;
+    private void updatePixel() {
+        if (outputBlock.getType()!=Material.WOOL) return;
+
+        Block block = outputBlock;
         
+        int val;
+        if (inputs.length==1) val = Circuit.bitSetToUnsignedInt(inputBits, 0, inputs.length);
+        else val = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
+
+        byte color;
+
         if (indexedColor) {
-            int index = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
-            if (index>=colorIndex.length) return;
+            int index = val;
+            if (index>=colorIndex.length) {
+                if (hasDebuggers()) debug("Color index out of bounds: " + index);
+                return;
+            }
             color = colorIndex[index];
         } else 
-            color = (byte)Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
+            color = (byte)val;
+
+        if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
         block.setData(color);
 
