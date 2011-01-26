@@ -1,7 +1,6 @@
 package org.tal.basiccircuits;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -27,11 +26,14 @@ public class print extends Circuit {
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
-        if (inIdx==clockPin && newLevel) updateSign(); 
+        if (inIdx==clockPin && newLevel) {
+            for (Block b : interactionBlocks)
+                updateSign(b);
+        }
     }
 
-    private void updateSign() {
-        BlockState state = outputBlock.getState();
+    private void updateSign(Block block) {
+        BlockState state = block.getState();
         if (state instanceof Sign) {
             Sign sign = (Sign)state;
 
@@ -130,6 +132,11 @@ public class print extends Circuit {
                 error(player, "Unknown type: " + args[0]);
                 return false;
             } else type = arg;
+        }
+
+        if (interactionBlocks.length==0) {
+            error(player, "Expecting at least 1 interaction block.");
+            return false;
         }
 
         return true;

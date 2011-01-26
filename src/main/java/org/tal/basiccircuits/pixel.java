@@ -52,14 +52,14 @@ public class pixel extends Circuit {
             return false;
         }
 
+        if (interactionBlocks.length==0) {
+            error(player, "Expecting at least 1 interaction block.");
+            return false;
+        }
         return true;
     }
 
-    private void updatePixel() {
-        if (outputBlock.getType()!=Material.WOOL) return;
-
-        Block block = outputBlock;
-        
+    private void updatePixel() {        
         int val;
         if (inputs.length==1) val = Circuit.bitSetToUnsignedInt(inputBits, 0, inputs.length);
         else val = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
@@ -77,6 +77,14 @@ public class pixel extends Circuit {
             color = (byte)val;
 
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
+
+        for (Block block : interactionBlocks)
+            colorBlocks(block, color);
+
+    }
+
+    private void colorBlocks(Block block, byte color) {
+        if (block.getType()!=Material.WOOL) return;
 
         block.setData(color);
 
@@ -163,7 +171,5 @@ public class pixel extends Circuit {
             downwest.setData(color);
         if (downsouthWest.getType()==Material.WOOL)
             downsouthWest.setData(color);
-
     }
-
 }

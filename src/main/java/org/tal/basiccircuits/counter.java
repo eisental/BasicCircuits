@@ -18,11 +18,14 @@ public class counter extends Circuit {
         if (inIdx==inputPin) {
             if (on) { // high from low
                 count++;
+                if (hasDebuggers()) debug("Count incremented to " + count);
                 this.sendInt(0, outputs.length, count);
             }
         } else if (inIdx==resetPin) {
             if (on) { // high from low
+
                 count = 0;
+                if (hasDebuggers()) debug("Count reset to 0");
                 this.sendInt(0, outputs.length, count);
             }
         }

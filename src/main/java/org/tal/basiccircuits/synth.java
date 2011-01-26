@@ -53,10 +53,6 @@ public class synth extends Circuit {
     }
 
     private void updateNote() {
-        if (outputBlock.getType()!=Material.NOTE_BLOCK) return;
-
-        Block block = outputBlock;
-
         int val;
         if (inputs.length==1) val = Circuit.bitSetToUnsignedInt(inputBits, 0, inputs.length);
         else val = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
@@ -78,9 +74,13 @@ public class synth extends Circuit {
         }
 
         if (hasDebuggers()) debug("Setting note block pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
-        NoteBlock n = (NoteBlock)block.getState();
-        n.setNote(pitch);
-        n.update();
+        for (Block block : interactionBlocks) {
+            if (block.getType()==Material.NOTE_BLOCK) {
+                NoteBlock n = (NoteBlock)block.getState();
+                n.setNote(pitch);
+                n.update();
+            }
+        }
 
     }
 
