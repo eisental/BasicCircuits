@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
@@ -46,10 +47,14 @@ public class BasicCircuits extends JavaPlugin {
         }
 
         rc = (RedstoneChips)p;
-        rc.addCircuitClasses(adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
-                multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
-                shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, iptransmitter.class,
-                ipreceiver.class, pulse.class, not.class, synth.class);
+        try {
+            rc.addCircuitClasses(adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
+                    multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
+                    shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, iptransmitter.class,
+                    ipreceiver.class, pulse.class, not.class, synth.class);
+        } catch (NoClassDefFoundError ncde) {
+            log.log(Level.SEVERE, getDescription().getName() + ": Can't find RedstoneChips plugin or version mismatch.");
+        }
         
         log.info(getDescription().getName() + " " + getDescription().getVersion() + " circuit package enabled.");
     }
