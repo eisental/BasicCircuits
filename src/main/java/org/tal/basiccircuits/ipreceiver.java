@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
@@ -19,19 +22,29 @@ public class ipreceiver extends Circuit {
 
     DatagramSocket socket;
     ReceiverThread thread = new ReceiverThread();
+    List<InetAddress> authorizedAddresses;
+    byte[] buf;
     boolean closeConnection = false;
+    DatagramPacket packet;
 
     @Override
-    public void inputChange(int inIdx, boolean newLevel) { }
+    public void inputChange(int inIdx, boolean high) {
+        if (high) {
+        }
+    }
 
     @Override
     protected boolean init(Player player, String[] args) {
         if (outputs.length==0) {
             error(player, "Expecting at least 1 output.");
             return false;
+        } if (inputs.length!=1) {
+            error(player, "Expecting 1 clock input.");
+            return false;
         }
-        if (args.length!=1) {
-            error(player, "Expecting a port sign argument.");
+
+        if (args.length<2) {
+            error(player, "Expecting a port sign argument and at least one authorized incoming address.");
             return false;
         }
 
@@ -53,6 +66,19 @@ public class ipreceiver extends Circuit {
             return false;
         }
 
+        // incoming addresses
+        for (int i=1; i<args.length; i++) {
+            try {
+                authorizedAddresses.add(InetAddress.getByName(args[i]));
+            } catch (UnknownHostException ex) {
+                error(player, "Unknown host: " + args[i]);
+                return false;
+            }
+        }
+
+        buf = new byte[(int)Math.ceil(inputs.length/8)];
+        packet = new DatagramPacket(buf, buf.length);
+
         return true;
 
     }
@@ -67,17 +93,18 @@ public class ipreceiver extends Circuit {
         @Override
         public void run() {
             while (true) {
-                byte[] buf = new byte[Math.max(1, inputs.length/8)];
+                byte[] buf = new byte[(int)Math.ceil(inputs.length/8)];
 
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 try {
                     socket.receive(packet);
-                    byte[] bytes = packet.getData();
-                    BitSet7 bits = BitSet7.valueOf(bytes);
-                    sendBitSet(bits);
-                    if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, bits.length()) + " from " + packet.getAddress() + ":" + packet.getPort());
-                    System.out.println("received " + bits);
+                    if (authorizedAddresses.contains(packet.getAddress())) {
+                        byte[] bytes = packet.getData();
+                        BitSet7 bits = BitSet7.valueOf(bytes);
+                        sendBitSet(bits);
+                        if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, bits.length()) + " from " + packet.getAddress() + ":" + packet.getPort());
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(ipreceiver.class.getName()).log(Level.SEVERE, null, ex);
                 }

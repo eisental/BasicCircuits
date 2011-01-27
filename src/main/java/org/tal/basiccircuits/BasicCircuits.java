@@ -50,8 +50,7 @@ public class BasicCircuits extends JavaPlugin {
         try {
             rc.addCircuitClasses(adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
                     multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
-                    shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, iptransmitter.class,
-                    ipreceiver.class, pulse.class, not.class, synth.class);
+                    shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class, synth.class);
         } catch (NoClassDefFoundError ncde) {
             log.log(Level.SEVERE, getDescription().getName() + ": Can't find RedstoneChips plugin. Filename or version mismatch.");
         }
