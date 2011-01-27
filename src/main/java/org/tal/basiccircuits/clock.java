@@ -2,6 +2,7 @@ package org.tal.basiccircuits;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -56,8 +57,12 @@ public class clock extends Circuit {
 
         onBits.set(0, inputs.length);
         offBits.clear();
+        if (freq<200) {
+            error(player, "Clock is set to tick too fast. Clock frequency is currently limited to 200ms.");
+            return false;
+        }
         info(player, "Clock will tick every " + freq + " milliseconds for " + onInterval + " milliseconds.");
-
+        info(player, ChatColor.LIGHT_PURPLE + "WARNING: The clock circuit is still very unstable. Use at your own risk, and expect server crashes.");
         return true;
     }
 
