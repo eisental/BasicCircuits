@@ -8,7 +8,7 @@ import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 
 /**

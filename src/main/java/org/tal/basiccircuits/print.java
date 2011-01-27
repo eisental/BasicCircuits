@@ -4,7 +4,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.circuit.Circuit;
 
 
 
@@ -27,7 +27,7 @@ public class print extends Circuit {
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
         if (inIdx==clockPin && newLevel) {
-            for (Block b : interactionBlocks)
+            for (Block b : interfaceBlocks)
                 updateSign(b);
         }
     }
@@ -134,7 +134,7 @@ public class print extends Circuit {
             } else type = arg;
         }
 
-        if (interactionBlocks.length==0) {
+        if (interfaceBlocks.length==0) {
             error(player, "Expecting at least 1 interaction block.");
             return false;
         }

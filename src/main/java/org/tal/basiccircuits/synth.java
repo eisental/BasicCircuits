@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.circuit.Circuit;
 
 /**
  *
@@ -74,7 +74,7 @@ public class synth extends Circuit {
         }
 
         if (hasDebuggers()) debug("Setting note block pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
-        for (Block block : interactionBlocks) {
+        for (Block block : interfaceBlocks) {
             if (block.getType()==Material.NOTE_BLOCK) {
                 NoteBlock n = (NoteBlock)block.getState();
                 n.setNote(pitch);

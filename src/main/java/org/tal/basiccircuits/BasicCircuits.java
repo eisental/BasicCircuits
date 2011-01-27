@@ -53,7 +53,7 @@ public class BasicCircuits extends JavaPlugin {
                     shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, iptransmitter.class,
                     ipreceiver.class, pulse.class, not.class, synth.class);
         } catch (NoClassDefFoundError ncde) {
-            log.log(Level.SEVERE, getDescription().getName() + ": Can't find RedstoneChips plugin or version mismatch.");
+            log.log(Level.SEVERE, getDescription().getName() + ": Can't find RedstoneChips plugin. Filename or version mismatch.");
         }
         
         log.info(getDescription().getName() + " " + getDescription().getVersion() + " circuit package enabled.");

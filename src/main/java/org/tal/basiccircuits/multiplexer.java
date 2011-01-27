@@ -4,7 +4,7 @@ package org.tal.basiccircuits;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 
 /**

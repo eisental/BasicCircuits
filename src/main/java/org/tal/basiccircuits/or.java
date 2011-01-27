@@ -1,7 +1,7 @@
 package org.tal.basiccircuits;
 
 
-import org.tal.redstonechips.BitSetCircuit;
+import org.tal.redstonechips.circuit.BitSetCircuit;
 import org.tal.redstonechips.util.BitSet7;
 
 /**

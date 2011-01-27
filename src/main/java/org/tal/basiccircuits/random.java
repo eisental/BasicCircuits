@@ -3,7 +3,7 @@ package org.tal.basiccircuits;
 
 import java.util.Random;
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.circuit.Circuit;
 
 
 /**

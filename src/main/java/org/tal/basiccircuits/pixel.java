@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.Circuit;
+import org.tal.redstonechips.circuit.Circuit;
 
 /**
  * // dyes wool if present on output block
@@ -52,8 +52,8 @@ public class pixel extends Circuit {
             return false;
         }
 
-        if (interactionBlocks.length==0) {
-            error(player, "Expecting at least 1 interaction block.");
+        if (this.interfaceBlocks.length==0) {
+            error(player, "Expecting at least 1 interface block.");
             return false;
         }
         return true;
@@ -78,7 +78,7 @@ public class pixel extends Circuit {
 
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
-        for (Block block : interactionBlocks)
+        for (Block block : interfaceBlocks)
             colorBlocks(block, color);
 
     }
