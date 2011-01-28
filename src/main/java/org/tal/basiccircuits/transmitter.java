@@ -67,7 +67,7 @@ public class transmitter extends Circuit {
 
     private void transmitBitSet(BitSet7 bits, int startBit, int length) {
         BitSet7 tbits = bits.get(startBit, length+startBit);
-        if (hasDebuggers()) debug("Transmitting " + bitSetToBinaryString(tbits, 0, length));
+        if (hasDebuggers()) debug("Transmitting " + bitSetToBinaryString(tbits, 0, length) + " to " + receivers.size() + " receiver(s).");
         for (receiver r : receivers) {
             r.receive(tbits);
         }

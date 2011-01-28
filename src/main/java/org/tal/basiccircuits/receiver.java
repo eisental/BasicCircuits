@@ -37,6 +37,7 @@ public class receiver extends Circuit {
     }
 
     public void receive(BitSet7 bits) {
+        if (hasDebuggers()) debug("received " + bitSetToBinaryString(bits, 0, outputs.length));
         this.sendBitSet(bits);
     }
 
