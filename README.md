@@ -1,4 +1,4 @@
-BasicCircuits 0.7
+BasicCircuits 0.71
 ==================
 
 The basic circuit package for [RedstoneChips](http://eisental.github.com/RedstoneChips).
@@ -16,6 +16,11 @@ Installation
 
 Changelog
 ---------
+#### 0.71 (28/01/11)
+* Fixed bug in counter circuit. It will now work properly without any sign arguments.
+* New flipflop reset mode. It's possible to activate a flipflop with one extra reset input pin (input 0). When the reset pin
+  is triggered all flipflops in the chip reset to off state.
+
 #### 0.7 (27/01/11)
 * iptransmitter and ipreceiver are disabled for the time being.
 * New synth circuit for controlling noteblocks.
