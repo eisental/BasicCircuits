@@ -1,28 +1,32 @@
-BasicCircuits 0.6
+BasicCircuits 0.7
 ==================
 
-The basic circuit package for [RedstoneChips](http://github.com/eisental/RedstoneChips). 
-Includes many different kinds of chips that can handle binary numbers of any length (although sometimes limited to 32bit integers).
+The basic circuit package for [RedstoneChips](http://eisental.github.com/RedstoneChips).
 
-### Check the [wiki](https://github.com/eisental/BasicCircuits/wiki) for a full circuit list and more info on building and activating circuits.
-
-__If you like this, please__
-
-[![Donate](/eisental/RedstoneChips/raw/master/images/btn_donate_LG.gif")](http://sites.google.com/site/eisental/home/donate)
+__For much more information, visit the [circuitdocs](http://eisental.github.com/RedstoneChips/circuitdocs).__
 
 Installation
 -------------
-   * Delete any old versions of BasicCircuits and RedstoneChips
-   * install [RedstoneChips](http://github.com/eisental/RedstoneChips) 0.6.
-   * Download [jar file](/eisental/BasicCircuits/BasicCircuits-0.6.jar).
-   * copy the jar file to your craftbukkit plugins folder.
+* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to RedstoneChips-0.7 (or delete it to remove previous settings).
+* Download the [RedsoneChips-0.7](http://eisental.github.com/eisental/RedstoneChips/RedstoneChips-0.7.jar) jar file.
+* Download the [BasicCircuits-0.7](http://eisental.github.com/eisental/BasicCircuits/BasicCircuits-0.7.jar) jar file.
+* Copy the downloaded jar files into the plugins folder of your craftbukkit installation, keeping their original filenames.
 
-Commands
----------
-* __/redchips-channels__ Lists currently used broadcast channels.
+
 
 Changelog
 ---------
+#### 0.7 (27/01/11)
+* iptransmitter and ipreceiver are disabled for the time being.
+* New synth circuit for controlling noteblocks.
+* Support for 1-bit pixel circuits.
+* New counter sign arguments, min, max and direction.
+* Added debug messages to counter.
+* Changes to pixel, synth, and print to support multiple interface blocks.
+* encoder now only requires that the number of inputs be less than or equal to the maximum number that can be represented by its outputs.
+* clock is now limited to a minimum interval of 200ms.
+* fixed some bugs and added debug messages to pisoregister and receiver.
+
 #### 0.6 (24/01/11)
 * new [iptransmitter](/eisental/BasicCircuits/wiki/Iptransmitter) and [ipreceiver](/eisental/BasicCircuits/wiki/Ipreceiver) circuits for your inter-planetary communication needs.
 * new [pulse](/eisental/BasicCircuits/wiki/Pulse) circuit and a [not](/eisental/BasicCircuits/wiki/Not) gate circuit.
