@@ -4,6 +4,7 @@ package org.tal.basiccircuits;
 import java.util.BitSet;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 
 /**
@@ -13,7 +14,7 @@ import org.tal.redstonechips.circuit.Circuit;
 public class pisoregister extends Circuit {
     private static final int clockPin = 0;
     private static final int writePin = 1;
-    private BitSet register;
+    private BitSet7 register;
     private boolean shift = false;
     private int curIdx = 0;
 
@@ -22,7 +23,9 @@ public class pisoregister extends Circuit {
         if (inIdx==writePin) {
             shift = high;
             if (shift) write();
-        } else if (inIdx==clockPin && shift) {
+            else if (hasDebuggers()) debug("Switched to shift mode.");
+        } else if (inIdx==clockPin && !shift && high) {
+            if (hasDebuggers()) debug("Reading bit " + curIdx + ": " + register.get(curIdx));
             sendOutput(0, register.get(curIdx));
             curIdx++;
             if (curIdx>=inputs.length-2) curIdx = 0;
@@ -34,6 +37,7 @@ public class pisoregister extends Circuit {
         for (int i=2; i<inputs.length; i++) {
             register.set(i-2, inputBits.get(i));
         }
+        if (hasDebuggers()) debug("writing " + bitSetToBinaryString(register, 0, inputs.length-2) + " to register");
     }
 
     @Override
@@ -46,7 +50,7 @@ public class pisoregister extends Circuit {
             return false;
         }
 
-        register = new BitSet(inputs.length-2);
+        register = new BitSet7(inputs.length-2);
 
         return true;
     }
