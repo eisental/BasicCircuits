@@ -2,13 +2,16 @@ package org.tal.basiccircuits;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -16,6 +19,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.tal.redstonechips.RedstoneChips;
+import org.tal.redstonechips.util.TargetBlock;
 
 /**
  *
@@ -27,6 +31,8 @@ public class BasicCircuits extends JavaPlugin {
 
     public static List<transmitter> transmitters = new ArrayList<transmitter>();
     public static List<receiver> receivers = new ArrayList<receiver>();
+    public static Map<Block, terminal> terminals = new HashMap<Block, terminal>();
+
     public static final String rcName = "RedstoneChips";
     static final Logger log = Logger.getLogger("Minecraft");
 
@@ -50,7 +56,8 @@ public class BasicCircuits extends JavaPlugin {
         try {
             rc.addCircuitClasses(adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
                     multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
-                    shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class, synth.class, srnor.class);
+                    shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class, 
+                    synth.class, srnor.class, terminal.class, router.class);
         } catch (NoClassDefFoundError ncde) {
             log.log(Level.SEVERE, getDescription().getName() + ": Can't find RedstoneChips plugin. Filename or version mismatch.");
         }
@@ -88,6 +95,15 @@ public class BasicCircuits extends JavaPlugin {
                 player.sendMessage("");
             }
             
+            return true;
+        } else if (cmd.getName().equalsIgnoreCase("rc-type")) {
+            TargetBlock b = new TargetBlock(player);
+            terminal t = terminals.get(b.getTargetBlock());
+            if (t==null) {
+                player.sendMessage(rc.getPrefsManager().getErrorColor() + "You must point towards a terminal screen (a terminal circuit's interface block) to type anything.");
+            } else {
+                t.type(args, player);
+            }
             return true;
         } else return false;
     }
