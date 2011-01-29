@@ -1,4 +1,4 @@
-BasicCircuits 0.71
+BasicCircuits 0.73
 ==================
 
 The basic circuit package for [RedstoneChips](http://eisental.github.com/RedstoneChips).
