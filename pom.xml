@@ -4,7 +4,7 @@
   <groupId>org.tal</groupId>
   <artifactId>BasicCircuits</artifactId>
   <packaging>jar</packaging>
-  <version>0.71</version>
+  <version>0.72</version>
   <name>BasicCircuits</name>
   <url>http://maven.apache.org</url>
     <build>

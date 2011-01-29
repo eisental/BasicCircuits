@@ -13,7 +13,7 @@ import org.tal.redstonechips.util.BitSet7;
  */
 public class multiplexer extends Circuit {
     int selectSize, bitCount;
-    int selection = -1;
+    int selection = 0;
     BitSet7 select;
     BitSet7[] inputBitSets;
 
@@ -56,7 +56,8 @@ public class multiplexer extends Circuit {
             select.set(inIdx, newLevel);
             int i = Circuit.bitSetToUnsignedInt(select, 0, selectSize);
             if (i<inputBitSets.length) {
-                selection = i;                
+                selection = i;
+                if (hasDebuggers()) debug("Selecting input " + i);
                 this.sendBitSet(inputBitSets[selection]);
             }
 
@@ -64,8 +65,9 @@ public class multiplexer extends Circuit {
             int idxInBitSet = (inIdx-selectSize) % bitCount;
             int bitSetIdx = ((inIdx-selectSize)-idxInBitSet)/bitCount;
             inputBitSets[bitSetIdx].set(idxInBitSet, newLevel);
-            if (bitSetIdx==selection)
+            if (bitSetIdx==selection) {
                 this.sendBitSet(inputBitSets[selection]);
+            }
         }
     }
 
