@@ -40,7 +40,7 @@ public class router extends Circuit {
                 error(player, "Bad routing entry: " + arg);
                 return false;
             }
-            System.out.println("reading mapping: " + split[0] + " : " + split[1]);
+
             try {
                 Integer input = Integer.decode(split[0]);
                 Integer output = Integer.decode(split[1]);
