@@ -9,13 +9,19 @@ Installation
 -------------
 * If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to RedstoneChips-0.7 (or delete it to remove previous settings).
 * Download the [RedsoneChips-0.7](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.7.jar) jar file.
-* Download the [BasicCircuits-0.71](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.71.jar) jar file.
+* Download the [BasicCircuits-0.73](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.73.jar) jar file.
 * Copy the downloaded jar files into the plugins folder of your craftbukkit installation, keeping their original filenames.
 
 
 
 Changelog
 ---------
+#### BasicCircuits 0.73 (29/01/11)
+* New terminal and router circuits.
+
+#### BasicCircuits 0.72 (28/01/11)
+* New SR NOR latch.
+
 #### 0.71 (28/01/11)
 * Fixed bug in counter circuit. It will now work properly without any sign arguments.
 * New flipflop reset mode. It's possible to activate a flipflop with one extra reset input pin (input 0). When the reset pin
