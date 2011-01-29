@@ -4,3 +4,6 @@ version: 0.71
 commands:
   redchips-channels:
     description: Lists currently used transmitter and receiver channels.
+  rc-type:
+    description: Used for typing into the terminal circuit
+    usage: /<command> <data>
