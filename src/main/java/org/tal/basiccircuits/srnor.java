@@ -11,10 +11,13 @@ public class srnor extends Circuit {
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
-      for(int i = 0; i < inputs.length; i++){
-        sendOutput(i, true);
+      // only update outputs when an input goes low to high.
+      if(newLevel){
+        for(int i = 0; i < inputs.length; i++){
+          sendOutput(i, true);
+        }
+        sendOutput(inIdx, false);
       }
-      sendOutput(inIdx, false);
     }
 
     @Override
