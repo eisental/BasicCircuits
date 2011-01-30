@@ -11,23 +11,34 @@ import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
  * @author Tal Eisenberg
  */
 public class router extends Circuit {
+    BitSet7 register;
+
     Map<Integer, List<Integer>> routingTable;
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
-        List<Integer> outs = routingTable.get(inIdx);
-        if (outs==null) // just update the respective output.
-            sendOutput(inIdx, newLevel);
-        else {
-            for (int i : outs)
-                sendOutput(i, newLevel);
+        if (inIdx==0 && newLevel) {
+            register.clear();
+            for (int i=0; i<inputs.length-1; i++) {
+                List<Integer> outs = routingTable.get(i);
+                if (outs!=null) { // when there's no table entry do nothing.
+                    for (int k : outs) {
+                        if (hasDebuggers()) debug("Routing data input " + i + " (" + (inputBits.get(i+1)?"on":"off") + ") to output " + k);
+                        register.set(k, inputBits.get(i+1) || register.get(k));
+                    }
+                }
+            }
+
+            sendBitSet(0, outputs.length, register);
         }
+        
     }
 
     @Override
@@ -44,6 +55,8 @@ public class router extends Circuit {
             try {
                 Integer input = Integer.decode(split[0]);
                 Integer output = Integer.decode(split[1]);
+                if (input>=inputs.length-1) error(player, "Data input " + input + " doesn't exist");
+
                 if (routingTable.containsKey(input)) {
                     routingTable.get(input).add(output);
                 } else {
@@ -51,6 +64,8 @@ public class router extends Circuit {
                     outs.add(output);
                     routingTable.put(input, outs);
                 }
+
+                register = new BitSet7(outputs.length);
             } catch (NumberFormatException ne) {
                 error(player, "Bad routing entry: " + arg);
             }
