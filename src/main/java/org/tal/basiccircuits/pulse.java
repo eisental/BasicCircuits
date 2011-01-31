@@ -14,17 +14,22 @@ public class pulse extends Circuit {
     @Override
     public void inputChange(final int inIdx, boolean high) {
         if (high) {
-            new Thread() {
-                @Override
-                public void run() {
-                    sendOutput(inIdx, true);
-                    try {
-                        sleep(interval);
-                    } catch (InterruptedException ex) {}
-                    sendOutput(inIdx, false);
-                }
-            }.start();
+            sendOutput(inIdx, true);
+            if (interval==0) {
+                sendOutput(inIdx, false);
+            } else {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            sleep(interval);
+                        } catch (InterruptedException ex) {}
+                        sendOutput(inIdx, false);
+                    }
+                }.start();
+            }
         }
+
     }
 
     @Override

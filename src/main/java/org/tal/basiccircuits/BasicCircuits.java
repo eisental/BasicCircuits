@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -66,37 +67,41 @@ public class BasicCircuits extends JavaPlugin {
     }
 
     @Override
-    public boolean onCommand(Player player, Command cmd, String commandLabel, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (cmd.getName().equalsIgnoreCase("redchips-channels")) {
             SortedSet<String> channels = new TreeSet<String>();
             for (transmitter t : transmitters) channels.add(t.getChannel());
             for (receiver r : receivers) channels.add(r.getChannel());
             if (channels.isEmpty()) {
-                player.sendMessage(rc.getPrefsManager().getInfoColor() + "There are no registered channels.");
+                sender.sendMessage(rc.getPrefsManager().getInfoColor() + "There are no registered channels.");
             } else {
-                player.sendMessage("");
-                player.sendMessage(rc.getPrefsManager().getInfoColor() + "Currently used broadcast channels:");
-                player.sendMessage(rc.getPrefsManager().getInfoColor() + "------------------------------");
+                sender.sendMessage("");
+                sender.sendMessage(rc.getPrefsManager().getInfoColor() + "Currently used broadcast channels:");
+                sender.sendMessage(rc.getPrefsManager().getInfoColor() + "------------------------------");
                 String list = "";
                 ChatColor color = ChatColor.WHITE;
                 for (String channel : channels) {
                     list += color + channel + ", ";
                     if (list.length()>50) {
-                        player.sendMessage(list.substring(0, list.length()-2));
+                        sender.sendMessage(list.substring(0, list.length()-2));
                         list = "";
                     }
                     if (color==ChatColor.WHITE)
                         color = ChatColor.YELLOW;
                     else color = ChatColor.WHITE;
                 }
-                if (!list.isEmpty()) player.sendMessage(list.substring(0, list.length()-2));
-                player.sendMessage(rc.getPrefsManager().getInfoColor() + "Used by " + transmitters.size() + " transmitter(s) and " + receivers.size() + " receiver(s).");
-                player.sendMessage(rc.getPrefsManager().getInfoColor() + "------------------------------");
-                player.sendMessage("");
+                if (!list.isEmpty()) sender.sendMessage(list.substring(0, list.length()-2));
+                sender.sendMessage(rc.getPrefsManager().getInfoColor() + "Used by " + transmitters.size() + " transmitter(s) and " + receivers.size() + " receiver(s).");
+                sender.sendMessage(rc.getPrefsManager().getInfoColor() + "------------------------------");
+                sender.sendMessage("");
             }
             
             return true;
         } else if (cmd.getName().equalsIgnoreCase("rc-type")) {
+            if (!sender.isPlayer()) {
+                sender.sendMessage("Only players are allowed to run this command.");
+            }
+            Player player = (Player)sender;
             TargetBlock b = new TargetBlock(player);
             terminal t = terminals.get(b.getTargetBlock());
             if (t==null) {
