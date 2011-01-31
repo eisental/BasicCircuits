@@ -1,5 +1,5 @@
-BasicCircuits 0.73
-==================
+BasicCircuits
+=============
 
 The basic circuit package for [RedstoneChips](http://eisental.github.com/RedstoneChips).
 
@@ -7,15 +7,23 @@ __For much more information, visit the [circuitdocs](http://eisental.github.com/
 
 Installation
 -------------
-* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to RedstoneChips-0.7 (or delete it to remove previous settings).
-* Download the [RedsoneChips-0.7](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.7.jar) jar file.
-* Download the [BasicCircuits-0.73](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.73.jar) jar file.
+* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to RedstoneChips-0.71 (or delete it to remove previous settings).
+* Download the [RedsoneChips-0.71](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.71.jar) jar file.
+* Download the [BasicCircuits-0.74](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.74.jar) jar file.
 * Copy the downloaded jar files into the plugins folder of your craftbukkit installation, keeping their original filenames.
 
 
 
 Changelog
 ---------
+#### BasicCircuit 0.74 (31/01/11)
+* Added pulse argument for positive, negative and double edge-triggering.
+* Circuit classes are now disabled when the plugin is disabled.
+* Updated to work with the new bukkit command api.
+* Router now uses a clock input. If two or more inputs are routed to the same output they're now ORed together.
+* New circuit: decadecounter. Commissioned by I D
+* Pulse circuit with a 0 pulse length will not create a thread and is now very safe to use.
+
 #### BasicCircuits 0.73 (29/01/11)
 * New terminal and router circuits.
 
