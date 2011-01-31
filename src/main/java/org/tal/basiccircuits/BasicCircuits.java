@@ -44,6 +44,11 @@ public class BasicCircuits extends JavaPlugin {
     @Override
     public void onDisable() {
         log.info(getDescription().getName() + " " + getDescription().getVersion() + " disabled.");
+        if (rc!=null)
+            rc.removeCircuitClasses(adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
+                    multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
+                    shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class,
+                    synth.class, srnor.class, terminal.class, router.class, decadecounter.class);
     }
 
     @Override
