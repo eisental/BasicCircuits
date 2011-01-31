@@ -69,6 +69,12 @@ public class transmitter extends Circuit {
         BitSet7 tbits = bits.get(startBit, length+startBit);
         if (hasDebuggers()) debug("Transmitting " + bitSetToBinaryString(tbits, 0, length) + " to " + receivers.size() + " receiver(s).");
         for (receiver r : receivers) {
+            // check if the receivers chunk is loaded
+            if (!r.activationBlock.getWorld().isChunkLoaded(r.activationBlock.getChunk())) {
+                System.out.println("one of the receivers is unloaded. loading chunk");
+                r.activationBlock.getWorld().loadChunk(r.activationBlock.getChunk());
+            }
+
             r.receive(tbits);
         }
     }
