@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 import java.util.regex.Pattern;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
@@ -20,9 +21,9 @@ public class synth extends Circuit {
     @Override
     public void inputChange(int inIdx, boolean on) {
         if (inputs.length==1) {
-            updateNote();
+            playNote();
         } else if (inIdx==0 && on) { // clock pin
-            updateNote();
+            playNote();
         }
     }
 
@@ -52,7 +53,7 @@ public class synth extends Circuit {
         return true;
     }
 
-    private void updateNote() {
+    private void playNote() {
         int val;
         if (inputs.length==1) val = Circuit.bitSetToUnsignedInt(inputBits, 0, inputs.length);
         else val = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
@@ -73,18 +74,34 @@ public class synth extends Circuit {
             pitch = (byte)val;
         }
 
-        if (hasDebuggers()) debug("Setting note block pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
-        for (Block block : interfaceBlocks) {
-            if (block.getType()==Material.NOTE_BLOCK) {
-                NoteBlock n = (NoteBlock)block.getState();
-                n.setNote(pitch);
-                n.update();
+        if (pitch==-1) { // rest
+            if (hasDebuggers()) debug("Setting note blocks to rest");
+        } else {
+            if (hasDebuggers()) debug("Setting note blocks pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
+            for (Block block : interfaceBlocks) {
+                tryToPlay(block.getFace(BlockFace.NORTH), pitch);
+                tryToPlay(block.getFace(BlockFace.SOUTH), pitch);
+                tryToPlay(block.getFace(BlockFace.WEST), pitch);
+                tryToPlay(block.getFace(BlockFace.EAST), pitch);
+                tryToPlay(block.getFace(BlockFace.UP), pitch);
+                tryToPlay(block.getFace(BlockFace.DOWN), pitch);
             }
         }
 
     }
 
+    private void tryToPlay(Block block, byte pitch) {
+        if (block.getType()==Material.NOTE_BLOCK) {
+            NoteBlock n = (NoteBlock)block.getState();
+            n.setNote(pitch);
+            n.play();
+        }
+    }
+
     private int noteStringToData(String note) {
+        if (note.equalsIgnoreCase("r"))
+            return -1;
+
         // possible inputs: 0...127 / X[#]0..10
         int keynum;
         if (note.matches("[\\-0-9]+")) { // the whole string is a number
@@ -111,6 +128,8 @@ public class synth extends Circuit {
     }
 
     private String dataToNoteString(int note) {
+        if (note==-1) return "r";
+
         // 0 = f#1,
         note += 6;
         int keynum, octave;

@@ -1,7 +1,10 @@
 package org.tal.basiccircuits;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
@@ -21,88 +24,86 @@ public class print extends Circuit {
     }
 
     Type type = Type.num;
+    String[] lines = new String[4];
     String curText = "";
+    Block[] blocksToUpdate;
+
     boolean add;
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
         if (inIdx==clockPin && newLevel) {
-            for (Block b : interfaceBlocks)
-                updateSign(b);
+            updateText();
+            updateSigns();
         }
     }
 
-    private void updateSign(Block block) {
-        BlockState state = block.getState();
-        if (state instanceof Sign) {
-            Sign sign = (Sign)state;
+    private void updateText() {
+        String text = "";
 
-            if (firstUpdate) { // clear the sign of any text left overs.
-                sign.setLine(0, "");
-                sign.setLine(1, "");
-                sign.setLine(2, "");
-                sign.setLine(3, "");
-                firstUpdate = false;
+        if (type==Type.num || type==Type.unsigned) {
+            text = Integer.toString(Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1));
+        } else if (type==Type.signed) {
+            text = Integer.toString(Circuit.bitSetToSignedInt(inputBits, 1, inputs.length-1));
+        } else if (type==Type.hex) {
+            text = Integer.toHexString(Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1));
+        } else if (type==Type.oct) {
+            text = Integer.toOctalString(Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1));
+        } else if (type==Type.bin) {
+            for (int i=1; i<inputs.length; i++) text += (inputBits.get(i)?"1":"0");
+        } else if (type==Type.ascii) {
+            text = "" + (char)Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
+        } else text = "err";
+
+        if (add) {
+            if (type==Type.bin || type==Type.ascii || curText.length()==0) {
+                curText = curText + text;
+            } else
+                curText = curText + " " + text;
+        } else curText = text;
+
+        if (curText.length()>36) {
+            lines[0] = curText.substring(0, 12);
+            lines[1] = curText.substring(12, 24);
+            lines[2] = curText.substring(24, 36);
+            lines[3] = curText.substring(36, 48);
+        } else if (curText.length()>24) {
+            lines[0] = "";
+            lines[1] = curText.substring(0, 12);
+            lines[2] = curText.substring(12, 24);
+            lines[3] = curText.substring(24);
+        } else if (curText.length()>12) {
+            lines[0] = "";
+            lines[1] = curText.substring(0,12);
+            lines[2] = curText.substring(12);
+            lines[3] = "";
+        } else {
+            lines[0] = "";
+            lines[1] = curText;
+            lines[2] = "";
+            lines[3] = "";
+        }
+
+        if (hasDebuggers()) {
+            debug("printing:");
+            debug(lines[0]);
+            debug(lines[1]);
+            debug(lines[2]);
+            debug(lines[3]);
+        }
+
+        if (curText.length()>48) curText = "";
+    }
+
+    private void updateSigns() {
+        for (Block b : blocksToUpdate) {
+            if (b.getType()==Material.WALL_SIGN) {
+                Sign sign = (Sign)b.getState();
+                sign.setLine(0, lines[0]);
+                sign.setLine(1, lines[1]);
+                sign.setLine(2, lines[2]);
+                sign.setLine(3, lines[3]);
             }
-
-            String s = "";
-
-            if (type==Type.num || type==Type.unsigned) {
-                s = Integer.toString(Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1));
-            } else if (type==Type.signed) {
-                s = Integer.toString(Circuit.bitSetToSignedInt(inputBits, 1, inputs.length-1));
-            } else if (type==Type.hex) {
-                s = Integer.toHexString(Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1));
-            } else if (type==Type.oct) {
-                s = Integer.toOctalString(Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1));
-            } else if (type==Type.bin) {
-                for (int i=1; i<inputs.length; i++) s += (inputBits.get(i)?"1":"0");
-            } else if (type==Type.ascii) {
-                s = "" + (char)Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
-            } else s = "err";
-
-            if (add) {
-                if (curText.isEmpty()) {
-                    sign.setLine(0, "");
-                    sign.setLine(1, "");
-                    sign.setLine(2, "");
-                    sign.setLine(3, "");
-                }
-
-                if (type==Type.bin || type==Type.ascii || curText.length()==0) {
-                    s = curText + s;
-                } else
-                    s = curText + " " + s;
-            }
-
-            if (s.length()>36) {
-                sign.setLine(0, s.substring(0, 12));
-                sign.setLine(1, s.substring(12, 24));
-                sign.setLine(2, s.substring(24, 36));
-                sign.setLine(3, s.substring(36));
-            } else if (s.length()>24) {
-                sign.setLine(1, s.substring(0, 12));
-                sign.setLine(2, s.substring(12, 24));
-                sign.setLine(3, s.substring(24));
-            } else if (s.length()>12) {
-                sign.setLine(0, "");
-                sign.setLine(1, s.substring(0,12));
-                sign.setLine(2, s.substring(12));
-            } else {
-                sign.setLine(0, "");
-                sign.setLine(1, s);
-            }
-            if (hasDebuggers()) {
-                debug("printing:");
-                debug(sign.getLine(0));
-                debug(sign.getLine(1));
-                debug(sign.getLine(2));
-                debug(sign.getLine(3));
-            }
-            sign.update();
-
-            if (s.length()>48) curText = "";
-            else curText = s;
         }
     }
 
@@ -139,6 +140,27 @@ public class print extends Circuit {
             return false;
         }
 
+        List<Block> blockList = new ArrayList<Block>();
+        for (Block i : interfaceBlocks) {
+            Block north = i.getFace(BlockFace.NORTH);
+            Block south = i.getFace(BlockFace.SOUTH);
+            Block west = i.getFace(BlockFace.WEST);
+            Block east = i.getFace(BlockFace.EAST);
+            if (!isStructureBlock(north)) blockList.add(north);
+            if (!isStructureBlock(south)) blockList.add(south);
+            if (!isStructureBlock(west)) blockList.add(west);
+            if (!isStructureBlock(east)) blockList.add(east);
+        }
+
+        this.blocksToUpdate = blockList.toArray(new Block[blockList.size()]);
+
         return true;
+    }
+
+    private boolean isStructureBlock(Block b) {
+        for (Block s : structure)
+            if (b==s) return true;
+
+        return false;
     }
 }
