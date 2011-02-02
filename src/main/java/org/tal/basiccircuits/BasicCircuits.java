@@ -103,7 +103,7 @@ public class BasicCircuits extends JavaPlugin {
             
             return true;
         } else if (cmd.getName().equalsIgnoreCase("rc-type")) {
-            if (!sender.isPlayer()) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage("Only players are allowed to run this command.");
             }
             Player player = (Player)sender;

@@ -71,7 +71,7 @@ public class transmitter extends Circuit {
         for (receiver r : receivers) {
             // check if the receivers chunk is loaded
             if (!r.activationBlock.getWorld().isChunkLoaded(r.activationBlock.getChunk())) {
-                System.out.println("one of the receivers is unloaded. loading chunk");
+                System.out.println("receiver " + r.hashCode() + " is unloaded. loading chunk");
                 r.activationBlock.getWorld().loadChunk(r.activationBlock.getChunk());
             }
 

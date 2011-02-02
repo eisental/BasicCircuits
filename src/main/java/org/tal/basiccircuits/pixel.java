@@ -84,9 +84,7 @@ public class pixel extends Circuit {
     }
 
     private void colorBlocks(Block block, byte color) {
-        if (block.getType()!=Material.WOOL) return;
-
-        block.setData(color);
+        if (block.getType()==Material.WOOL) block.setData(color);
 
         Block down = block.getFace(BlockFace.DOWN);
         Block east = block.getFace(BlockFace.EAST);

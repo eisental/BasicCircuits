@@ -57,7 +57,7 @@ public class counter extends Circuit {
 
         if (args.length==0) {
             min = 0;
-            max = (int)Math.pow(2, outputs.length);
+            max = (int)Math.pow(2, outputs.length) - 1;
             direction = 1;
         } else if (args.length==1) {
             // just max
