@@ -5,6 +5,7 @@
 
 package org.tal.basiccircuits;
 
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
@@ -51,8 +52,8 @@ public class terminal extends Circuit {
             return false;
         }
 
-        for (Block i : interfaceBlocks)
-            BasicCircuits.terminals.put(i, this);
+        for (Location l : interfaceBlocks)
+            BasicCircuits.terminals.put(l, this);
 
         return true;
     }

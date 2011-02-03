@@ -2,6 +2,7 @@ package org.tal.basiccircuits;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -141,7 +142,8 @@ public class print extends Circuit {
         }
 
         List<Block> blockList = new ArrayList<Block>();
-        for (Block i : interfaceBlocks) {
+        for (Location loc : interfaceBlocks) {
+            Block i = world.getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
             Block north = i.getFace(BlockFace.NORTH);
             Block south = i.getFace(BlockFace.SOUTH);
             Block west = i.getFace(BlockFace.WEST);
@@ -158,8 +160,8 @@ public class print extends Circuit {
     }
 
     private boolean isStructureBlock(Block b) {
-        for (Block s : structure)
-            if (b==s) return true;
+        for (Location s : structure)
+            if (b.getLocation().equals(s)) return true;
 
         return false;
     }

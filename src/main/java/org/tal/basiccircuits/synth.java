@@ -1,6 +1,7 @@
 package org.tal.basiccircuits;
 
 import java.util.regex.Pattern;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -78,7 +79,8 @@ public class synth extends Circuit {
             if (hasDebuggers()) debug("Setting note blocks to rest");
         } else {
             if (hasDebuggers()) debug("Setting note blocks pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
-            for (Block block : interfaceBlocks) {
+            for (Location loc : interfaceBlocks) {
+                Block block = world.getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
                 tryToPlay(block.getFace(BlockFace.NORTH), pitch);
                 tryToPlay(block.getFace(BlockFace.SOUTH), pitch);
                 tryToPlay(block.getFace(BlockFace.WEST), pitch);

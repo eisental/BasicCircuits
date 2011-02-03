@@ -1,6 +1,7 @@
 package org.tal.basiccircuits;
 
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -78,8 +79,8 @@ public class pixel extends Circuit {
 
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
-        for (Block block : interfaceBlocks)
-            colorBlocks(block, color);
+        for (Location loc : interfaceBlocks)
+            colorBlocks(world.getBlockAt(loc.getBlockX(),loc.getBlockY(),loc.getBlockZ()), color);
 
     }
 

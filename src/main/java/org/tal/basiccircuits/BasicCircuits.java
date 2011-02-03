@@ -10,8 +10,8 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Server;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -32,7 +32,7 @@ public class BasicCircuits extends JavaPlugin {
 
     public static List<transmitter> transmitters = new ArrayList<transmitter>();
     public static List<receiver> receivers = new ArrayList<receiver>();
-    public static Map<Block, terminal> terminals = new HashMap<Block, terminal>();
+    public static Map<Location, terminal> terminals = new HashMap<Location, terminal>();
 
     public static final String rcName = "RedstoneChips";
     static final Logger log = Logger.getLogger("Minecraft");
@@ -108,7 +108,7 @@ public class BasicCircuits extends JavaPlugin {
             }
             Player player = (Player)sender;
             TargetBlock b = new TargetBlock(player);
-            terminal t = terminals.get(b.getTargetBlock());
+            terminal t = terminals.get(b.getTargetBlock().getLocation());
             if (t==null) {
                 player.sendMessage(rc.getPrefsManager().getErrorColor() + "You must point towards a terminal screen (a terminal circuit's interface block) to type anything.");
             } else {
