@@ -70,7 +70,7 @@ public class router extends Circuit {
                 error(player, "Bad routing entry: " + arg);
             }
         }
-        System.out.println(routingTable);
+        //System.out.println(routingTable);
         return true;
     }
 
