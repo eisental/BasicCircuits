@@ -7,9 +7,9 @@ __For much more information, visit the [circuitdocs](http://eisental.github.com/
 
 Installation
 -------------
-* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to RedstoneChips-0.75 (or delete it to remove previous settings).
-* Download the [RedsoneChips-0.75](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.75.jar) jar file.
-* Download the [BasicCircuits-0.75](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.75.jar) jar file.
+* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to RedstoneChips-0.76 (or delete it to remove previous settings).
+* Download the [RedsoneChips-0.76](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.76.jar) jar file.
+* Download the [BasicCircuits-0.76](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.76.jar) jar file.
 * Copy the downloaded jar files into the plugins folder of your craftbukkit installation, keeping their original filenames.
 
 
@@ -17,7 +17,7 @@ Installation
 Changelog
 ---------
 
-#### BasicCircuits 0.76 (+ 0.75) (4/02/11)
+#### BasicCircuits 0.76 (and 0.75) (4/02/11)
 - Support the new library load mechanism in RedstoneChips 0.76.
 - Updated pixel, print and synth to work with the interface block changes. print output signs can be attached to any side of the interface block and multiple signs per interface block are supported. pixel's center is now the inerface block itself, wool can be added anywhere around it. synth noteblocks can be attached to any face of the interface block, including multiple noteblocks per interface block.
 - synth circuits will now PLAY the note when the clock pin is triggered instead of just changing the noteblock's pitch. No extra triggering is needed for the noteblock. 
