@@ -6,7 +6,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,10 +28,25 @@ public class ipreceiver extends Circuit {
     byte[] buf;
     boolean closeConnection = false;
     DatagramPacket packet;
+    private final static int SO_TIMEOUT = 20;
 
     @Override
     public void inputChange(int inIdx, boolean high) {
         if (high) {
+            try {
+                socket.receive(packet);
+                if (authorizedAddresses.contains(packet.getAddress())) {
+                    byte[] bytes = packet.getData();
+                    BitSet7 bits = BitSet7.valueOf(bytes);
+                    sendBitSet(bits);
+                    if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, outputs.length) + " from " + packet.getAddress() + ":" + packet.getPort());
+                } else if (hasDebuggers())
+                    debug("Received data from unauthorized address " + packet.getAddress() + ".");
+            } catch (SocketTimeoutException sx) {
+                if (hasDebuggers()) debug("Nothing to receive.");
+            } catch (IOException ex) {
+                Logger.getLogger(ipreceiver.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -52,8 +69,7 @@ public class ipreceiver extends Circuit {
             int port = Integer.decode(args[0]);
             try {
                 socket = new DatagramSocket(port);
-                thread = new ReceiverThread();
-                thread.start();
+                socket.setSoTimeout(SO_TIMEOUT);
                 info(player, "Listening on port " + socket.getLocalPort());
             } catch (BindException be) {
                 error(player, "Port " + port + " is already used.");
@@ -67,6 +83,8 @@ public class ipreceiver extends Circuit {
         }
 
         // incoming addresses
+        authorizedAddresses = new ArrayList<InetAddress>();
+        
         for (int i=1; i<args.length; i++) {
             try {
                 authorizedAddresses.add(InetAddress.getByName(args[i]));
@@ -76,16 +94,11 @@ public class ipreceiver extends Circuit {
             }
         }
 
-        buf = new byte[(int)Math.ceil(inputs.length/8)];
+        buf = new byte[(int)Math.ceil(outputs.length/8)];
         packet = new DatagramPacket(buf, buf.length);
 
         return true;
 
-    }
-
-    @Override
-    public void circuitDestroyed() {
-        closeConnection = true;
     }
 
     private class ReceiverThread extends Thread {
@@ -104,7 +117,7 @@ public class ipreceiver extends Circuit {
                         BitSet7 bits = BitSet7.valueOf(bytes);
                         sendBitSet(bits);
                         if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, bits.length()) + " from " + packet.getAddress() + ":" + packet.getPort());
-                    }
+                    } 
                 } catch (IOException ex) {
                     Logger.getLogger(ipreceiver.class.getName()).log(Level.SEVERE, null, ex);
                 }

@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.Range;
 
 /**
  *
@@ -42,6 +43,15 @@ public class iptransmitter extends Circuit {
         try {
             address = InetAddress.getByName(args[0]);
             port = Integer.decode(args[1]);
+
+            String sRange = (String)redstoneChips.getPrefsManager().getPrefs().get("iptransmitter.ports");
+            Range portRange = new Range(sRange, Range.Type.OPEN_ALLOWED);
+            if (!portRange.isInRange(port)) {
+                error(player, "Port " + port + " is not allowed. Use ports in the range of " + portRange.toString());
+                error(player, "You can change the port range by changing the iptransmitter.ports preferences key.");
+                return false;
+            }
+
             try {
                 socket = new DatagramSocket();
             } catch (SocketException ex) {

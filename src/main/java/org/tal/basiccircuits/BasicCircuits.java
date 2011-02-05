@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.tal.redstonechips.CircuitLibrary;
-import org.tal.redstonechips.RedstoneChips;
 import org.tal.redstonechips.util.TargetBlock;
 
 /**
@@ -34,11 +33,17 @@ public class BasicCircuits extends CircuitLibrary {
     }
 
     @Override
+    public void onRedstoneChipsEnable() {
+        // add a new pref key for iptransmitter.
+        redstoneChips.getPrefsManager().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
+    }
+
+    @Override
     public Class[] getCircuitClasses() {
         return new Class[] { adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
                 multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
                 shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class,
-                synth.class, srnor.class, terminal.class, router.class, decadecounter.class };
+                synth.class, srnor.class, terminal.class, router.class, decadecounter.class, iptransmitter.class, ipreceiver.class };
     }
     
     @Override

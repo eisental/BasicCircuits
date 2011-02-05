@@ -18,7 +18,7 @@ Changelog
 ---------
 
 #### BasicCircuits 0.76 (and 0.75) (4/02/11)
-- Support the new library load mechanism in RedstoneChips 0.76.
+- Support the new library loading mechanism in RedstoneChips 0.76.
 - Updated pixel, print and synth to work with the interface block changes. print output signs can be attached to any side of the interface block and multiple signs per interface block are supported. pixel's center is now the inerface block itself, wool can be added anywhere around it. synth noteblocks can be attached to any face of the interface block, including multiple noteblocks per interface block.
 - synth circuits will now PLAY the note when the clock pin is triggered instead of just changing the noteblock's pitch. No extra triggering is needed for the noteblock. 
 - Fixed bug in counter when using it without arguments.
