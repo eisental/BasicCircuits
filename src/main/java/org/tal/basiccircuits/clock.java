@@ -92,7 +92,7 @@ public class clock extends Circuit {
 
     @Override
     public void loadState(Map<String, String> state) {
-        inputBits = Circuit.loadBitSet(state, "inputBits", inputs.length);
+        inputBits = Circuit.loadBitSet(state, "inputBits");
 
         if (inputBits.isEmpty() && running) stopClock();
         else if (!inputBits.isEmpty() && !running) startClock();

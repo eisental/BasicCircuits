@@ -73,7 +73,7 @@ public class multiplexer extends Circuit {
 
     @Override
     public void loadState(Map<String, String> state) {
-        inputBits = Circuit.loadBitSet(state, "inputBits", inputs.length);
+        inputBits = Circuit.loadBitSet(state, "inputBits");
 
         int curBit = 0;
         for (int i=0; i<selectSize; i++) {

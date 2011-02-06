@@ -23,12 +23,11 @@ import org.tal.redstonechips.util.BitSet7;
 public class ipreceiver extends Circuit {
 
     DatagramSocket socket;
-    ReceiverThread thread = new ReceiverThread();
     List<InetAddress> authorizedAddresses;
     byte[] buf;
     boolean closeConnection = false;
     DatagramPacket packet;
-    private final static int SO_TIMEOUT = 20;
+    private final static int SO_TIMEOUT = 20; // receive timeout in milliseconds. Could have been also 1ms i guess.
 
     @Override
     public void inputChange(int inIdx, boolean high) {
@@ -36,10 +35,17 @@ public class ipreceiver extends Circuit {
             try {
                 socket.receive(packet);
                 if (authorizedAddresses.contains(packet.getAddress())) {
+                    // update data outputs according to the packet.
                     byte[] bytes = packet.getData();
                     BitSet7 bits = BitSet7.valueOf(bytes);
-                    sendBitSet(bits);
-                    if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, outputs.length) + " from " + packet.getAddress() + ":" + packet.getPort());
+                    sendBitSet(1, outputs.length-1, bits);
+                    
+                    if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, outputs.length-1) + " from " + packet.getAddress() + ":" + packet.getPort());
+                    
+                    // pulse the output clock pin.
+                    sendOutput(0, true);
+                    sendOutput(0, false);
+
                 } else if (hasDebuggers())
                     debug("Received data from unauthorized address " + packet.getAddress() + ".");
             } catch (SocketTimeoutException sx) {
@@ -52,8 +58,8 @@ public class ipreceiver extends Circuit {
 
     @Override
     protected boolean init(Player player, String[] args) {
-        if (outputs.length==0) {
-            error(player, "Expecting at least 1 output.");
+        if (outputs.length<2) {
+            error(player, "Expecting at least 2 outputs. 1 output clock pin and 1 or more data pins.");
             return false;
         } if (inputs.length!=1) {
             error(player, "Expecting 1 clock input.");
@@ -94,44 +100,15 @@ public class ipreceiver extends Circuit {
             }
         }
 
-        buf = new byte[(int)Math.ceil(outputs.length/8)];
+        buf = new byte[(int)Math.ceil((outputs.length-1)/8d)];
         packet = new DatagramPacket(buf, buf.length);
 
         return true;
 
     }
 
-    private class ReceiverThread extends Thread {
-
-        @Override
-        public void run() {
-            while (true) {
-                byte[] buf = new byte[(int)Math.ceil(inputs.length/8)];
-
-                // receive request
-                DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                try {
-                    socket.receive(packet);
-                    if (authorizedAddresses.contains(packet.getAddress())) {
-                        byte[] bytes = packet.getData();
-                        BitSet7 bits = BitSet7.valueOf(bytes);
-                        sendBitSet(bits);
-                        if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, bits.length()) + " from " + packet.getAddress() + ":" + packet.getPort());
-                    } 
-                } catch (IOException ex) {
-                    Logger.getLogger(ipreceiver.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                synchronized(this) {
-                    if (closeConnection) {
-                        socket.close();
-                        if (hasDebuggers()) debug("Closing socket connection on port " + socket.getLocalPort());
-                        closeConnection = false;
-                        return;
-                    }
-                }
-            }
-        }
+    @Override
+    public void circuitDestroyed() {
+        if (socket!=null) socket.close();
     }
-
 }

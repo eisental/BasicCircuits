@@ -43,7 +43,8 @@ public class BasicCircuits extends CircuitLibrary {
         return new Class[] { adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
                 multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
                 shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class,
-                synth.class, srnor.class, terminal.class, router.class, decadecounter.class, iptransmitter.class, ipreceiver.class };
+                synth.class, srnor.class, terminal.class, router.class, decadecounter.class, iptransmitter.class, ipreceiver.class,
+                comparator.class };
     }
     
     @Override
