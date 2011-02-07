@@ -16,6 +16,14 @@ Installation
 
 Changelog
 ---------
+#### BasicCircuits 0.77 (7/02/11)
+- iptransmitter and ipreceiver are enabled again.
+- new iptransmitter.ports circuit preference key for setting the port range iptransmitter is allowed to use.
+- ipreceiver now uses a clock input for receiving new data and has a clock output pin to which a pulse is sent
+once new data is received.
+- clock circuit now works with the new bukkit scheduler. Timing is now much much better (hooray!) and the clock will not crash the server.
+- clock circuits with 0 pulse width should now perform much better.
+- pulse circuit now works with the bukkit scheduler as well. 
 
 #### BasicCircuits 0.76 (and 0.75) (4/02/11)
 - Support the new library loading mechanism in RedstoneChips 0.76.
