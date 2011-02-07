@@ -49,7 +49,7 @@ public class ipreceiver extends Circuit {
                 } else if (hasDebuggers())
                     debug("Received data from unauthorized address " + packet.getAddress() + ".");
             } catch (SocketTimeoutException sx) {
-                if (hasDebuggers()) debug("Nothing to receive.");
+                if (hasDebuggers()) debug("No data is available.");
             } catch (IOException ex) {
                 Logger.getLogger(ipreceiver.class.getName()).log(Level.SEVERE, null, ex);
             }

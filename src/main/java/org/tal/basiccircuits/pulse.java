@@ -9,11 +9,13 @@ import org.tal.redstonechips.util.UnitParser;
  * @author Tal Eisenberg
  */
 public class pulse extends Circuit {
-    enum EdgeTriggering { positive, negative, doubleEdge };
+    public enum EdgeTriggering { positive, negative, doubleEdge };
 
-    EdgeTriggering trigger = EdgeTriggering.positive;
+    private EdgeTriggering trigger = EdgeTriggering.positive;
 
     private long interval;
+    private PulseOff[] pulseOffs;
+    private long intervalInTicks;
 
     @Override
     public void inputChange(final int inIdx, boolean high) {
@@ -48,6 +50,15 @@ public class pulse extends Circuit {
             }
         }
 
+        if (interval!=0) {
+            intervalInTicks = Math.round(interval/50);
+
+            pulseOffs = new PulseOff[outputs.length];
+            for (int i=0; i < outputs.length; i++) {
+                pulseOffs[i] = new PulseOff(i);
+            }
+        }
+
         return true;
     }
 
@@ -56,15 +67,19 @@ public class pulse extends Circuit {
         if (interval==0) {
             sendOutput(inIdx, false);
         } else {
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        sleep(interval);
-                    } catch (InterruptedException ex) {}
-                    sendOutput(inIdx, false);
-                }
-            }.start();
+            redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, pulseOffs[inIdx], intervalInTicks);
+        }
+
+    }
+
+    class PulseOff implements Runnable {
+        int index;
+
+        public PulseOff(int index) { this.index = index; }
+
+        @Override
+        public void run() {
+            sendOutput(index, false);
         }
 
     }

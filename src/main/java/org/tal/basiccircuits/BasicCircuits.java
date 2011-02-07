@@ -15,7 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
-import org.tal.redstonechips.CircuitLibrary;
+import org.tal.redstonechips.circuit.CircuitLibrary;
 import org.tal.redstonechips.util.TargetBlock;
 
 /**

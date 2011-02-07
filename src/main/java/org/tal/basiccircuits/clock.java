@@ -2,7 +2,6 @@ package org.tal.basiccircuits;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -13,20 +12,18 @@ import org.tal.redstonechips.util.UnitParser;
  * @author Tal Eisenberg
  */
 public class clock extends Circuit {
-    private long freq;
+    private long interval;
     private long onInterval, offInterval;
 
     private boolean running = false;
     private BitSet7 onBits, offBits;
-    private TickThread thread = new TickThread();
+    private Thread thread;
 
     @Override
-    public void inputChange(int inIdx, boolean newLevel) {
-        // if not running any change from low to high will start it.
-
-        if (newLevel) { // change from low to high
+    public void inputChange(int inIdx, boolean state) {
+        if (state) { // one of the input pins is turned on.
             if (!running) startClock();
-        } else {
+        } else { // one of the input pins is set to off.
             if (running && inputBits.isEmpty()) stopClock();
         }
     }
@@ -57,12 +54,19 @@ public class clock extends Circuit {
 
         onBits.set(0, inputs.length);
         offBits.clear();
-        if (freq<200) {
-            error(player, "Clock is set to tick too fast. Clock frequency is currently limited to 200ms.");
+        if (interval<100) {
+            error(player, "Clock is set to tick too fast. Clock frequency is currently limited to 100ms.");
             return false;
         }
-        info(player, "Clock will tick every " + freq + " milliseconds for " + onInterval + " milliseconds.");
-        info(player, ChatColor.LIGHT_PURPLE + "WARNING: The clock circuit is still very unstable. Use at your own risk, and expect server crashes.");
+
+        info(player, "Clock will tick every " + interval + " milliseconds for " + onInterval + " milliseconds.");
+
+        if (onInterval>0) {
+            thread = new TickThread();
+        } else {
+            thread = new ZeroPulseTickThread();
+        }
+
         return true;
     }
 
@@ -80,12 +84,14 @@ public class clock extends Circuit {
 
     private void stopClock() {
         thread.interrupt();
-        thread = new TickThread();
+        if (onInterval>0)
+            thread = new TickThread();
+        else thread = new ZeroPulseTickThread();
         running = false;
     }
 
     private void setFreq(long freq, double pulseWidth) {
-        this.freq = freq;
+        this.interval = freq;
         this.onInterval = Math.round(freq*pulseWidth);
         this.offInterval = freq - onInterval;
     }
@@ -104,38 +110,68 @@ public class clock extends Circuit {
     }
 
     class TickThread extends Thread {
-        boolean state = false;
+        private Runnable updateOutputsTask;
+
+        private boolean state = false;
+
         @Override
         public void run() {
+            updateOutputsTask = new Runnable() {
+                @Override
+                public void run() {
+                    if (state) { // turn on any output whose input is on
+                        BitSet7 out = (BitSet7)inputBits.clone();
+                        out.and(onBits);
+                        sendBitSet(0, outputs.length, out);
+                    } else { // just clear everything
+                        sendBitSet(0, outputs.length, offBits);
+                    }
+                }
+            };
+
             state = true;
             if (hasDebuggers()) debug("Starting clock.");
             try {
                 while(true) {
-                    update();
-                    if (state) Thread.sleep(onInterval);
-                    else Thread.sleep(offInterval);
+                    redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, updateOutputsTask);
+                    if (state) {
+                        if (onInterval>0) Thread.sleep(onInterval);
+                    } else if (offInterval>0) Thread.sleep(offInterval);
                     state = !state;
                 }
             } catch (InterruptedException ie) {
                 if (hasDebuggers()) debug("Stopping clock.");
                 state = false;
-                update();
+                redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, updateOutputsTask);
             }
         }
+    }
 
-        private void update() {
-            if (state) { // turn on any output whose input is on
-                BitSet7 out = (BitSet7)inputBits.clone();
-                out.and(onBits);
-                synchronized(this) {
+    class ZeroPulseTickThread extends Thread {
+        private Runnable updateOutputsTask;
+
+        @Override
+        public void run() {
+            updateOutputsTask = new Runnable() {
+                @Override
+                public void run() {
+                    BitSet7 out = (BitSet7)inputBits.clone();
+                    out.and(onBits);
                     sendBitSet(0, outputs.length, out);
-                }
-            } else { // just clear everything
-                synchronized(this) {
                     sendBitSet(0, outputs.length, offBits);
                 }
-            }
-        }
+            };
 
+            if (hasDebuggers()) debug("Starting clock.");
+            try {
+                while(true) {
+                    redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, updateOutputsTask);
+                    Thread.sleep(interval);
+                }
+            } catch (InterruptedException ie) {
+                if (hasDebuggers()) debug("Stopping clock.");
+            }
+
+        }
     }
 }
