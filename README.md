@@ -17,6 +17,7 @@ Installation
 Changelog
 ---------
 #### BasicCircuits 0.77 (7/02/11)
+- new comparator circuit for comparing binary numbers.
 - iptransmitter and ipreceiver are enabled again.
 - new iptransmitter.ports circuit preference key for setting the port range iptransmitter is allowed to use.
 - ipreceiver now uses a clock input for receiving new data and has a clock output pin to which a pulse is sent
