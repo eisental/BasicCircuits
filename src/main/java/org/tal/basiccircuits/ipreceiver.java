@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -40,7 +41,7 @@ public class ipreceiver extends Circuit {
                     BitSet7 bits = BitSet7.valueOf(bytes);
                     sendBitSet(1, outputs.length-1, bits);
                     
-                    if (hasDebuggers()) debug("Received " + Circuit.bitSetToBinaryString(bits, 0, outputs.length-1) + " from " + packet.getAddress() + ":" + packet.getPort());
+                    if (hasDebuggers()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, outputs.length-1) + " from " + packet.getAddress() + ":" + packet.getPort());
                     
                     // pulse the output clock pin.
                     sendOutput(0, true);

@@ -1,7 +1,10 @@
 package org.tal.basiccircuits;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -49,7 +52,7 @@ public class counter extends Circuit {
     }
 
     @Override
-    public boolean init(Player player, String[] args) {
+    protected boolean init(Player player, String[] args) {
         if (inputs.length==0) {
             error(player, "Expecting at least 1 input.");
             return false;
@@ -126,5 +129,33 @@ public class counter extends Circuit {
         else count = max;
 
         return true;
+    }
+
+    @Override
+    protected boolean isStateless() {
+        return false;
+    }
+
+    @Override
+    public void loadState(Map<String, String> state) {
+        Object loadedCount = state.get("count");
+        if (loadedCount!=null) {
+            count = Integer.decode((String)loadedCount);
+            outputBits = BitSetUtils.intToBitSet(count, outputs.length);
+            this.updateOutputLevers();
+        }
+
+        Object loadedDirection = state.get("direction");
+        if (loadedDirection!=null) {
+            direction = Integer.decode((String)loadedDirection);
+        }
+    }
+
+    @Override
+    public Map<String, String> saveState() {
+        Map<String,String> state = new HashMap<String, String>();
+        state.put("count", Integer.toString(count));
+        state.put("direction", Integer.toString(direction));
+        return state;
     }
 }

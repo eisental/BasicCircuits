@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -14,7 +15,7 @@ public class decoder extends Circuit {
     @Override
     public void inputChange(int inIdx, boolean on) {
         if (inIdx==0 && on) {
-            int i = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
+            int i = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
             register.clear();
             register.set(i);
             this.sendBitSet(0, outputs.length, register);

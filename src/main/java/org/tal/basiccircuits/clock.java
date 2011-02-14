@@ -1,7 +1,5 @@
 package org.tal.basiccircuits;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -33,15 +31,23 @@ public class clock extends Circuit {
         // one argument for duration. number of inputs should match number of outputs.
         double pulseWidth = 0.5;
         if (args.length==0) setFreq(1000, pulseWidth); // 1 sec default, 50% pulse width
-        else {            
+        else {
             if (args.length>1) {
                 try {
                     pulseWidth = Double.parseDouble(args[1]);
                 } catch (NumberFormatException ne) {
-                    error(player, "Bad floating-point number: " + pulseWidth);
+                    error(player, "Bad pulse width decimal number: " + pulseWidth);
+                    return false;
                 }
             }
-            setFreq(Math.round(UnitParser.parse(args[0])), pulseWidth);
+
+            try {
+                long freq = Math.round(UnitParser.parse(args[0]));
+                setFreq(freq, pulseWidth);
+            } catch (Exception e) {
+                error(player, "Bad clock frequency: " + args[0]);
+                return false;
+            }
         }
 
         if (inputs.length!=outputs.length) {
@@ -78,11 +84,15 @@ public class clock extends Circuit {
     }
 
     private void startClock() {
+        if (thread==null) { running = false; return; }
+
         thread.start();
         running = true;
     }
 
     private void stopClock() {
+        if (thread==null) { running = false; return; }
+
         thread.interrupt();
         if (onInterval>0)
             thread = new TickThread();
@@ -94,19 +104,6 @@ public class clock extends Circuit {
         this.interval = freq;
         this.onInterval = Math.round(freq*pulseWidth);
         this.offInterval = freq - onInterval;
-    }
-
-    @Override
-    public void loadState(Map<String, String> state) {
-        inputBits = Circuit.loadBitSet(state, "inputBits");
-
-        if (inputBits.isEmpty() && running) stopClock();
-        else if (!inputBits.isEmpty() && !running) startClock();
-    }
-
-    @Override
-    public Map<String, String> saveState() {
-        return Circuit.storeBitSet(new HashMap<String, String>(), "inputBits", inputBits, inputs.length);
     }
 
     class TickThread extends Thread {

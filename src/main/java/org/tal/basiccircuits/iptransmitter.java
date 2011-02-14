@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Range;
 
 /**
@@ -73,7 +74,7 @@ public class iptransmitter extends Circuit {
         byte[] buf = out.toByteArray(); 
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
         try {
-            if (hasDebuggers()) debug("Sending " + Circuit.bitSetToBinaryString(out, 0, length));
+            if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(out, 0, length));
             socket.send(packet);
         } catch (IOException ie) {
             error(null, "iptransmitter: " + ie);

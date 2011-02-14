@@ -38,8 +38,16 @@ public class pulse extends Circuit {
         }
 
         if (args.length==0) interval = 1000; // 1 sec default
-        if (args.length>=1)
-            interval = Math.round(UnitParser.parse(args[0]));
+        
+        if (args.length>=1) {
+            try {
+                interval = Math.round(UnitParser.parse(args[0]));
+            } catch (Exception e) {
+                error(player, "Bad pulse duration argument: " + args[0]);
+                return false;
+            }
+        }
+
         if (args.length>=2) {
             if (args.length==2) {
                 try {

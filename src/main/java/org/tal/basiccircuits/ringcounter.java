@@ -6,16 +6,14 @@
 package org.tal.basiccircuits;
 
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class decadecounter extends Circuit {
+public class ringcounter extends counter {
     BitSet7 register;
-    int count;
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {

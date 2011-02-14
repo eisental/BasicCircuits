@@ -1,20 +1,26 @@
 package org.tal.basiccircuits;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.DyeColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.circuit.ReceivingCircuit;
+import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  * // dyes wool if present on output block
  * @author Tal Eisenberg
  */
-public class pixel extends Circuit {
+public class pixel extends Circuit implements ReceivingCircuit {
     private boolean indexedColor = false;
     private byte[] colorIndex;
+    private String broadcastChannel = null;
 
     @Override
     public void inputChange(int inIdx, boolean on) {
@@ -30,23 +36,41 @@ public class pixel extends Circuit {
         // needs to have 5 inputs 1 clock 4 data
 
         if (args.length>0) {
-            indexedColor = true;
-            colorIndex = new byte[args.length];
-            for (int i=0; i<colorIndex.length; i++) {
+            List<Byte> colorList = new ArrayList<Byte>();
+            for (int i=0; i<args.length; i++) {
                 try {
-                    colorIndex[i] = DyeColor.valueOf(args[i].toUpperCase()).getData();
+                    colorList.add(DyeColor.valueOf(args[i].toUpperCase()).getData());
                 } catch (IllegalArgumentException ie) {
+                    // not dye color
                     try {
                         int val = Integer.decode(args[i]);
-                        colorIndex[i] = (byte)val;
+                        colorList.add((byte)val);
                     } catch (NumberFormatException ne) {
-                        error(player, "Unknown color name: " + args[i]);
-                        return false;
+                        // not dye number also, treat as brodcast channel if last;
+                        if (i==args.length-1) broadcastChannel = args[i];
+                        else {
+                            error(player, "Unknown color name: " + args[i]);
+                            return false;
+                        }
                     }
                 }
 
             }
+
+            if (!colorList.isEmpty()) {
+                colorIndex = new byte[colorList.size()];
+                for (int i=0; i<colorList.size(); i++)
+                    colorIndex[i] = colorList.get(i);
+                indexedColor = true;
+            }
+
+            if (broadcastChannel!=null) {
+                info(player, "Pixel will listen on broadcast channel " + broadcastChannel + ".");
+                redstoneChips.addReceiver(this);
+            }
         }
+
+
 
         if (inputs.length>5) {
             error(player, "Too many inputs. Requires 1 clock pin and no more than 4 data pins.");
@@ -62,8 +86,8 @@ public class pixel extends Circuit {
 
     private void updatePixel() {        
         int val;
-        if (inputs.length==1) val = Circuit.bitSetToUnsignedInt(inputBits, 0, inputs.length);
-        else val = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
+        if (inputs.length<=1) val = BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputBits.length());
+        else val = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, inputBits.length()-1);
 
         byte color;
 
@@ -79,8 +103,8 @@ public class pixel extends Circuit {
 
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
-        for (Location loc : interfaceBlocks)
-            colorBlocks(world.getBlockAt(loc.getBlockX(),loc.getBlockY(),loc.getBlockZ()), color);
+        for (BlockVector v : interfaceBlocks)
+            colorBlocks(world.getBlockAt(v.getBlockX(),v.getBlockY(),v.getBlockZ()), color);
 
     }
 
@@ -168,5 +192,23 @@ public class pixel extends Circuit {
             downwest.setData(color);
         if (downsouthWest.getType()==Material.WOOL)
             downsouthWest.setData(color);
+    }
+
+    @Override
+    public void receive(BitSet7 bits) {
+        // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
+        if (inputs.length<=1) {
+            inputBits = bits.get(0, (inputs.length==0?5:inputs.length));
+        }  else {
+            for (int i=0; i<bits.length(); i++)
+                inputBits.set(i+1, bits.get(i));
+            inputBits.clear(0);
+        }
+        updatePixel();
+    }
+
+    @Override
+    public String getChannel() {
+        return broadcastChannel;
     }
 }

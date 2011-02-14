@@ -4,6 +4,7 @@ package org.tal.basiccircuits;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -15,7 +16,7 @@ public class shiftregister extends Circuit {
     @Override
     public void inputChange(int inIdx, boolean high) {
         if (inIdx==0 && high) { // clock
-            Circuit.shiftLeft(register, outputs.length);
+            BitSetUtils.shiftLeft(register, outputs.length);
             register.set(0, inputBits.get(1));
             sendBitSet(register);
         }

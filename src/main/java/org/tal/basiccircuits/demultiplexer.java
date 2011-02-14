@@ -1,11 +1,10 @@
 package org.tal.basiccircuits;
 
 
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -51,7 +50,7 @@ public class demultiplexer extends Circuit {
     public void inputChange(int inIdx, boolean newLevel) {
         if (inIdx<selectSize) { // selection change
             select.set(inIdx, newLevel);
-            selection = Circuit.bitSetToUnsignedInt(select, 0, selectSize);
+            selection = BitSetUtils.bitSetToUnsignedInt(select, 0, selectSize);
 
             // clear the outputs
             output.clear();
@@ -70,15 +69,4 @@ public class demultiplexer extends Circuit {
             this.sendBitSet(output);
         }
     }
-
-    @Override
-    public void loadState(Map<String, String> state) {
- 
-    }
-
-    @Override
-    public Map<String, String> saveState() {
-        return Circuit.storeBitSet(new HashMap<String,String>(), "inputBits", inputBits, inputs.length);
-    }
-
 }

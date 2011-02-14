@@ -1,10 +1,10 @@
 package org.tal.basiccircuits;
 
 
-import java.util.BitSet;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 
 /**
@@ -37,7 +37,7 @@ public class pisoregister extends Circuit {
         for (int i=2; i<inputs.length; i++) {
             register.set(i-2, inputBits.get(i));
         }
-        if (hasDebuggers()) debug("writing " + bitSetToBinaryString(register, 0, inputs.length-2) + " to register");
+        if (hasDebuggers()) debug("writing " + BitSetUtils.bitSetToBinaryString(register, 0, inputs.length-2) + " to register");
     }
 
     @Override

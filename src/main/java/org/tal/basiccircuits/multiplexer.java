@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -54,7 +55,7 @@ public class multiplexer extends Circuit {
     public void inputChange(int inIdx, boolean newLevel) {
         if (inIdx<selectSize) { // need to send a new input
             select.set(inIdx, newLevel);
-            int i = Circuit.bitSetToUnsignedInt(select, 0, selectSize);
+            int i = BitSetUtils.bitSetToUnsignedInt(select, 0, selectSize);
             if (i<inputBitSets.length) {
                 selection = i;
                 if (hasDebuggers()) debug("Selecting input " + i);
@@ -70,34 +71,4 @@ public class multiplexer extends Circuit {
             }
         }
     }
-
-    @Override
-    public void loadState(Map<String, String> state) {
-        inputBits = Circuit.loadBitSet(state, "inputBits");
-
-        int curBit = 0;
-        for (int i=0; i<selectSize; i++) {
-            select.set(i, inputBits.get(i));
-        }
-
-        for (BitSet7 s : this.inputBitSets) {
-            for (int i=0; i<bitCount; i++) {
-                s.set(i, inputBits.get(curBit+i+selectSize));
-            }
-            curBit += bitCount;
-        }
-
-        int i = Circuit.bitSetToUnsignedInt(select, 0, selectSize);
-        if (i<inputBitSets.length) {
-            selection = i;
-            this.sendBitSet(inputBitSets[selection]);
-        }
-
-    }
-
-    @Override
-    public Map<String, String> saveState() {
-        return Circuit.storeBitSet(new HashMap<String,String>(), "inputBits", inputBits, inputs.length);
-    }
-
 }

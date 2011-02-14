@@ -5,14 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.circuit.ReceivingCircuit;
+import org.tal.redstonechips.circuit.TransmittingCircuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class transmitter extends Circuit {
-    private List<receiver> receivers = new ArrayList<receiver>();
+public class transmitter extends Circuit implements TransmittingCircuit {
+    private List<ReceivingCircuit> receivers = new ArrayList<ReceivingCircuit>();
     private String channel;
 
     @Override
@@ -36,10 +39,10 @@ public class transmitter extends Circuit {
             channel = args[0];
 
             // register the transmitter
-            BasicCircuits.transmitters.add(this);
+            redstoneChips.addTransmitter(this);
 
             // find already existing receivers for this channel
-            for (receiver r : BasicCircuits.receivers) {
+            for (ReceivingCircuit r : redstoneChips.getReceivers()) {
                 if (r.getChannel()!=null && r.getChannel().equals(channel)) addReceiver(r);
             }
 
@@ -50,25 +53,28 @@ public class transmitter extends Circuit {
         }
     }
 
-    public void addReceiver(receiver r) { 
+    @Override
+    public void addReceiver(ReceivingCircuit r) {
         receivers.add(r);
     }
 
-    public void removeReceiver(receiver r) {
+    @Override
+    public void removeReceiver(ReceivingCircuit r) {
         receivers.remove(r);
     }
 
+    @Override
     public String getChannel() { return channel; }
 
     @Override
     public void circuitDestroyed() {
-        BasicCircuits.transmitters.remove(this);
+        redstoneChips.removeTransmitter(this);
     }
 
     private void transmitBitSet(BitSet7 bits, int startBit, int length) {
         BitSet7 tbits = bits.get(startBit, length+startBit);
-        if (hasDebuggers()) debug("Transmitting " + bitSetToBinaryString(tbits, 0, length) + " to " + receivers.size() + " receiver(s).");
-        for (receiver r : receivers) {
+        if (hasDebuggers()) debug("Transmitting " + BitSetUtils.bitSetToBinaryString(tbits, 0, length) + " to " + receivers.size() + " receiver(s).");
+        for (ReceivingCircuit r : receivers) {
             r.receive(tbits);
         }
     }

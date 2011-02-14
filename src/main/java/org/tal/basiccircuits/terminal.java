@@ -5,17 +5,18 @@
 
 package org.tal.basiccircuits;
 
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class terminal extends Circuit {
+public class terminal extends Circuit implements rcTypeReceiver {
     private enum DataType { ascii, num }
 
     private BitSet7 outBuf = new BitSet7(8);
@@ -52,21 +53,33 @@ public class terminal extends Circuit {
             return false;
         }
 
-        for (Location l : interfaceBlocks)
-            BasicCircuits.terminals.put(l, this);
+        for (BlockVector v : interfaceBlocks)
+            redstoneChips.registerRcTypeReceiver(v, this);
 
         return true;
     }
 
-    void type(String[] args, Player player) {
-        String typeString = " ";
-        for (String a : args)
-            typeString += a + " ";
+    @Override
+    public void circuitDestroyed() {
+        redstoneChips.removeRcTypeReceiver(this);
+    }
 
+    @Override
+    public void type(String[] words, Player player) {
+        if (words.length==0) {
+            error(player, "You didn't type anything after the command name.");
+            return;
+        }
+
+        String typeString = "";
+
+        for (String a : words)
+            typeString += a + " ";
         if (type==DataType.ascii) {
             for (int i=0; i<typeString.length()-1; i++) {
                 buf[0] = typeString.charAt(i);
                 outBuf = BitSet7.valueOf(buf);
+                if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, 8));
                 this.sendBitSet(1, 8, outBuf);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
@@ -76,7 +89,9 @@ public class terminal extends Circuit {
                 int i = Integer.decode(typeString.trim());
                 buf[0] = i;
                 outBuf = BitSet7.valueOf(buf);
+                if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, outputs.length-1));
                 this.sendBitSet(1, outputs.length-1, outBuf);
+                this.sendOutput(0, false);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
             } catch (NumberFormatException ne) {

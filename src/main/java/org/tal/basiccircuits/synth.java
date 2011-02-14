@@ -1,13 +1,14 @@
 package org.tal.basiccircuits;
 
 import java.util.regex.Pattern;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -17,7 +18,7 @@ public class synth extends Circuit {
     private boolean indexedPitch = false;
     private byte[] pitchIndex;
 
-    public static final Pattern MIDINOTE_PATTERN = Pattern.compile("[a-gA-G]#?\\-?[0-8]+");
+    public static final Pattern MIDINOTE_PATTERN = Pattern.compile("[a-gA-G][#b]?\\-?[0-8]+");
 
     @Override
     public void inputChange(int inIdx, boolean on) {
@@ -56,8 +57,8 @@ public class synth extends Circuit {
 
     private void playNote() {
         int val;
-        if (inputs.length==1) val = Circuit.bitSetToUnsignedInt(inputBits, 0, inputs.length);
-        else val = Circuit.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
+        if (inputs.length==1) val = BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputs.length);
+        else val = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
 
         byte pitch;
 
@@ -79,8 +80,8 @@ public class synth extends Circuit {
             if (hasDebuggers()) debug("Setting note blocks to rest");
         } else {
             if (hasDebuggers()) debug("Setting note blocks pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
-            for (Location loc : interfaceBlocks) {
-                Block block = world.getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            for (BlockVector v : interfaceBlocks) {
+                Block block = world.getBlockAt(v.getBlockX(), v.getBlockY(), v.getBlockZ());
                 tryToPlay(block.getFace(BlockFace.NORTH), pitch);
                 tryToPlay(block.getFace(BlockFace.SOUTH), pitch);
                 tryToPlay(block.getFace(BlockFace.WEST), pitch);
@@ -109,7 +110,7 @@ public class synth extends Circuit {
         if (note.matches("[\\-0-9]+")) { // the whole string is a number
             keynum = Integer.parseInt(note);
         } else if (MIDINOTE_PATTERN.matcher(note).matches()) {
-            int octave = Integer.parseInt(note.split("[a-gA-G]#?")[1])-1;
+            int octave = Integer.parseInt(note.split("[a-gA-G][#b]?")[1])-1;
             String key = note.split("\\-?[0-8]+")[0];
             if (key.substring(0,1).matches("[a-gA-G]")) {
                 if (key.charAt(0)=='c') keynum = 0;
@@ -120,8 +121,10 @@ public class synth extends Circuit {
                 else if (key.charAt(0)=='a') keynum = 9;
                 else if (key.charAt(0)=='b') keynum = 11;
                 else throw new IllegalArgumentException("Bad note name " + note);
-                if (key.length()>1)
+                if (key.length()>1) {
                     if (key.charAt(1)=='#') keynum++;
+                    else if (key.charAt(1)=='b') keynum--;
+                }
                 keynum = (keynum-6) + (octave)*12; // MIDI to minecraft
                 if (keynum>24 || keynum<0) throw new IllegalArgumentException(note + " is out of bounds. (" + keynum + "). The pitch range should be f#1 to f#3 or 0 to 24.");
             } else throw new IllegalArgumentException("Bad note name: " + note);

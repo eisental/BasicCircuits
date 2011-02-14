@@ -7,6 +7,7 @@ package org.tal.basiccircuits;
 
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -24,10 +25,10 @@ public class comparator extends Circuit {
     public void inputChange(int inIdx, boolean state) {
         if (hasConstant) {
             // compare inputBits as an unsigned int to the constant.
-            compare(Circuit.bitSetToUnsignedInt(inputBits, 0, wordLength), constant);
+            compare(BitSetUtils.bitSetToUnsignedInt(inputBits, 0, wordLength), constant);
         } else {
-            compare(Circuit.bitSetToUnsignedInt(inputBits, 0, wordLength),
-                    Circuit.bitSetToUnsignedInt(inputBits, wordLength, wordLength));
+            compare(BitSetUtils.bitSetToUnsignedInt(inputBits, 0, wordLength),
+                    BitSetUtils.bitSetToUnsignedInt(inputBits, wordLength, wordLength));
         }
     }
 

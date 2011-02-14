@@ -1,12 +1,6 @@
 name: BasicCircuits
 main: org.tal.basiccircuits.BasicCircuits
-version: 0.77
+version: 0.8
 author: eisental
 description: Basic circuit library for RedstoneChips integrated circuits plugin.
 website: eisental.github.com/RedstoneChips
-commands:
-  redchips-channels:
-    description: Lists currently used transmitter and receiver channels.
-  rc-type:
-    description: Used for typing into the terminal circuit
-    usage: /<command> <data>
