@@ -7,15 +7,30 @@ __For much more information, visit the [circuitdocs](http://eisental.github.com/
 
 Installation
 -------------
-* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to RedstoneChips-0.77 (or delete it to remove previous settings).
-* Download the [RedsoneChips-0.77](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.77.jar) jar file.
-* Download the [BasicCircuits-0.77](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.77.jar) jar file.
+* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to /RedstoneChips (or delete it to remove previous settings).
+* Download the [RedsoneChips-0.8](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.8.jar) jar file.
+* Download the [BasicCircuits-0.8](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.8.jar) jar file.
 * Copy the downloaded jar files into the plugins folder of your craftbukkit installation, keeping their original filenames.
 
 
 
 Changelog
 ---------
+#### BasicCircuit 0.8 (14/02/11)
+- New delay circuit - delay any number of input signal for a fixed time duration.
+- When a receiver has more than 1 output, it's 1st output now becomes an output clock pin, pulsing shortly everytime after new data is received.
+- Renamed decadecounter to ringcounter. Apologies to anybody who is using it.
+- adder, multiplier and divider now require a wordlength sign arg to define the number of bits each input set has. They can all have any number of outputs and a warning is sent if not enough outputs are used. The constant argument is the 2nd argument now.
+- All circuits can gracefully reinitialize after a server restart without changing their state or losing information.
+- pixel can receive input changes wirelessly and can be built without any inputs.
+- receiver and transmitter work with the new TransmittingCircuit and ReceivingCircuit interfaces and can communicate with other implementing circuits such as pixel.
+- print sign updates should work 90% of the time. print also has a new display mode for scrolling text and supports a clear pin when using add or scroll. Pointing at the prints activation sign and using /rc-type will now set the output signs' text accordingly. It will also save it's text buffer and restore it on server restart.
+- synth circuit accepts flat notes, using a b sign: c2 eb2 g2 for ex. is the same as c2 d#2 g2.
+- pulse and clock will display an error message when an invalid pulse duration argument is used.
+- Moved /redchips-channels and /rc-type commands to RedstoneCihps
+- Transmitters/receivers list is now handled by RedstoneCihps
+
+
 #### BasicCircuits 0.77 (7/02/11)
 - new comparator circuit for comparing binary numbers.
 - iptransmitter and ipreceiver are enabled again.
