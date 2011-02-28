@@ -1,9 +1,7 @@
 package org.tal.basiccircuits;
 
 
-import java.util.HashMap;
-import java.util.Map;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -19,9 +17,9 @@ public class multiplexer extends Circuit {
     BitSet7[] inputBitSets;
 
     @Override
-    public boolean init(Player player, String[] args) {
+    public boolean init(CommandSender sender, String[] args) {
         if (args.length==0) {
-            error(player, "Syntax for multiplexer is 'multiplexer <no. of input sets>.");
+            error(sender, "Syntax for multiplexer is 'multiplexer <no. of input sets>.");
             return false;
         }
 
@@ -31,7 +29,7 @@ public class multiplexer extends Circuit {
             int expectedInputs = incount*outputs.length + selectSize;
 
             if (inputs.length!=expectedInputs) {
-                error(player, "Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
+                error(sender, "Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
                 return false;
             }
 
@@ -46,7 +44,7 @@ public class multiplexer extends Circuit {
 
             return true;
         } catch (NumberFormatException ne) {
-            error(player, "Not a number: " + args[0]);
+            error(sender, "Not a number: " + args[0]);
             return false;
         }
     }

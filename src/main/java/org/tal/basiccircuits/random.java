@@ -2,7 +2,7 @@ package org.tal.basiccircuits;
 
 
 import java.util.Random;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 
 
@@ -32,13 +32,13 @@ public class random extends Circuit {
     }
 
     @Override
-    public boolean init(Player player, String[] args) {
+    public boolean init(CommandSender sender, String[] args) {
         if (inputs.length==1 && outputs.length!=1) {
             setAll = true;
         } else if (inputs.length==outputs.length) {
             setAll = false;
         } else {
-            error(player, "Expecting either the same amount of inputs and outputs, or exactly 1 input.");
+            error(sender, "Expecting either the same amount of inputs and outputs, or exactly 1 input.");
             return false;
         }
         

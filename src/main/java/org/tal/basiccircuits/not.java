@@ -1,6 +1,6 @@
 package org.tal.basiccircuits;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 
 /**
@@ -15,9 +15,9 @@ public class not extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length!=outputs.length) {
-            error(player, "Expecting the same number of inputs and outputs.");
+            error(sender, "Expecting the same number of inputs and outputs.");
             return false;
         }
 

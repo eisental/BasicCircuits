@@ -1,7 +1,7 @@
 package org.tal.basiccircuits;
 
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -18,9 +18,9 @@ public class demultiplexer extends Circuit {
 
 
     @Override
-    public boolean init(Player player, String[] args) {
+    public boolean init(CommandSender sender, String[] args) {
         if (args.length==0) {
-            error(player, "Syntax for multiplexer is 'multiplexer <no. of output sets>.");
+            error(sender, "Syntax for multiplexer is 'multiplexer <no. of output sets>.");
             return false;
         }
 
@@ -31,7 +31,7 @@ public class demultiplexer extends Circuit {
             int expectedInputs = bitCount + selectSize;
 
             if (inputs.length!=expectedInputs) {
-                error(player, "Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
+                error(sender, "Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
                 return false;
             }
 
@@ -41,7 +41,7 @@ public class demultiplexer extends Circuit {
             
             return true;
         } catch (NumberFormatException ne) {
-            error(player, "Bad argument: " + args[0] + " expecting a number.");
+            error(sender, "Bad argument: " + args[0] + " expecting a number.");
             return false;
         }
     }

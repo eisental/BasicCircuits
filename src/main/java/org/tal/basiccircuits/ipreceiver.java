@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -58,17 +58,17 @@ public class ipreceiver extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (outputs.length<2) {
-            error(player, "Expecting at least 2 outputs. 1 output clock pin and 1 or more data pins.");
+            error(sender, "Expecting at least 2 outputs. 1 output clock pin and 1 or more data pins.");
             return false;
         } if (inputs.length!=1) {
-            error(player, "Expecting 1 clock input.");
+            error(sender, "Expecting 1 clock input.");
             return false;
         }
 
         if (args.length<2) {
-            error(player, "Expecting a port sign argument and at least one authorized incoming address.");
+            error(sender, "Expecting a port sign argument and at least one authorized incoming address.");
             return false;
         }
 
@@ -77,15 +77,15 @@ public class ipreceiver extends Circuit {
             try {
                 socket = new DatagramSocket(port);
                 socket.setSoTimeout(SO_TIMEOUT);
-                info(player, "Listening on port " + socket.getLocalPort());
+                info(sender, "Listening on port " + socket.getLocalPort());
             } catch (BindException be) {
-                error(player, "Port " + port + " is already used.");
+                error(sender, "Port " + port + " is already used.");
                 return false;
             } catch (SocketException ex) {
-                error(player, "Socket exception: " + ex);
+                error(sender, "Socket exception: " + ex);
             }
         } catch (NumberFormatException ne) {
-            error(player, "Bad port number: " + args[1]);
+            error(sender, "Bad port number: " + args[1]);
             return false;
         }
 
@@ -96,7 +96,7 @@ public class ipreceiver extends Circuit {
             try {
                 authorizedAddresses.add(InetAddress.getByName(args[i]));
             } catch (UnknownHostException ex) {
-                error(player, "Unknown host: " + args[i]);
+                error(sender, "Unknown host: " + args[i]);
                 return false;
             }
         }

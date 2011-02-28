@@ -2,7 +2,7 @@ package org.tal.basiccircuits;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSetUtils;
 
@@ -13,48 +13,45 @@ import org.tal.redstonechips.util.BitSetUtils;
 public class counter extends Circuit {
     private static final int inputPin = 0;
     private static final int resetPin = 1;
+    private static final int directionPin = 2;
 
     int min;
     int max;
     int direction;
     int count;
+    int reset;
     boolean updown = false;
 
     @Override
     public void inputChange(int inIdx, boolean on) {
-        if (inIdx==inputPin) {
-            if (on) { // high from low
-                if (direction==1 && count>=max) {
-                    if (updown) {
-                        direction = -1;
-                        count = max-1;
-                    } else count = min;
-                } else if (direction==-1 && count<=min) {
-                    if (updown) {
-                        direction = 1;
-                        count = min+1;
-                    } else count = max;
-                } else count+=direction;
+        if (inIdx==inputPin && on) {
+            if (direction==1 && count>=max) {
+                if (updown) {
+                    direction = -1;
+                    count = max-1;
+                } else count = min;
+            } else if (direction==-1 && count<=min) {
+                if (updown) {
+                    direction = 1;
+                    count = min+1;
+                } else count = max;
+            } else count+=direction;
 
-                if (hasDebuggers()) debug("set to " + count);
-                this.sendInt(0, outputs.length, count);
-            }
-        } else if (inIdx==resetPin) {
-            if (on) { // high from low
-                if (direction==-1 && !updown )
-                    count = max;
-                else count = min;
-                if (hasDebuggers()) debug("Count reset to " + count);
-                this.sendInt(0, outputs.length, count);
-            }
+            if (hasDebuggers()) debug("set to " + count);
+            this.sendInt(0, outputs.length, count);
+        } else if (inIdx==resetPin && on) {
+            count = reset;
+            if (hasDebuggers()) debug("Count reset to " + count);
+            this.sendInt(0, outputs.length, count);
+        } else if (inIdx==directionPin) {
+            direction = (on?1:-1);
         }
-
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length==0) {
-            error(player, "Expecting at least 1 input.");
+            error(sender, "Expecting at least 1 input.");
             return false;
         }
 
@@ -67,7 +64,7 @@ public class counter extends Circuit {
             try {
                 max = Integer.decode(args[0]);
             } catch (NumberFormatException ne) {
-                error(player, "Bad max argument: " + args[0]);
+                error(sender, "Bad max argument: " + args[0]);
                 return false;
             }
 
@@ -78,14 +75,14 @@ public class counter extends Circuit {
             try {
                 min = Integer.decode(args[0]);
             } catch (NumberFormatException ne) {
-                error(player, "Bad min argument: " + args[0]);
+                error(sender, "Bad min argument: " + args[0]);
                 return false;
             }
 
             try {
                 max = Integer.decode(args[1]);
             } catch (NumberFormatException ne) {
-                error(player, "Bad max argument: " + args[1]);
+                error(sender, "Bad max argument: " + args[1]);
                 return false;
             }
 
@@ -100,13 +97,13 @@ public class counter extends Circuit {
             try {
                 min = Integer.decode(args[0]);
             } catch (NumberFormatException ne) {
-                error(player, "Bad min argument: " + args[0]);
+                error(sender, "Bad min argument: " + args[0]);
                 return false;
             }
             try {
                 max = Integer.decode(args[1]);
             } catch (NumberFormatException ne) {
-                error(player, "Bad max argument: " + args[1]);
+                error(sender, "Bad max argument: " + args[1]);
                 return false;
             }
 
@@ -120,13 +117,13 @@ public class counter extends Circuit {
                     updown = true;
                 }
             } catch (NumberFormatException ne) {
-                error(player, "Bad direction argument: " + args[2]);
+                error(sender, "Bad direction argument: " + args[2]);
                 return false;
             }
         }
 
-        if (direction == 1) count = min;
-        else count = max;
+        if (direction == 1) count = reset = min;
+        else count = reset = max;
 
         return true;
     }

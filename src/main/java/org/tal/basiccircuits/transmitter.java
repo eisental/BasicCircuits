@@ -3,7 +3,7 @@ package org.tal.basiccircuits;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.ReceivingCircuit;
 import org.tal.redstonechips.circuit.TransmittingCircuit;
@@ -30,9 +30,9 @@ public class transmitter extends Circuit implements TransmittingCircuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length==0) {
-            error(player, "Expecting at least 1 input.");
+            error(sender, "Expecting at least 1 input.");
             return false;
         }
         if (args.length>0) {
@@ -48,7 +48,7 @@ public class transmitter extends Circuit implements TransmittingCircuit {
 
             return true;
         } else {
-            error(player, "Channel sign argument is missing.");
+            error(sender, "Channel sign argument is missing.");
             return false;
         }
     }

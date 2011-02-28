@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 
@@ -42,20 +42,20 @@ public class router extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         routingTable = new HashMap<Integer, List<Integer>>();
 
         for (String arg : args) {
             String[] split = arg.split(":");
             if (split.length!=2) {
-                error(player, "Bad routing entry: " + arg);
+                error(sender, "Bad routing entry: " + arg);
                 return false;
             }
 
             try {
                 Integer input = Integer.decode(split[0]);
                 Integer output = Integer.decode(split[1]);
-                if (input>=inputs.length-1) error(player, "Data input " + input + " doesn't exist");
+                if (input>=inputs.length-1) error(sender, "Data input " + input + " doesn't exist");
 
                 if (routingTable.containsKey(input)) {
                     routingTable.get(input).add(output);
@@ -67,7 +67,7 @@ public class router extends Circuit {
 
                 register = new BitSet7(outputs.length);
             } catch (NumberFormatException ne) {
-                error(player, "Bad routing entry: " + arg);
+                error(sender, "Bad routing entry: " + arg);
             }
         }
         //System.out.println(routingTable);

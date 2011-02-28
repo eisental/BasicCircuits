@@ -1,7 +1,7 @@
 package org.tal.basiccircuits;
 
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.ReceivingCircuit;
 import org.tal.redstonechips.circuit.TransmittingCircuit;
@@ -20,7 +20,7 @@ public class receiver extends Circuit implements ReceivingCircuit {
     public void inputChange(int inIdx, boolean newLevel) {}
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (args.length>0) {
             channel = args[0];
 
@@ -31,7 +31,7 @@ public class receiver extends Circuit implements ReceivingCircuit {
             
             return true;
         } else {
-            error(player, "Channel name is missing.");
+            error(sender, "Channel name is missing.");
             return false;
         }
 

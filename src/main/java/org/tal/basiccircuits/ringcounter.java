@@ -5,7 +5,7 @@
 
 package org.tal.basiccircuits;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.util.BitSet7;
 
 /**
@@ -33,12 +33,12 @@ public class ringcounter extends counter {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length==0) {
-            error(player, "Expecting at least 1 clock input. A 2nd reset input pin is optional.");
+            error(sender, "Expecting at least 1 clock input. A 2nd reset input pin is optional.");
             return false;
         } else if (outputs.length==0) {
-            error(player, "Expecting at least 1 output.");
+            error(sender, "Expecting at least 1 output.");
             return false;
         }
 

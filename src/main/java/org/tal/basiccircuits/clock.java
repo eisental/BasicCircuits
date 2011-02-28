@@ -1,6 +1,6 @@
 package org.tal.basiccircuits;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.UnitParser;
@@ -27,7 +27,7 @@ public class clock extends Circuit {
     }
 
     @Override
-    public boolean init(Player player, String[] args) {
+    public boolean init(CommandSender sender, String[] args) {
         // one argument for duration. number of inputs should match number of outputs.
         double pulseWidth = 0.5;
         if (args.length==0) setFreq(1000, pulseWidth); // 1 sec default, 50% pulse width
@@ -36,7 +36,7 @@ public class clock extends Circuit {
                 try {
                     pulseWidth = Double.parseDouble(args[1]);
                 } catch (NumberFormatException ne) {
-                    error(player, "Bad pulse width decimal number: " + pulseWidth);
+                    error(sender, "Bad pulse width: " + args[1] + ". Expecting a number between 0 and 1.0");
                     return false;
                 }
             }
@@ -45,13 +45,13 @@ public class clock extends Circuit {
                 long freq = Math.round(UnitParser.parse(args[0]));
                 setFreq(freq, pulseWidth);
             } catch (Exception e) {
-                error(player, "Bad clock frequency: " + args[0]);
+                error(sender, "Bad clock frequency: " + args[0]);
                 return false;
             }
         }
 
         if (inputs.length!=outputs.length) {
-            error(player, "Expecting the same amount of inputs and outputs.");
+            error(sender, "Expecting the same amount of inputs and outputs.");
             return false;
         }
 
@@ -61,11 +61,11 @@ public class clock extends Circuit {
         onBits.set(0, inputs.length);
         offBits.clear();
         if (interval<100) {
-            error(player, "Clock is set to tick too fast. Clock frequency is currently limited to 100ms.");
+            error(sender, "Clock is set to tick too fast. Clock frequency is currently limited to 100ms.");
             return false;
         }
 
-        info(player, "Clock will tick every " + interval + " milliseconds for " + onInterval + " milliseconds.");
+        info(sender, "Clock will tick every " + interval + " milliseconds for " + onInterval + " milliseconds.");
 
         if (onInterval>0) {
             thread = new TickThread();

@@ -8,7 +8,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -35,9 +35,9 @@ public class iptransmitter extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (args.length!=2) {
-            error(player, "Expecting 2 sign arguments. remote address, and port.");
+            error(sender, "Expecting 2 sign arguments. remote address, and port.");
             return false;
         }
 
@@ -48,8 +48,8 @@ public class iptransmitter extends Circuit {
             String sRange = (String)redstoneChips.getPrefsManager().getPrefs().get("iptransmitter.ports");
             Range portRange = new Range(sRange, Range.Type.OPEN_ALLOWED);
             if (!portRange.isInRange(port)) {
-                error(player, "Port " + port + " is not allowed. Use ports in the range of " + portRange.toString());
-                error(player, "You can change the port range by changing the iptransmitter.ports preferences key.");
+                error(sender, "Port " + port + " is not allowed. Use ports in the range of " + portRange.toString());
+                error(sender, "You can change the port range by changing the iptransmitter.ports preferences key.");
                 return false;
             }
 
@@ -59,10 +59,10 @@ public class iptransmitter extends Circuit {
                 Logger.getLogger(iptransmitter.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (NumberFormatException ne) {
-            error(player, "Bad port number: " + args[1]);
+            error(sender, "Bad port number: " + args[1]);
             return false;
         } catch (UnknownHostException ue) {
-            error(player, "Unknown host: " + args[0]);
+            error(sender, "Unknown host: " + args[0]);
             return false;
         }
 

@@ -5,7 +5,7 @@
 
 package org.tal.basiccircuits;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSetUtils;
 
@@ -53,11 +53,11 @@ public class comparator extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (outputs.length==1) identityMode = true;
         else if (outputs.length==3) identityMode = false; // magnitude mode
         else {
-            error(player, "Expecting 1 output for an identity comparator or 3 outputs for a magnitude comparator");
+            error(sender, "Expecting 1 output for an identity comparator or 3 outputs for a magnitude comparator");
             return false;
         }
 
@@ -67,13 +67,13 @@ public class comparator extends Circuit {
                 constant = Integer.decode(args[0]);
                 hasConstant = true;
             } catch (NumberFormatException ne) {
-                error(player, "Bad constant argument: " + args[0]);
+                error(sender, "Bad constant argument: " + args[0]);
                 return false;
             }
             wordLength = inputs.length;
         } else {
             if (inputs.length%2!=0) {
-                error(player, "Expecting an even number of inputs when no sign argument is used.");
+                error(sender, "Expecting an even number of inputs when no sign argument is used.");
                 return false;
             }
             wordLength = inputs.length/2;

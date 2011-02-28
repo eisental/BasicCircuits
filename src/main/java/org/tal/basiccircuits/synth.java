@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -30,7 +30,7 @@ public class synth extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         // needs to have 5 inputs 1 clock 4 data
 
         if (args.length>0) {
@@ -40,7 +40,7 @@ public class synth extends Circuit {
                 try {
                     pitchIndex[i] = (byte)noteStringToData(args[i]);
                 } catch (IllegalArgumentException ie) {
-                    error(player, ie.getMessage());
+                    error(sender, ie.getMessage());
                     return false;
                 }
 
@@ -48,7 +48,7 @@ public class synth extends Circuit {
         }
 
         if (inputs.length>6) {
-            error(player, "Too many inputs. Requires 1 clock pin and no more than 5 data pins.");
+            error(sender, "Too many inputs. Requires 1 clock pin and no more than 5 data pins.");
             return false;
         }
 

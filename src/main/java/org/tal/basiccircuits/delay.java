@@ -5,7 +5,7 @@
 
 package org.tal.basiccircuits;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.UnitParser;
 
@@ -30,14 +30,14 @@ public class delay extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length!=outputs.length) {
-            error(player, "Expecting the same number of inputs and outputs.");
+            error(sender, "Expecting the same number of inputs and outputs.");
             return false;
         }
 
         if (inputs.length==0) {
-            error(player, "Expecting at least one input and one output.");
+            error(sender, "Expecting at least one input and one output.");
         }
 
         if (args.length==0) interval = 1000; // 1 sec default
@@ -46,7 +46,7 @@ public class delay extends Circuit {
             try {
                 interval = Math.round(UnitParser.parse(args[0]));
             } catch (Exception e) {
-                error(player, "Bad pulse duration argument: " + args[0]);
+                error(sender, "Bad pulse duration argument: " + args[0]);
                 return false;
             }
         }

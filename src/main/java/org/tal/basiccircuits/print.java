@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
@@ -176,12 +177,12 @@ public class print extends Circuit implements rcTypeReceiver {
     }
 
     @Override
-    public boolean init(Player player, String[] args) {
+    public boolean init(CommandSender sender, String[] args) {
         if (args.length>0) {
             try {
                 type = Type.valueOf(args[0]);
             } catch (IllegalArgumentException ie) {
-                error(player, "Unknown type: " + args[0]);
+                error(sender, "Unknown type: " + args[0]);
                 return false;
             }
 
@@ -189,7 +190,7 @@ public class print extends Circuit implements rcTypeReceiver {
                 try {
                     display = Display.valueOf(args[1]);
                 } catch (IllegalArgumentException ie) {
-                    error(player, "Unknown display arg: " + args[1]);
+                    error(sender, "Unknown display arg: " + args[1]);
                     return false;
                 }
             }
@@ -197,18 +198,18 @@ public class print extends Circuit implements rcTypeReceiver {
         }
 
         if (display==Display.add && inputs.length<2) {
-            error(player, "Expecting at least 2 inputs. 1 clock pin and 1 data pin.");
+            error(sender, "Expecting at least 2 inputs. 1 clock pin and 1 data pin.");
             return false;
         } else if (display==Display.replace && inputs.length<3) {
-            error(player, "Expecting at least 3 inputs. 1 clock pin, 1 clear pin and 1 data pin.");
+            error(sender, "Expecting at least 3 inputs. 1 clock pin, 1 clear pin and 1 data pin.");
             return false;
         } else if (display==Display.scroll && inputs.length<4) {
-            error(player, "Expecting at least 4 inputs. 1 clock pin, 1 clear pin, 1 scroll pin and 1 data pin.");
+            error(sender, "Expecting at least 4 inputs. 1 clock pin, 1 clear pin, 1 scroll pin and 1 data pin.");
             return false;
         }
 
         if (interfaceBlocks.length==0) {
-            error(player, "Expecting at least 1 interaction block.");
+            error(sender, "Expecting at least 1 interaction block.");
             return false;
         }
 

@@ -1,6 +1,6 @@
 package org.tal.basiccircuits;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -23,13 +23,13 @@ public class decoder extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length<2) {
-            error(player, "Expecting at least 2 inputs.");
+            error(sender, "Expecting at least 2 inputs.");
             return false;
         }
         if (outputs.length!=Math.pow(2, inputs.length-1)) {
-            error(player, "Bad number of outputs. Expecting " + (int)Math.pow(2, inputs.length-1));
+            error(sender, "Bad number of outputs. Expecting " + (int)Math.pow(2, inputs.length-1));
             return false;
         }
 

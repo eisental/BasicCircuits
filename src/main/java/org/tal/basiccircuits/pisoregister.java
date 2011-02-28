@@ -1,7 +1,7 @@
 package org.tal.basiccircuits;
 
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -41,12 +41,12 @@ public class pisoregister extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length<3) {
-            error(player, "Expecting at least 3 inputs.");
+            error(sender, "Expecting at least 3 inputs.");
             return false;
         } if (outputs.length!=1) {
-            error(player, "Expecting exactly 1 output. ");
+            error(sender, "Expecting exactly 1 output. ");
             return false;
         }
 

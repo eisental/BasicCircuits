@@ -6,7 +6,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.ReceivingCircuit;
@@ -32,7 +32,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         // needs to have 5 inputs 1 clock 4 data
 
         if (args.length>0) {
@@ -49,7 +49,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
                         // not dye number also, treat as brodcast channel if last;
                         if (i==args.length-1) broadcastChannel = args[i];
                         else {
-                            error(player, "Unknown color name: " + args[i]);
+                            error(sender, "Unknown color name: " + args[i]);
                             return false;
                         }
                     }
@@ -65,7 +65,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
             }
 
             if (broadcastChannel!=null) {
-                info(player, "Pixel will listen on broadcast channel " + broadcastChannel + ".");
+                info(sender, "Pixel will listen on broadcast channel " + broadcastChannel + ".");
                 redstoneChips.addReceiver(this);
             }
         }
@@ -73,12 +73,12 @@ public class pixel extends Circuit implements ReceivingCircuit {
 
 
         if (inputs.length>5) {
-            error(player, "Too many inputs. Requires 1 clock pin and no more than 4 data pins.");
+            error(sender, "Too many inputs. Requires 1 clock pin and no more than 4 data pins.");
             return false;
         }
 
         if (this.interfaceBlocks.length==0) {
-            error(player, "Expecting at least 1 interface block.");
+            error(sender, "Expecting at least 1 interface block.");
             return false;
         }
         return true;

@@ -1,6 +1,6 @@
 package org.tal.basiccircuits;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 
@@ -27,9 +27,9 @@ public class flipflop extends Circuit {
     }
 
     @Override
-    public boolean init(Player player, String[] args) {
+    public boolean init(CommandSender sender, String[] args) {
         if (outputs.length!=inputs.length && inputs.length!=outputs.length+1) {
-            error(player, "Expecting the same number of inputs and outputs or one extra input reset pin.");
+            error(sender, "Expecting the same number of inputs and outputs or one extra input reset pin.");
             return false;
         }
 

@@ -1,7 +1,7 @@
 package org.tal.basiccircuits;
 
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -23,9 +23,9 @@ public class shiftregister extends Circuit {
     }
 
     @Override
-    protected boolean init(Player player, String[] args) {
+    protected boolean init(CommandSender sender, String[] args) {
         if (inputs.length!=2) {
-            error(player, "Expecting two inputs. ");
+            error(sender, "Expecting two inputs. ");
             return false;
         }
 

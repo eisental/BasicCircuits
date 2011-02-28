@@ -7,16 +7,21 @@ __For much more information, visit the [circuitdocs](http://eisental.github.com/
 
 Installation
 -------------
-* If you're updating from a previous version, delete any previously installed RedstoneChips and BasicCircuits jar files and rename your <craftbukkit>/plugins/RedstoneChips-XX folder to /RedstoneChips (or delete it to remove previous settings).
-* Download the [RedsoneChips-0.8](https://github.com/downloads/eisental/RedstoneChips/RedstoneChips-0.8.jar) jar file.
-* Download the [BasicCircuits-0.8](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.8.jar) jar file.
+* Make sure you have RedstoneChips-0.82.jar installed in your craftbukkit plugins folder.
+* Download the [BasicCircuits-0.82](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.82.jar) jar file.
 * Copy the downloaded jar files into the plugins folder of your craftbukkit installation, keeping their original filenames.
 
 
 
 Changelog
 ---------
-#### BasicCircuit 0.8 (14/02/11)
+#### BasicCircuits 0.82 (28/02/11)
+- counter can now have a 3rd input pin for switching count direction.
+- terminal circuit can have an optional clear input pin for setting all its inputs to 0.
+- Updated to work with latest craftbukkit and RC0.82.
+- Fixed bug in clock's pulse width error message.
+
+#### BasicCircuits 0.8 (14/02/11)
 - New delay circuit - delay any number of input signal for a fixed time duration.
 - When a receiver has more than 1 output, it's 1st output now becomes an output clock pin, pulsing shortly everytime after new data is received.
 - Renamed decadecounter to ringcounter. Apologies to anybody who is using it.
