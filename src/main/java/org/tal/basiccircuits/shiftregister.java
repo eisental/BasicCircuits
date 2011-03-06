@@ -1,6 +1,8 @@
 package org.tal.basiccircuits;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -11,7 +13,7 @@ import org.tal.redstonechips.util.BitSetUtils;
  * @author Tal Eisenberg
  */
 public class shiftregister extends Circuit {
-    private BitSet7 register;
+    private BitSet7 register = new BitSet7();
 
     @Override
     public void inputChange(int inIdx, boolean high) {
@@ -29,11 +31,26 @@ public class shiftregister extends Circuit {
             return false;
         }
 
-
-        register = new BitSet7(outputs.length);
         return true;
 
     }
 
+    @Override
+    public Map<String, String> saveState() {
+        Map<String,String> state = new HashMap<String,String>();
+        BitSetUtils.bitSetToMap(state, "register", register, outputs.length);
+        return state;
+    }
+
+    @Override
+    public void loadState(Map<String, String> state) {
+        register = BitSetUtils.mapToBitSet(state, "register");
+        outputBits = (BitSet7)register.clone();
+    }
+
+    @Override
+    protected boolean isStateless() {
+        return false;
+    }
 
 }

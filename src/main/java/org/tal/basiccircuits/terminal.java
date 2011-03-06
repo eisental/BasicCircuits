@@ -98,11 +98,10 @@ public class terminal extends Circuit implements rcTypeReceiver {
                 outBuf = BitSet7.valueOf(buf);
                 if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, outputs.length-1));
                 this.sendBitSet(1, outputs.length-1, outBuf);
-                this.sendOutput(0, false);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
             } catch (NumberFormatException ne) {
-                error(player, "Not a number: " + typeString.trim() + ". use ascii data type for sending ascii symbols.");
+                error(player, "Not a number: " + typeString.trim() + ". use ascii data type (1st sign arg), for sending ascii symbols.");
             }
         }
 
