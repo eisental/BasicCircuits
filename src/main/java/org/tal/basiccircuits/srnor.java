@@ -1,15 +1,18 @@
 package org.tal.basiccircuits;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
  * @author Matthew Peychich
  */
 public class srnor extends Circuit {
-    BitSet7 register;
+    BitSet7 register = new BitSet7();
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
@@ -28,8 +31,27 @@ public class srnor extends Circuit {
             return false;
         }
 
-        register = new BitSet7(outputs.length);
         return true;
+    }
+
+    @Override
+    public Map<String, String> saveState() {
+        Map<String, String> state = new HashMap<String,String>();
+        BitSetUtils.bitSetToMap(state, "register", register, outputs.length);
+        return state;
+    }
+
+    @Override
+    public void loadState(Map<String, String> state) {
+        if (state.containsKey("register")) {
+            register = BitSetUtils.mapToBitSet(state, "register");
+            this.sendBitSet(register);
+        }
+    }
+
+    @Override
+    protected boolean isStateless() {
+        return false;
     }
 
 }

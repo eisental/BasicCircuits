@@ -21,7 +21,8 @@ public class pixel extends Circuit implements ReceivingCircuit {
     private boolean indexedColor = false;
     private byte[] colorIndex;
     private String broadcastChannel = null;
-
+    private static BlockFace[] faces = new BlockFace[] { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
+    
     @Override
     public void inputChange(int inIdx, boolean on) {
         if (inputs.length==1) {
@@ -46,7 +47,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
                         int val = Integer.decode(args[i]);
                         colorList.add((byte)val);
                     } catch (NumberFormatException ne) {
-                        // not dye number also, treat as brodcast channel if last;
+                        // not dye number also, treat as broadcast channel if last;
                         if (i==args.length-1) broadcastChannel = args[i];
                         else {
                             error(sender, "Unknown color name: " + args[i]);
@@ -109,90 +110,12 @@ public class pixel extends Circuit implements ReceivingCircuit {
     }
 
     private void colorBlocks(Block block, byte color) {
-        Block down = block.getFace(BlockFace.DOWN);
-        Block east = block.getFace(BlockFace.EAST);
-        Block north = block.getFace(BlockFace.NORTH);
-        Block northEast = block.getFace(BlockFace.NORTH_EAST);
-        Block northWest = block.getFace(BlockFace.NORTH_WEST);
-        Block south = block.getFace(BlockFace.SOUTH);
-        Block southEast = block.getFace(BlockFace.SOUTH_EAST);
-        Block southWest = block.getFace(BlockFace.SOUTH_WEST);
-        Block up = block.getFace(BlockFace.UP);
-        Block west = block.getFace(BlockFace.WEST);
-
-        Block upeast = up.getFace(BlockFace.EAST);
-        Block upnorth = up.getFace(BlockFace.NORTH);
-        Block upnorthEast = up.getFace(BlockFace.NORTH_EAST);
-        Block upnorthWest = up.getFace(BlockFace.NORTH_WEST);
-        Block upsouth = up.getFace(BlockFace.SOUTH);
-        Block upsouthEast = up.getFace(BlockFace.SOUTH_EAST);
-        Block upsouthWest = up.getFace(BlockFace.SOUTH_WEST);
-        Block upwest = up.getFace(BlockFace.WEST);
-
-        Block downeast = down.getFace(BlockFace.EAST);
-        Block downnorth = down.getFace(BlockFace.NORTH);
-        Block downnorthEast = down.getFace(BlockFace.NORTH_EAST);
-        Block downnorthWest = down.getFace(BlockFace.NORTH_WEST);
-        Block downsouth = down.getFace(BlockFace.SOUTH);
-        Block downsouthEast = down.getFace(BlockFace.SOUTH_EAST);
-        Block downsouthWest = down.getFace(BlockFace.SOUTH_WEST);
-        Block downwest = down.getFace(BlockFace.WEST);
-
-        if (down.getType()==Material.WOOL)
-            down.setData(color);
-        if (east.getType()==Material.WOOL)
-            east.setData(color);
-        if (north.getType()==Material.WOOL)
-            north.setData(color);
-        if (northEast.getType()==Material.WOOL)
-            northEast.setData(color);
-        if (northWest.getType()==Material.WOOL)
-            northWest.setData(color);
-        if (south.getType()==Material.WOOL)
-            south.setData(color);
-        if (southEast.getType()==Material.WOOL)
-            southEast.setData(color);
-        if (west.getType()==Material.WOOL)
-            west.setData(color);
-        if (up.getType()==Material.WOOL)
-            up.setData(color);
-        if (southWest.getType()==Material.WOOL)
-            southWest.setData(color);
-
-        if (upeast.getType()==Material.WOOL)
-            upeast.setData(color);
-        if (upnorth.getType()==Material.WOOL)
-            upnorth.setData(color);
-        if (upnorthEast.getType()==Material.WOOL)
-            upnorthEast.setData(color);
-        if (upnorthWest.getType()==Material.WOOL)
-            upnorthWest.setData(color);
-        if (upsouth.getType()==Material.WOOL)
-            upsouth.setData(color);
-        if (upsouthEast.getType()==Material.WOOL)
-            upsouthEast.setData(color);
-        if (upwest.getType()==Material.WOOL)
-            upwest.setData(color);
-        if (upsouthWest.getType()==Material.WOOL)
-            upsouthWest.setData(color);
-
-        if (downeast.getType()==Material.WOOL)
-            downeast.setData(color);
-        if (downnorth.getType()==Material.WOOL)
-            downnorth.setData(color);
-        if (downnorthEast.getType()==Material.WOOL)
-            downnorthEast.setData(color);
-        if (downnorthWest.getType()==Material.WOOL)
-            downnorthWest.setData(color);
-        if (downsouth.getType()==Material.WOOL)
-            downsouth.setData(color);
-        if (downsouthEast.getType()==Material.WOOL)
-            downsouthEast.setData(color);
-        if (downwest.getType()==Material.WOOL)
-            downwest.setData(color);
-        if (downsouthWest.getType()==Material.WOOL)
-            downsouthWest.setData(color);
-    }
+        List<Block> wool = new ArrayList<Block>();
+        findWoolAround(block, wool, 2, 0);
+        for (Block b : wool) {
+            b.setData(color);
+        }
+}
 
     @Override
     public void receive(BitSet7 bits) {
@@ -210,5 +133,21 @@ public class pixel extends Circuit implements ReceivingCircuit {
     @Override
     public String getChannel() {
         return broadcastChannel;
+    }
+
+    private void findWoolAround(Block b, List<Block> wool, int range, int curDist) {
+        if (curDist>=range) {
+            return;
+        } else {
+            curDist++;
+            for (BlockFace face : faces) {
+                Block f = b.getFace(face);
+                if (f.getType()==Material.WOOL) {
+                    if (!wool.contains(f))
+                        wool.add(f);
+                    findWoolAround(f, wool, range, curDist);
+                }
+            }
+        }
     }
 }
