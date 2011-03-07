@@ -67,7 +67,7 @@ public class segdriver extends Circuit {
             error(sender, "Expecting 7 outputs (found " + outputs.length + ").");
             return false;
         } else if (inputs.length<1 || inputs.length>5) {
-            error(sender, "Expecting 1-5 outputs.");
+            error(sender, "Expecting 1-5 inputs.");
             return false;
         }
 
