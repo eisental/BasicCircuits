@@ -11,7 +11,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -214,8 +213,8 @@ public class print extends Circuit implements rcTypeReceiver {
         }
 
         List<Location> blockList = new ArrayList<Location>();
-        for (BlockVector v : interfaceBlocks) {
-            Block i = world.getBlockAt(v.getBlockX(), v.getBlockY(), v.getBlockZ());
+        for (Location l : interfaceBlocks) {
+            Block i = world.getBlockAt(l);
             Block north = i.getFace(BlockFace.NORTH);
             Block south = i.getFace(BlockFace.SOUTH);
             Block west = i.getFace(BlockFace.WEST);
@@ -242,8 +241,8 @@ public class print extends Circuit implements rcTypeReceiver {
     }
 
     private boolean isStructureBlock(Block b) {
-        for (BlockVector s : structure)
-            if (b.getX()==s.getBlockX() && b.getY()==s.getBlockY() && b.getZ()==s.getBlockZ()) return true;
+        for (Location s : structure)
+            if (b.getLocation().equals(s)) return true;
 
         return false;
     }

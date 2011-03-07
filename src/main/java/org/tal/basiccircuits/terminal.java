@@ -5,9 +5,9 @@
 
 package org.tal.basiccircuits;
 
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSet7;
@@ -60,8 +60,8 @@ public class terminal extends Circuit implements rcTypeReceiver {
             return false;
         }
 
-        for (BlockVector v : interfaceBlocks)
-            redstoneChips.registerRcTypeReceiver(v, this);
+        for (Location l : interfaceBlocks)
+            redstoneChips.registerRcTypeReceiver(l, this);
 
         return true;
     }

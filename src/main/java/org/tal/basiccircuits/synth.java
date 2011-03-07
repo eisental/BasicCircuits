@@ -1,12 +1,12 @@
 package org.tal.basiccircuits;
 
 import java.util.regex.Pattern;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.command.CommandSender;
-import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSetUtils;
 
@@ -80,8 +80,8 @@ public class synth extends Circuit {
             if (hasDebuggers()) debug("Setting note blocks to rest");
         } else {
             if (hasDebuggers()) debug("Setting note blocks pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
-            for (BlockVector v : interfaceBlocks) {
-                Block block = world.getBlockAt(v.getBlockX(), v.getBlockY(), v.getBlockZ());
+            for (Location l : interfaceBlocks) {
+                Block block = world.getBlockAt(l);
                 tryToPlay(block.getFace(BlockFace.NORTH), pitch);
                 tryToPlay(block.getFace(BlockFace.SOUTH), pitch);
                 tryToPlay(block.getFace(BlockFace.WEST), pitch);

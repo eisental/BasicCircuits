@@ -3,11 +3,11 @@ package org.tal.basiccircuits;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
-import org.bukkit.util.BlockVector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -104,8 +104,8 @@ public class pixel extends Circuit implements ReceivingCircuit {
 
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
-        for (BlockVector v : interfaceBlocks)
-            colorBlocks(world.getBlockAt(v.getBlockX(),v.getBlockY(),v.getBlockZ()), color);
+        for (Location l : interfaceBlocks)
+            colorBlocks(world.getBlockAt(l), color);
 
     }
 

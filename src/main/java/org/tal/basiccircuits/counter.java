@@ -122,6 +122,10 @@ public class counter extends Circuit {
             }
         }
 
+        if (inputs.length==3) { // has a direction pin.
+            direction = (inputBits.get(2)?1:-1);
+        }
+
         if (direction == 1) count = reset = min;
         else count = reset = max;
 
