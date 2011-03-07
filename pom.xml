@@ -38,7 +38,7 @@
       <scope>test</scope>
     </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.tal</groupId>
             <artifactId>RedstoneChips</artifactId>
             <version>beta</version>
         </dependency>
