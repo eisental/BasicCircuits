@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
+import org.bukkit.util.Vector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -111,7 +112,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
 
     private void colorBlocks(Block block, byte color) {
         List<Block> wool = new ArrayList<Block>();
-        findWoolAround(block, wool, 2, 0);
+        findWoolAround(block.getLocation().toVector(), block, wool, 3, 0);
         for (Block b : wool) {
             b.setData(color);
         }
@@ -135,7 +136,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
         return broadcastChannel;
     }
 
-    private void findWoolAround(Block b, List<Block> wool, int range, int curDist) {
+    private void findWoolAround(Vector origin, Block b, List<Block> wool, int range, int curDist) {
         if (curDist>=range) {
             return;
         } else {
@@ -143,9 +144,9 @@ public class pixel extends Circuit implements ReceivingCircuit {
             for (BlockFace face : faces) {
                 Block f = b.getFace(face);
                 if (f.getType()==Material.WOOL) {
-                    if (!wool.contains(f))
+                    if (!wool.contains(f) && origin.distanceSquared(f.getLocation().toVector())<4)
                         wool.add(f);
-                    findWoolAround(f, wool, range, curDist);
+                    findWoolAround(origin, f, wool, range, curDist);
                 }
             }
         }

@@ -7,14 +7,25 @@ __For much more information, visit the [circuitdocs](http://eisental.github.com/
 
 Installation
 -------------
-* Make sure you have RedstoneChips-0.82.jar installed in your craftbukkit plugins folder.
-* Download the [BasicCircuits-0.82](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.82.jar) jar file.
-* Copy the downloaded jar files into the plugins folder of your craftbukkit installation, keeping their original filenames.
+* Make sure you have the core [RedstoneChips](http://eisental.github.com/RedstoneChips) plugin installed in your craftbukkit plugins folder.
+* Download the [BasicCircuits-0.83](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.83.jar) jar file.
+* Copy the downloaded jar file into the plugins folder of your craftbukkit installation, keeping its original filename.
 
 
 
 Changelog
 ---------
+#### BasicCircuits 0.83 (07/03/11)
+- New repeater circuit.
+- New inverted gates: nor, nand and xnor.
+- New segdriver circuits for running a 7-segment display digit.
+- pixel will now only color wool blocks that are attached or indirectly attached (through other wool blocks) to its interface blocks.
+- router doesn't require a clock input when only 1 data pin is used. 
+- router now accepts the 'all' keyword for routing an input to all of the chips outputs, e.g. `0:all` will route the 1st data input to each output.
+- Fixed flipflop, pisoregister, shiftregister and srnor to properly restore their state after a server restart.
+- Fixed counter init bug, direction is now set according to the direction pin if one exists.
+- Updated to work with RedstoneChips 0.83.
+
 #### BasicCircuits 0.82 (28/02/11)
 - counter can now have a 3rd input pin for switching count direction.
 - terminal circuit can have an optional clear input pin for setting all its inputs to 0.
