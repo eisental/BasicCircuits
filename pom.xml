@@ -4,7 +4,7 @@
   <groupId>org.tal</groupId>
   <artifactId>BasicCircuits</artifactId>
   <packaging>jar</packaging>
-  <version>0.83</version>
+  <version>0.84</version>
   <name>BasicCircuits</name>
   <url>http://maven.apache.org</url>
     <build>
@@ -16,17 +16,7 @@
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
-                    </archive>
-                </configuration>
+                <version>2.3.2</version>
             </plugin>
         </plugins>
     </build>
