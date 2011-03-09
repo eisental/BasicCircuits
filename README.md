@@ -8,13 +8,16 @@ __For much more information, visit the [circuitdocs](http://eisental.github.com/
 Installation
 -------------
 * Make sure you have the core [RedstoneChips](http://eisental.github.com/RedstoneChips) plugin installed in your craftbukkit plugins folder.
-* Download [BasicCircuits-0.83.jar](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.83.jar).
-* Copy BasicCircuits-0.83.jar to the plugins folder of your craftbukkit installation.
+* Download [BasicCircuits-0.84.jar](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.84.jar).
+* Copy BasicCircuits-0.84.jar to the plugins folder of your craftbukkit installation.
 
 
 
 Changelog
 ---------
+#### BasicCircuits 0.84 (10/03/11)
+- Updated to work with RedstoneChips 0.84.
+
 #### BasicCircuits 0.83 (07/03/11)
 - New repeater circuit.
 - New inverted gates: nor, nand and xnor.
