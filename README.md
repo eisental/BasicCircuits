@@ -9,7 +9,7 @@ Installation
 -------------
 * Make sure you have the core [RedstoneChips](http://eisental.github.com/RedstoneChips) plugin installed in your craftbukkit plugins folder.
 * Download [BasicCircuits-0.84.jar](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-0.84.jar).
-* Copy BasicCircuits-0.84.jar to the plugins folder of your craftbukkit installation.
+* Copy jar file to the plugins folder of your craftbukkit installation.
 
 
 
