@@ -14,7 +14,7 @@ public class BasicCircuits extends CircuitLibrary {
                 multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
                 shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class,
                 synth.class, srnor.class, terminal.class, router.class, ringcounter.class, iptransmitter.class, ipreceiver.class,
-                comparator.class, delay.class, repeater.class, nand.class, nor.class, xnor.class, segdriver.class };
+                comparator.class, delay.class, repeater.class, nand.class, nor.class, xnor.class, segdriver.class, dregister.class, sram.class };
     }
 
     @Override

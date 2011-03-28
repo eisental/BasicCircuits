@@ -13,32 +13,55 @@ import org.tal.redstonechips.util.BitSetUtils;
  */
 public class divider extends BitSetCircuit {
     int constant = 1;
+    boolean round = false;
+    boolean mod = false;
 
     @Override
     protected void bitSetChanged(int bitSetIdx, BitSet7 set) {
-        int div = BitSetUtils.bitSetToUnsignedInt(inputBitSets[0], 0, wordlength);
+        int firstOperand = BitSetUtils.bitSetToUnsignedInt(inputBitSets[0], 0, wordlength);
+        int secondOperand = 1;
         if (inputBitSets.length>1) {
             for (int i=1; i<inputBitSets.length; i++) {
                 int num = BitSetUtils.bitSetToUnsignedInt(inputBitSets[i], 0, wordlength);
-                if (num==0) { div = 0; break; }
-                div = Math.round(div/num);
+                secondOperand = secondOperand * num;
             }
         }
 
-        div = Math.round(div / constant);
+        secondOperand = secondOperand * constant;
 
-        this.sendInt(0, outputs.length, div);
+        int result;
+        if (round)
+            result = (int)Math.round((double)firstOperand / (double)secondOperand);
+        else {
+            result = firstOperand / secondOperand;
+        }
+        this.sendInt(0, wordlength, result);
+        if (mod) {
+            int modulous = firstOperand % secondOperand;
+            this.sendInt(wordlength, wordlength-1, modulous);
+        }
     }
 
     @Override
     public boolean init(CommandSender sender, String[] args) {
-        if (outputs.length==0) {
-            error(sender, "Expecting at least 1 output pin.");
+        if (args.length==0) {
+            error(sender, "Wordlength sign argument is missing.");
             return false;
         }
 
-        if (args.length==0) {
-            error(sender, "Wordlength sign argument is missing.");
+        if (args.length==3) {
+            if (args[2].equalsIgnoreCase("round"))
+                round = true;
+            else if (args[2].equalsIgnoreCase("mod"))
+                mod = true;
+            else {
+                error(sender, "Unknown sign argument: " + args[1]);
+                return false;
+            }
+        }
+
+        if (outputs.length==0) {
+            error(sender, "Expecting at least 1 output pin.");
             return false;
         }
 
@@ -74,8 +97,8 @@ public class divider extends BitSetCircuit {
             }
         }
 
-        int expectedOutputs = wordlength;
-        System.out.println("expectedOutputs=" + expectedOutputs);
+        int expectedOutputs = (mod?2*wordlength-1:wordlength);
+
         if (outputs.length<expectedOutputs) {
             error(sender, ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. To prevent this, the circuit should have " + expectedOutputs + " output bits.");
         }

@@ -14,7 +14,7 @@ import org.tal.redstonechips.util.BitSetUtils;
  * @author Tal Eisenberg
  */
 public class multiplier extends BitSetCircuit {
-    int constant = 0;
+    int constant = 1;
 
     @Override
     protected void bitSetChanged(int bitSetIdx, BitSet7 set) {
@@ -47,7 +47,7 @@ public class multiplier extends BitSetCircuit {
 
         if ((inputs.length % wordlength)==0) {
             int inBitSetCount = inputs.length / wordlength;
-            info(sender, "Activating adder with " + inBitSetCount + " input set(s) of " + wordlength + " bits each.");
+            info(sender, "Activating multiplier with " + inBitSetCount + " input set(s) of " + wordlength + " bits each.");
             inputBitSets = new BitSet7[inBitSetCount];
             for (int i=0; i<inBitSetCount; i++) {
                 inputBitSets[i] = new BitSet7(wordlength);

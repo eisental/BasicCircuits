@@ -109,7 +109,7 @@ public class ipreceiver extends Circuit {
     }
 
     @Override
-    public void circuitDestroyed() {
+    public void circuitShutdown() {
         if (socket!=null) socket.close();
     }
 }

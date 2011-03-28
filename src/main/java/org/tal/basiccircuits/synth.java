@@ -47,8 +47,8 @@ public class synth extends Circuit {
             }
         }
 
-        if (inputs.length>6) {
-            error(sender, "Too many inputs. Requires 1 clock pin and no more than 5 data pins.");
+        if (inputs.length>6 && !indexedPitch) {
+            error(sender, "Too many inputs. Direct mode requires 1 clock pin and no more than 5 data pins.");
             return false;
         }
 

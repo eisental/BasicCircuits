@@ -67,7 +67,7 @@ public class transmitter extends Circuit implements TransmittingCircuit {
     public String getChannel() { return channel; }
 
     @Override
-    public void circuitDestroyed() {
+    public void circuitShutdown() {
         redstoneChips.removeTransmitter(this);
     }
 

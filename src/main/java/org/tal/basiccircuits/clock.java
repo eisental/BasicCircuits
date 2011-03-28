@@ -77,7 +77,7 @@ public class clock extends Circuit {
     }
 
     @Override
-    public void circuitDestroyed() {
+    public void circuitShutdown() {
         if (running) {
             stopClock();
         }

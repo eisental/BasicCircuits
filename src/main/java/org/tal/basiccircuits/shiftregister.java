@@ -21,13 +21,16 @@ public class shiftregister extends Circuit {
             BitSetUtils.shiftLeft(register, outputs.length);
             register.set(0, inputBits.get(1));
             sendBitSet(register);
+        } else if (inIdx==2 && high) { // reset
+            register.clear();
+            sendBitSet(register);
         }
     }
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
-        if (inputs.length!=2) {
-            error(sender, "Expecting two inputs. ");
+        if (inputs.length!=2 && inputs.length!=3) {
+            error(sender, "Expecting 2 or 3 inputs. ");
             return false;
         }
 

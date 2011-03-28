@@ -33,18 +33,26 @@ public class segdriver extends Circuit {
 
     public final static boolean[][] map = new boolean[][] { zero,one,two,three,four,five,six,seven,eight,nine,a,b,c,d,e,f };
 
+    private int blankPin = -1;
+    private int dataPin = 0;
+    private int clockPin = -1;
+
+    private boolean blank = false;
+
     @Override
     public void inputChange(int inIdx, boolean state) {
-        if ((inIdx==0 && state) || inputs.length==1) {
-            int input = BitSetUtils.bitSetToUnsignedInt(inputBits, (inputs.length>1?1:0), inputs.length-(inputs.length>1?1:0));
-            boolean[] segments = map[input];
-            String seglist = "";
-            for (int i=0; i<outputs.length; i++) {
-                sendOutput(i, segments[i]);
-                if (hasDebuggers() && segments[i]) seglist += toSegmentLetter(i);
+        if (inIdx==clockPin && state || (clockPin==-1 && inIdx>=dataPin)) {
+            if (!blank)
+            printInput();
+        } else if (inIdx==blankPin) {
+            blank = state;
+            if (blank) {
+                outputBits.clear();
+                sendBitSet(outputBits);
+                debug("Blanking display.");
+            } else {
+                printInput();
             }
-
-            if (hasDebuggers()) debug("Printing " + input + ": " + seglist);
         }
     }
 
@@ -63,15 +71,62 @@ public class segdriver extends Circuit {
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
+        if (args.length>0 && args[0].equalsIgnoreCase("blankPin"))
+            blankPin = -2;
+
         if (outputs.length!=7) {
             error(sender, "Expecting 7 outputs (found " + outputs.length + ").");
             return false;
-        } else if (inputs.length<1 || inputs.length>5) {
-            error(sender, "Expecting 1-5 inputs.");
-            return false;
+        }
+
+        if (blankPin!=-1) {
+            if (inputs.length<2 || inputs.length>6) {
+                error(sender, "Expecting 2-6 inputs. Input pin 0 should be the blank pin.");
+                return false;
+            }
+
+            if (inputs.length==2) { // no clock
+                clockPin = -1;
+                blankPin = 0;
+                dataPin = 1;
+            } else {
+                clockPin = 0;
+                blankPin = 1;
+                dataPin = 2;
+            }
+
+            blank = inputBits.get(blankPin);
+
+        } else {
+            if (inputs.length<1 || inputs.length>5) {
+                error(sender, "Expecting 1-5 inputs.");
+                return false;
+            }
+            if (inputs.length==1) { // no clock
+                clockPin = -1;
+                blankPin = -1;
+                dataPin = 0;
+            } else {
+                blankPin = -1;
+                clockPin = 0;
+                dataPin = 1;
+            }
+
         }
 
         return true;
+    }
+
+    private void printInput() {
+        int input = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin);
+        boolean[] segments = map[input];
+        String seglist = "";
+        for (int i=0; i<outputs.length; i++) {
+            sendOutput(i, segments[i]);
+            if (hasDebuggers() && segments[i]) seglist += toSegmentLetter(i);
+        }
+
+        if (hasDebuggers()) debug("Printing " + input + ": " + seglist);
     }
 
 }

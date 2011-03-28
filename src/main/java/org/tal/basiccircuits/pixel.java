@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.util.Vector;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.ReceivingCircuit;
+import org.tal.redstonechips.circuit.TransmittingCircuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 
@@ -112,7 +113,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
 
     private void colorBlocks(Block block, byte color) {
         List<Block> wool = new ArrayList<Block>();
-        findWoolAround(block.getLocation().toVector(), block, wool, 3, 0);
+        findWoolAround(block.getLocation().toVector(), block, block, wool, 3, 0);
         for (Block b : wool) {
             b.setData(color);
         }
@@ -136,7 +137,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
         return broadcastChannel;
     }
 
-    private void findWoolAround(Vector origin, Block b, List<Block> wool, int range, int curDist) {
+    private void findWoolAround(Vector origin, Block originBlock, Block b, List<Block> wool, int range, int curDist) {
         if (curDist>=range) {
             return;
         } else {
@@ -144,11 +145,22 @@ public class pixel extends Circuit implements ReceivingCircuit {
             for (BlockFace face : faces) {
                 Block f = b.getFace(face);
                 if (f.getType()==Material.WOOL) {
-                    if (!wool.contains(f) && origin.distanceSquared(f.getLocation().toVector())<4)
+                    if (!wool.contains(f) && origin.distanceSquared(f.getLocation().toVector())<4 && f!=originBlock)
                         wool.add(f);
-                    findWoolAround(origin, f, wool, range, curDist);
+                    findWoolAround(origin, originBlock, f, wool, range, curDist);
                 }
             }
         }
     }
+
+    @Override
+    public void circuitShutdown() {
+        if (broadcastChannel == null) return;
+
+        redstoneChips.receivers.remove(this);
+        for (TransmittingCircuit t: redstoneChips.transmitters) {
+            if (t.getChannel()!=null && t.getChannel().equals(broadcastChannel)) t.removeReceiver(this);
+        }
+    }
+
 }

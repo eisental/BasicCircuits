@@ -82,7 +82,7 @@ public class iptransmitter extends Circuit {
     }
 
     @Override
-    public void circuitDestroyed() {
+    public void circuitShutdown() {
         socket.close();
     }
 }

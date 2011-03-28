@@ -52,7 +52,7 @@ public class receiver extends Circuit implements ReceivingCircuit {
     public String getChannel() { return channel; }
 
     @Override
-    public void circuitDestroyed() {
+    public void circuitShutdown() {
         redstoneChips.receivers.remove(this);
         for (TransmittingCircuit t: redstoneChips.transmitters) {
             if (t.getChannel()!=null && t.getChannel().equals(channel)) t.removeReceiver(this);
