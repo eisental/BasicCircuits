@@ -37,6 +37,10 @@ public class receiver extends ReceivingCircuit {
 
     @Override
     public void receive(BitSet7 bits) {
+        // don't retrigger the clock output if the data was not changed.
+        if (bits.equals(outputBits.get(dataPin, outputs.length)))
+            return;
+        
         if (hasDebuggers()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, outputs.length));
         this.sendBitSet(dataPin, outputs.length-dataPin, bits);
         if (outputs.length>1) {
