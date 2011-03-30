@@ -14,7 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -23,7 +25,7 @@ import org.yaml.snakeyaml.Yaml;
  *
  * @author Tal Eisenberg
  */
-public class sram extends Circuit {
+public class sram extends Circuit implements rcTypeReceiver {
     Map<Integer,Integer> memory;
     int addressLength;
     int wordLength;
@@ -112,45 +114,19 @@ public class sram extends Circuit {
         readWrite = inputBits.get(readWritePin);
         disabled = inputBits.get(disablePin);
 
+        try {
+            readMemoryFile();
+        } catch (FileNotFoundException ex) { }
+        
+        redstoneChips.registerRcTypeReceiver(activationBlock, this);
         return true;
     }
 
-    @Override
-    public Map<String, String> saveState() {
-        // store data in file.
-        File data = getMemoryFile(memId);
-
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
-        Yaml yaml = new Yaml(options);
-
-        try {
-            yaml.dump(memory, new FileWriter(data));
-        } catch (IOException ex) {
-            Logger.getLogger("Minecraft").severe("While saving memory to file: " + ex.getMessage());
-        }
-
-
-        // store memory id string.
-        Map<String,String> state = new HashMap<String,String>();
-        state.put("memID", memId);
-        return state;
-    }
-
-    @Override
-    public void loadState(Map<String, String> state) {
-        if (state.containsKey("memID"))
-            memId = state.get("memID").toString();
-
+    private void readMemoryFile() throws FileNotFoundException {
         File data = getMemoryFile(memId);
         Yaml yaml = new Yaml();
 
-        try {
-            memory = (Map<Integer,Integer>) yaml.load(new FileInputStream(data));
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger("Minecraft").severe("While reading memory contents: File " + data.toString() + " was not found.");
-        }
-
+        memory = (Map<Integer,Integer>) yaml.load(new FileInputStream(data));
     }
 
     @Override
@@ -183,4 +159,46 @@ public class sram extends Circuit {
         }
     }
 
+    @Override
+    public void circuitShutdown() {
+         // store data in file.
+        File data = getMemoryFile(memId);
+
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
+        Yaml yaml = new Yaml(options);
+
+        try {
+            yaml.dump(memory, new FileWriter(data));
+        } catch (IOException ex) {
+            Logger.getLogger("Minecraft").severe("While saving memory to file: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void type(String[] words, Player player) {
+        int curIdx = 0;
+        for (String word : words) {
+            // either idx:value or just value
+            int colonIdx = word.indexOf(":");
+            try {
+                if (colonIdx==-1) {
+                    // use running index
+
+                    int value = Integer.decode(word);
+                    memory.put(curIdx, value);
+                    curIdx++;
+                } else {
+                    int address = Integer.decode(word.substring(0, colonIdx));
+                    int value = Integer.decode(word.substring(colonIdx+1));
+                    memory.put(address, value);
+                }
+            } catch (NumberFormatException ne) {
+                error(player, "Bad entry. Expecting either an integer value or <address>:<int value> - " + word);
+                return;
+            }
+        }
+
+        info(player, "Successfully written to memory.");
+    }
 }

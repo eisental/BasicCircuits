@@ -36,6 +36,8 @@ public class pixel extends ReceivingCircuit {
         // needs to have 5 inputs 1 clock 4 data
 
         if (args.length>0) {
+            String channelString = null;
+
             List<Byte> colorList = new ArrayList<Byte>();
             for (int i=0; i<args.length; i++) {
                 try {
@@ -47,7 +49,7 @@ public class pixel extends ReceivingCircuit {
                         colorList.add((byte)val);
                     } catch (NumberFormatException ne) {
                         // not dye number also, treat as broadcast channel if last;
-                        if (i==args.length-1) parseChannelString(args[i]);
+                        if (i==args.length-1) channelString = args[i];
                         else {
                             error(sender, "Unknown color name: " + args[i]);
                             return false;
@@ -64,7 +66,8 @@ public class pixel extends ReceivingCircuit {
                 indexedColor = true;
             }
 
-            if (getChannel()!=null) {
+            if (channelString!=null) {
+                parseChannelString(channelString);
                 info(sender, "Pixel will listen on broadcast channel " + getChannel().name + ".");
             }
         }
@@ -151,6 +154,10 @@ public class pixel extends ReceivingCircuit {
 
     @Override
     public int getLength() {
-        return 4;
+        if (!indexedColor)
+            return 4;
+        else {
+            return (int)Math.ceil(Math.log(colorIndex.length)/Math.log(2));
+        }
     }
 }
