@@ -15,6 +15,20 @@ Installation
 
 Changelog
 ---------
+#### BasicCircuits 0.87 (30/03/11)
+- New subtract mode added to the adder circuit. 
+- Updated receiver, pixel and transmitter to work with the new channel system.
+- New sram memory circuit stores memory data in separate text files.
+- New dregister circuit.
+- New round mode and modulus mode added to divider.
+- segdriver can have a blanking pin by adding 'blankPin' as a sign argument.
+- shiftregister can have a 3rd reset pin to clear its outputs.
+- Pixel will not color its interface blocks when they're made of wool.
+- Fixed bug where pixel will keep receiving data wirelessly after it was destroyed.
+- synth chips can have more than 5 data pins when using indexed mode finally making infinite tunes possible
+- Fixed constant bug and typo in multiplier circuit.
+- terminal will properly save its state when its shutdown.
+
 #### BasicCircuits 0.84 (10/03/11)
 - Updated to work with RedstoneChips 0.84.
 
