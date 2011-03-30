@@ -12,14 +12,28 @@ import org.tal.redstonechips.util.BitSetUtils;
  * @author Tal Eisenberg
  */
 public class adder extends BitSetCircuit {
+
     BitSet7 constant;
+
+    boolean subtract = false;
 
     @Override
     protected void bitSetChanged(int bitSetIdx, BitSet7 set) {
-        BitSet7 output = (BitSet7)constant.clone();
+        BitSet7 output = null;
+
         for (BitSet7 s : this.inputBitSets) {
-            output = addBitSets(output, s, outputs.length);
+            if (output==null) output = s;
+            else {
+                if (subtract)
+                    output = addBitSets(output, negate(s, outputs.length), outputs.length);
+                else
+                    output = addBitSets(output, s, outputs.length);
+            }
         }
+
+        if (subtract)
+            output = addBitSets(output, negate(constant, outputs.length), outputs.length);
+        else output = addBitSets(output, constant, outputs.length);
 
         this.sendBitSet(output);
     }
@@ -82,6 +96,13 @@ public class adder extends BitSetCircuit {
                 error(sender, "Bad constant argument: " + args[1] + " expecting a number.");
                 return false;
             }
+        } if (args.length>2) {
+            if (args[2].equalsIgnoreCase("subtract")) {
+                // subtract mode
+                subtract = true;
+            } else {
+                error(sender, "Bad argument value: " + args[2]);
+            }
         }
 
         constant = BitSetUtils.intToBitSet(iconstant, wordlength); // TODO: support two's complement
@@ -94,4 +115,10 @@ public class adder extends BitSetCircuit {
         }
         return true;
     }
+
+    public static BitSet7 negate(BitSet7 set, int length) {
+        int n = BitSetUtils.bitSetToSignedInt(set, 0, length);
+        return BitSetUtils.intToBitSet(-n, length);
+    }
+
 }

@@ -9,9 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.Vector;
-import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.circuit.ReceivingCircuit;
-import org.tal.redstonechips.circuit.TransmittingCircuit;
+import org.tal.redstonechips.channels.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 
@@ -19,10 +17,9 @@ import org.tal.redstonechips.util.BitSetUtils;
  * // dyes wool if present on output block
  * @author Tal Eisenberg
  */
-public class pixel extends Circuit implements ReceivingCircuit {
+public class pixel extends ReceivingCircuit {
     private boolean indexedColor = false;
     private byte[] colorIndex;
-    private String broadcastChannel = null;
     private static BlockFace[] faces = new BlockFace[] { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     
     @Override
@@ -50,7 +47,7 @@ public class pixel extends Circuit implements ReceivingCircuit {
                         colorList.add((byte)val);
                     } catch (NumberFormatException ne) {
                         // not dye number also, treat as broadcast channel if last;
-                        if (i==args.length-1) broadcastChannel = args[i];
+                        if (i==args.length-1) parseChannelString(args[i]);
                         else {
                             error(sender, "Unknown color name: " + args[i]);
                             return false;
@@ -67,9 +64,8 @@ public class pixel extends Circuit implements ReceivingCircuit {
                 indexedColor = true;
             }
 
-            if (broadcastChannel!=null) {
-                info(sender, "Pixel will listen on broadcast channel " + broadcastChannel + ".");
-                redstoneChips.addReceiver(this);
+            if (getChannel()!=null) {
+                info(sender, "Pixel will listen on broadcast channel " + getChannel().name + ".");
             }
         }
 
@@ -132,11 +128,6 @@ public class pixel extends Circuit implements ReceivingCircuit {
         updatePixel();
     }
 
-    @Override
-    public String getChannel() {
-        return broadcastChannel;
-    }
-
     private void findWoolAround(Vector origin, Block originBlock, Block b, List<Block> wool, int range, int curDist) {
         if (curDist>=range) {
             return;
@@ -155,12 +146,11 @@ public class pixel extends Circuit implements ReceivingCircuit {
 
     @Override
     public void circuitShutdown() {
-        if (broadcastChannel == null) return;
-
-        redstoneChips.receivers.remove(this);
-        for (TransmittingCircuit t: redstoneChips.transmitters) {
-            if (t.getChannel()!=null && t.getChannel().equals(broadcastChannel)) t.removeReceiver(this);
-        }
+        if (getChannel() != null) redstoneChips.removeReceiver(this);
     }
 
+    @Override
+    public int getLength() {
+        return 4;
+    }
 }

@@ -1,30 +1,21 @@
 package org.tal.basiccircuits;
 
 
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.circuit.ReceivingCircuit;
-import org.tal.redstonechips.circuit.TransmittingCircuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.channels.TransmittingCircuit;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class transmitter extends Circuit implements TransmittingCircuit {
-    private List<ReceivingCircuit> receivers = new ArrayList<ReceivingCircuit>();
-    private String channel;
-
+public class transmitter extends TransmittingCircuit {
     @Override
     public void inputChange(int inIdx, boolean high) {
         if (inputs.length==1) { // no clock pin
-            transmitBitSet(inputBits, 0, inputs.length);
+            getChannel().transmit(inputBits, getStartBit(), inputs.length);
         } else { // has a clock pin
             if (inIdx==0 && high) { 
-                transmitBitSet(inputBits, 1, inputs.length-1);
+                getChannel().transmit(inputBits.get(1, inputs.length), getStartBit(), inputs.length-1);
             }
         }
     }
@@ -36,17 +27,13 @@ public class transmitter extends Circuit implements TransmittingCircuit {
             return false;
         }
         if (args.length>0) {
-            channel = args[0];
-
-            // register the transmitter
-            redstoneChips.addTransmitter(this);
-
-            // find already existing receivers for this channel
-            for (ReceivingCircuit r : redstoneChips.getReceivers()) {
-                if (r.getChannel()!=null && r.getChannel().equals(channel)) addReceiver(r);
+            try {
+                this.parseChannelString(args[0]);
+                return true;
+            } catch (IllegalArgumentException ie) {
+                error(sender, ie.getMessage());
+                return false;
             }
-
-            return true;
         } else {
             error(sender, "Channel sign argument is missing.");
             return false;
@@ -54,28 +41,14 @@ public class transmitter extends Circuit implements TransmittingCircuit {
     }
 
     @Override
-    public void addReceiver(ReceivingCircuit r) {
-        receivers.add(r);
-    }
-
-    @Override
-    public void removeReceiver(ReceivingCircuit r) {
-        receivers.remove(r);
-    }
-
-    @Override
-    public String getChannel() { return channel; }
-
-    @Override
     public void circuitShutdown() {
         redstoneChips.removeTransmitter(this);
     }
 
-    private void transmitBitSet(BitSet7 bits, int startBit, int length) {
-        BitSet7 tbits = bits.get(startBit, length+startBit);
-        if (hasDebuggers()) debug("Transmitting " + BitSetUtils.bitSetToBinaryString(tbits, 0, length) + " to " + receivers.size() + " receiver(s).");
-        for (ReceivingCircuit r : receivers) {
-            r.receive(tbits);
-        }
+    @Override
+    public int getLength() {
+        if (inputs.length==1) return 1;
+        else return inputs.length-1;
     }
+
 }

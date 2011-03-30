@@ -32,10 +32,12 @@ public class sram extends Circuit {
 
     int currentAddress = 0;
     int currentData = 0;
+
     boolean disabled = false;
     boolean readWrite = false;
 
-    String ramId;
+    boolean anonymous = true;
+    String memId;
 
     @Override
     public void inputChange(int inIdx, boolean state) {
@@ -94,10 +96,14 @@ public class sram extends Circuit {
             return false;
         }
 
-        if (ramId==null) {
+        if (memId==null) {
             if (args.length>0) {
-                ramId = args[0];
-            } else ramId = findFreeRamID();
+                memId = args[0];
+                anonymous = false;
+            } else {
+                memId = findFreeRamID();
+                anonymous = true;
+            }
         }
 
         memory = new HashMap<Integer, Integer>();
@@ -112,7 +118,7 @@ public class sram extends Circuit {
     @Override
     public Map<String, String> saveState() {
         // store data in file.
-        File data = getMemoryFile(ramId);
+        File data = getMemoryFile(memId);
 
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
@@ -125,18 +131,18 @@ public class sram extends Circuit {
         }
 
 
-        // store memory file name.
+        // store memory id string.
         Map<String,String> state = new HashMap<String,String>();
-        state.put("memID", ramId);
+        state.put("memID", memId);
         return state;
     }
 
     @Override
     public void loadState(Map<String, String> state) {
         if (state.containsKey("memID"))
-            ramId = state.get("memID").toString();
+            memId = state.get("memID").toString();
 
-        File data = getMemoryFile(ramId);
+        File data = getMemoryFile(memId);
         Yaml yaml = new Yaml();
 
         try {
@@ -166,4 +172,15 @@ public class sram extends Circuit {
         } while (file.exists());
         return Integer.toString(idx);
     }
+
+    @Override
+    public void circuitDestroyed() {
+        if (anonymous) {
+            File data = getMemoryFile(memId);
+            if (!data.delete()) {
+                Logger.getLogger("Minecraft").severe("Could not delete memory file: " + data);
+            }
+        }
+    }
+
 }
