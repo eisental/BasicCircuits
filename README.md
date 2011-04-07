@@ -15,6 +15,13 @@ Installation
 
 Changelog
 ---------
+#### BasicCircuits 0.88 (07/04/11)
+- Updated to work with RC0.88.
+- Decoder is less strict now, and can be built with less than the amount of outputs required for the number of inputs.
+- Divider now checks for division by zero and the modulus wordlength bug is fixed.
+- receiver and transmitter report their channel and start-end bits on activation.
+- sram reports its memory size and file name on activation and will save it`s memory to file every time the plugin saves its circuits file.
+
 #### BasicCircuits 0.87 (30/03/11)
 - New subtract mode added to the adder circuit. 
 - Updated receiver, pixel and transmitter to work with the new channel system.
