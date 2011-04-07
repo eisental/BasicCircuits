@@ -138,7 +138,7 @@ public class counter extends Circuit {
     }
 
     @Override
-    public void loadState(Map<String, String> state) {
+    public void setInternalState(Map<String, String> state) {
         Object loadedCount = state.get("count");
         if (loadedCount!=null) {
             count = Integer.decode((String)loadedCount);
@@ -153,7 +153,7 @@ public class counter extends Circuit {
     }
 
     @Override
-    public Map<String, String> saveState() {
+    public Map<String, String> getInternalState() {
         Map<String,String> state = new HashMap<String, String>();
         state.put("count", Integer.toString(count));
         state.put("direction", Integer.toString(direction));

@@ -61,7 +61,7 @@ public class pisoregister extends Circuit {
     }
 
     @Override
-    public Map<String, String> saveState() {
+    public Map<String, String> getInternalState() {
         Map<String,String> state = new HashMap<String,String>();
         state.put("curidx", Integer.toString(curIdx));
         state.put("shift", Boolean.toString(shift));
@@ -70,7 +70,7 @@ public class pisoregister extends Circuit {
     }
 
     @Override
-    public void loadState(Map<String, String> state) {
+    public void setInternalState(Map<String, String> state) {
         if (state.containsKey("curidx"))
             curIdx = Integer.decode(state.get("curidx"));
         if (state.containsKey("shift"))

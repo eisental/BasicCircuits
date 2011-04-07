@@ -248,7 +248,7 @@ public class print extends Circuit implements rcTypeReceiver {
     }
 
     @Override
-    public void loadState(Map<String, String> state) {
+    public void setInternalState(Map<String, String> state) {
         String text = state.get("text");
         if (text!=null) {
             textBuffer.setLength(0);
@@ -257,7 +257,7 @@ public class print extends Circuit implements rcTypeReceiver {
     }
 
     @Override
-    public Map<String, String> saveState() {
+    public Map<String, String> getInternalState() {
         Map<String,String> state = new HashMap<String,String>();
         state.put("text", textBuffer.toString());
         return state;

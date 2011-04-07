@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
@@ -119,6 +120,9 @@ public class sram extends Circuit implements rcTypeReceiver {
         } catch (FileNotFoundException ex) { }
         
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
+
+        info(sender, "sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + getMemoryFile(memId).getPath());
+
         return true;
     }
 
@@ -160,7 +164,7 @@ public class sram extends Circuit implements rcTypeReceiver {
     }
 
     @Override
-    public void circuitShutdown() {
+    public void save() {
          // store data in file.
         File data = getMemoryFile(memId);
 

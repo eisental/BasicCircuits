@@ -110,14 +110,14 @@ public class terminal extends Circuit implements rcTypeReceiver {
     }
 
     @Override
-    public Map<String, String> saveState() {
+    public Map<String, String> getInternalState() {
         Map<String,String> state = new HashMap<String,String>();
         BitSetUtils.bitSetToMap(state, "outputBits", outputBits, outputs.length);
         return state;
     }
 
     @Override
-    public void loadState(Map<String, String> state) {
+    public void setInternalState(Map<String, String> state) {
         if (state.containsKey("outputBits")) {
             outputBits = BitSetUtils.mapToBitSet(state, "outputBits");
         }

@@ -28,8 +28,8 @@ public class decoder extends Circuit {
             error(sender, "Expecting at least 2 inputs.");
             return false;
         }
-        if (outputs.length!=Math.pow(2, inputs.length-1)) {
-            error(sender, "Bad number of outputs. Expecting " + (int)Math.pow(2, inputs.length-1));
+        if (outputs.length>Math.pow(2, inputs.length-1)) {
+            error(sender, "Bad number of outputs. Expecting up to " + (int)Math.pow(2, inputs.length-1) + " outputs for " + inputs.length + " inputs.");
             return false;
         }
 

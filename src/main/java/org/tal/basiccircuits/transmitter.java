@@ -1,6 +1,7 @@
 package org.tal.basiccircuits;
 
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.channels.TransmittingCircuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -36,6 +37,9 @@ public class transmitter extends TransmittingCircuit {
         if (args.length>0) {
             try {
                 this.parseChannelString(args[0]);
+
+                info(sender, "Transmitter will broadcast over channel " + 
+                        ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefsManager().getInfoColor() + " bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()) + ".");
                 return true;
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());

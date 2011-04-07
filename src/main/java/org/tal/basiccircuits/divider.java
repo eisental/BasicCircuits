@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.BitSetCircuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -30,15 +31,20 @@ public class divider extends BitSetCircuit {
         secondOperand = secondOperand * constant;
 
         int result;
-        if (round)
-            result = (int)Math.round((double)firstOperand / (double)secondOperand);
-        else {
-            result = firstOperand / secondOperand;
+        if (round) {
+            if (checkForDivByZero(secondOperand))
+                result = (int)Math.round((double)firstOperand / (double)secondOperand);
+            else return;
+        } else {
+            if (checkForDivByZero(secondOperand))
+                result = firstOperand / secondOperand;
+            else return;
+            
         }
         this.sendInt(0, wordlength, result);
         if (mod) {
             int modulous = firstOperand % secondOperand;
-            this.sendInt(wordlength, wordlength-1, modulous);
+            this.sendInt(wordlength, outputs.length-wordlength, modulous);
         }
     }
 
@@ -74,7 +80,7 @@ public class divider extends BitSetCircuit {
 
         if ((inputs.length % wordlength)==0) {
             int inBitSetCount = inputs.length / wordlength;
-            info(sender, "Activating adder with " + inBitSetCount + " input set(s) of " + wordlength + " bits each.");
+            info(sender, "Activating divider with " + inBitSetCount + " input set(s) of " + wordlength + " bits each.");
             inputBitSets = new BitSet7[inBitSetCount];
             for (int i=0; i<inBitSetCount; i++) {
                 inputBitSets[i] = new BitSet7(wordlength);
@@ -97,11 +103,18 @@ public class divider extends BitSetCircuit {
             }
         }
 
-        int expectedOutputs = (mod?2*wordlength-1:wordlength);
+        int expectedOutputs = (mod?2*wordlength:wordlength);
 
-        if (outputs.length<expectedOutputs) {
-            error(sender, ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. To prevent this, the circuit should have " + expectedOutputs + " output bits.");
+        if (outputs.length<expectedOutputs && sender instanceof Player) {
+            info(sender, ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. To prevent this, the circuit should have " + expectedOutputs + " output bits.");
         }
         return true;    
+    }
+
+    private boolean checkForDivByZero(int secondOperand) {
+        if (secondOperand==0) {
+            if (hasDebuggers()) debug("Error: trying to divide by zero. ");
+            return false;
+        } else return true;
     }
 }
