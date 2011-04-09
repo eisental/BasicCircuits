@@ -11,6 +11,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.material.MaterialData;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -208,26 +209,42 @@ public class print extends Circuit implements rcTypeReceiver {
         }
 
         if (interfaceBlocks.length==0) {
-            error(sender, "Expecting at least 1 interaction block.");
+            error(sender, "Expecting at least 1 interface block.");
             return false;
         }
 
-        List<Location> blockList = new ArrayList<Location>();
+        List<Sign> signs = new ArrayList<Sign>();
+
         for (Location l : interfaceBlocks) {
             Block i = world.getBlockAt(l);
             Block north = i.getFace(BlockFace.NORTH);
             Block south = i.getFace(BlockFace.SOUTH);
             Block west = i.getFace(BlockFace.WEST);
             Block east = i.getFace(BlockFace.EAST);
-            if (!isStructureBlock(north)) blockList.add(north.getLocation());
-            if (!isStructureBlock(south)) blockList.add(south.getLocation());
-            if (!isStructureBlock(west)) blockList.add(west.getLocation());
-            if (!isStructureBlock(east)) blockList.add(east.getLocation());
+            Block up = i.getFace(BlockFace.UP);
+
+            Sign nsign = checkBlock(i, north);
+            if (nsign!=null) signs.add(nsign);
+
+            Sign ssign = checkBlock(i, south);
+            if (ssign!=null) signs.add(ssign);
+
+            Sign wsign = checkBlock(i, west);
+            if (wsign!=null) signs.add(wsign);
+
+            Sign esign = checkBlock(i, east);
+            if (esign!=null) signs.add(esign);
+
+            Sign usign = checkBlock(i, up);
+            if (usign!=null) signs.add(usign);
         }
 
-        this.blocksToUpdate = blockList.toArray(new Location[blockList.size()]);
+        if (signs.isEmpty()) {
+            error(sender, "Couldn't find any signs attached to the chip's interface blocks.");
+            return false;
+        } else info(sender, "Found " + signs.size() + " sign(s) to print on.");
 
-        signUpdateTask = new SignUpdateTask(blocksToUpdate);
+        signUpdateTask = new SignUpdateTask(signs.toArray(new Sign[signs.size()]));
 
         if (display==Display.replace) dataPin = 1;
         else if (display==Display.add) dataPin = 2;
@@ -235,9 +252,18 @@ public class print extends Circuit implements rcTypeReceiver {
 
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
 
-
-
         return true;
+    }
+
+    private Sign checkBlock(Block i, Block s) {
+        MaterialData data = s.getState().getData();
+        if (data instanceof org.bukkit.material.Sign) {
+            org.bukkit.material.Sign signData = (org.bukkit.material.Sign)data;
+            if (s.getFace(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
+                return (Sign)s.getState();
+            else return null;
+
+        } else return null;
     }
 
     private boolean isStructureBlock(Block b) {
@@ -289,16 +315,8 @@ public class print extends Circuit implements rcTypeReceiver {
 
         }
 
-        public SignUpdateTask(Location[] blocksToUpdate) throws IllegalArgumentException {
-            List<Sign> list = new ArrayList<Sign>();
-
-            for (Location l : blocksToUpdate) {
-                if (world.getBlockTypeIdAt(l.getBlockX(), l.getBlockY(), l.getBlockZ())==Material.WALL_SIGN.getId()) {
-                    list.add((Sign)world.getBlockAt(l.getBlockX(), l.getBlockY(), l.getBlockZ()).getState());
-                }
-            }
-
-            signList = list.toArray(new Sign[list.size()]);
+        public SignUpdateTask(Sign[] signList) throws IllegalArgumentException {
+            this.signList = signList;
         }
     }
 
