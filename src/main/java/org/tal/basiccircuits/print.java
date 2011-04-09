@@ -266,13 +266,6 @@ public class print extends Circuit implements rcTypeReceiver {
         } else return null;
     }
 
-    private boolean isStructureBlock(Block b) {
-        for (Location s : structure)
-            if (b.getLocation().equals(s)) return true;
-
-        return false;
-    }
-
     @Override
     public void setInternalState(Map<String, String> state) {
         String text = state.get("text");
