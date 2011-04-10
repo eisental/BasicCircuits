@@ -20,9 +20,16 @@ public class bintobcd extends Circuit {
     public void inputChange(int inIdx, boolean state) {
         String value = Integer.toString(BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputs.length));
 
-        for (int i=0; i<Math.min(value.length(), digits); i++) {
-            String d = value.substring(value.length()-i-1, value.length()-i);
-            int digit = Integer.parseInt(d);
+        for (int i=0; i<digits; i++) {
+            String d;
+            int digit;
+
+            if (i<value.length()) {
+                d = "" + value.charAt(value.length()-i-1);
+                digit = Integer.parseInt(d);
+            } else
+                digit = 0;
+            
             this.sendInt(i*4, 4, digit);
         }
     }
