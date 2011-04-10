@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -41,7 +40,6 @@ public class print extends Circuit implements rcTypeReceiver {
     private int dataPin = 1;
     private String[] lines = new String[4];
     private StringBuffer textBuffer = new StringBuffer();
-    private Location[] blocksToUpdate;
     private SignUpdateTask signUpdateTask;
 
     private static final int LineSize = 15;

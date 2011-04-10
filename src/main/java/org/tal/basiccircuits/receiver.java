@@ -30,7 +30,7 @@ public class receiver extends ReceivingCircuit {
                 dataPin = (outputs.length==1?0:1);
 
                 info(sender, "Receiver will broadcast over channel " +
-                        ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefsManager().getInfoColor() + " bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()) + ".");
+                        ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefsManager().getInfoColor() + " bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()-1) + ".");
 
                 return true;
             } catch (IllegalArgumentException ie) {
