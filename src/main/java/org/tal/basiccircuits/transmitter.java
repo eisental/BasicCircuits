@@ -39,7 +39,7 @@ public class transmitter extends TransmittingCircuit {
                 this.parseChannelString(args[0]);
 
                 info(sender, "Transmitter will broadcast over channel " + 
-                        ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefsManager().getInfoColor() + " bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()-1) + ".");
+                        ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefs().getInfoColor() + " bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()-1) + ".");
                 return true;
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());

@@ -13,16 +13,15 @@ public class clock extends Circuit {
     private long interval;
     private long onInterval, offInterval;
 
-    private boolean running = false;
     private BitSet7 onBits, offBits;
-    private Thread thread;
+    private Thread thread = null;
 
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (state) { // one of the input pins is turned on.
-            if (!running) startClock();
-        } else { // one of the input pins is set to off.
-            if (running && inputBits.isEmpty()) stopClock();
+            startClock();
+        } else { // all of the input pins are off.
+            if (inputBits.isEmpty()) stopClock();
         }
     }
 
@@ -67,37 +66,47 @@ public class clock extends Circuit {
 
         info(sender, "Clock will tick every " + interval + " milliseconds for " + onInterval + " milliseconds.");
 
-        if (onInterval>0) {
-            thread = new TickThread();
-        } else {
-            thread = new ZeroPulseTickThread();
-        }
-
         return true;
     }
 
     @Override
     public void circuitShutdown() {
-        if (running) {
-            stopClock();
+        stopClock();
+    }
+
+    @Override
+    public void circuitChunksUnloaded() {
+        super.circuitChunksUnloaded();
+
+        if (redstoneChips.getPrefs().getFreezeOnChunkUnload())
+            stopClock();        
+    }
+
+    @Override
+    public void circuitChunkLoaded() {
+        super.circuitChunkLoaded();
+
+        if (redstoneChips.getPrefs().getFreezeOnChunkUnload() && !inputBits.isEmpty())
+            startClock();
+
+    }
+
+
+    private void startClock() {
+        if (thread==null) {
+            if (onInterval>0)
+                thread = new TickThread();
+            else thread = new ZeroPulseTickThread();
+
+            thread.start();
         }
     }
 
-    private void startClock() {
-        if (thread==null) { running = false; return; }
-
-        thread.start();
-        running = true;
-    }
-
     private void stopClock() {
-        if (thread==null) { running = false; return; }
-
-        thread.interrupt();
-        if (onInterval>0)
-            thread = new TickThread();
-        else thread = new ZeroPulseTickThread();
-        running = false;
+        if (thread!=null) {
+            thread.interrupt();
+            thread = null;
+        }
     }
 
     private void setFreq(long freq, double pulseWidth) {

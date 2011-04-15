@@ -45,7 +45,7 @@ public class iptransmitter extends Circuit {
             address = InetAddress.getByName(args[0]);
             port = Integer.decode(args[1]);
 
-            String sRange = (String)redstoneChips.getPrefsManager().getPrefs().get("iptransmitter.ports");
+            String sRange = (String)redstoneChips.getPrefs().getPrefs().get("iptransmitter.ports");
             Range portRange = new Range(sRange, Range.Type.OPEN_ALLOWED);
             if (!portRange.isInRange(port)) {
                 error(sender, "Port " + port + " is not allowed. Use ports in the range of " + portRange.toString());

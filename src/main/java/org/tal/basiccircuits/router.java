@@ -85,7 +85,7 @@ public class router extends Circuit {
                 error(sender, "Bad routing entry: " + arg);
             }
         }
-        //System.out.println(routingTable);
+
         return true;
     }
 

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -37,11 +36,11 @@ public class counter extends Circuit {
                 } else count = max;
             } else count+=direction;
 
-            if (hasDebuggers()) debug("set to " + count);
+            if (hasDebuggers()) debug("Counting " + count + ".");
             this.sendInt(0, outputs.length, count);
         } else if (inIdx==resetPin && on) {
             count = reset;
-            if (hasDebuggers()) debug("Count reset to " + count);
+            if (hasDebuggers()) debug("Resetting counter to " + count + ".");
             this.sendInt(0, outputs.length, count);
         } else if (inIdx==directionPin) {
             direction = (on?1:-1);
@@ -139,14 +138,13 @@ public class counter extends Circuit {
 
     @Override
     public void setInternalState(Map<String, String> state) {
-        Object loadedCount = state.get("count");
+        String loadedCount = state.get("count");
         if (loadedCount!=null) {
-            count = Integer.decode((String)loadedCount);
-            outputBits = BitSetUtils.intToBitSet(count, outputs.length);
-            this.updateOutputLevers();
+            count = Integer.decode(loadedCount);
+            sendInt(count, 0, outputs.length);
         }
 
-        Object loadedDirection = state.get("direction");
+        String loadedDirection = state.get("direction");
         if (loadedDirection!=null) {
             direction = Integer.decode((String)loadedDirection);
         }
