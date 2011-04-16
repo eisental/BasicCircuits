@@ -40,8 +40,17 @@ public class multiplier extends BitSetCircuit {
 
         try {
             wordlength = Integer.decode(args[0]);
+
+            if (wordlength<=0) {
+                error(sender, "Bad wordlength sign argument: " + args[0] + ".");
+                error(sender, "Expecting a number greater than 0.");
+
+                return false;
+            }
         } catch (NumberFormatException ne) {
-            error(sender, "Bad wordlength sign argument: " + args[0] + " expecting a number.");
+            error(sender, "Bad wordlength sign argument: " + args[0] + ".");
+            error(sender, "Expecting a number greater than 0.");
+
             return false;
         }
 

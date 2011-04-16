@@ -20,6 +20,7 @@ import org.tal.redstonechips.util.BitSetUtils;
 public class pixel extends ReceivingCircuit {
     private boolean indexedColor = false;
     private byte[] colorIndex;
+    private int distance = 3;
     private static BlockFace[] faces = new BlockFace[] { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     
     @Override
@@ -50,7 +51,14 @@ public class pixel extends ReceivingCircuit {
                     } catch (NumberFormatException ne) {
                         // not dye number also, treat as broadcast channel if last;
                         if (i==args.length-1) channelString = args[i];
-                        else {
+                        else if ((args[i].startsWith("d{") || args[i].startsWith("dist{")) && args[i].endsWith("}")) {
+                            try {
+                                distance = Integer.decode(args[i].substring(args[i].indexOf("{")+1, args[i].length()-1));
+                            } catch (NumberFormatException ne2) {
+                                error(sender, "Bad distance argument: " + args[i] + ". Expecting d{<distance>} or dist{<distance>}.");
+                                return false;
+                            }
+                        } else {
                             error(sender, "Unknown color name: " + args[i]);
                             return false;
                         }
@@ -86,7 +94,9 @@ public class pixel extends ReceivingCircuit {
         return true;
     }
 
-    private void updatePixel() {        
+    private void updatePixel() {
+        if (!isCircuitChunkLoaded()) return;
+
         int val;
         if (inputs.length<=1) val = BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputBits.length());
         else val = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, inputBits.length()-1);
@@ -112,7 +122,7 @@ public class pixel extends ReceivingCircuit {
 
     private void colorBlocks(Block block, byte color) {
         List<Block> wool = new ArrayList<Block>();
-        findWoolAround(block.getLocation().toVector(), block, block, wool, 3, 0);
+        findWoolAround(block.getLocation().toVector(), block, block, wool, distance, 0);
         for (Block b : wool) {
             b.setData(color);
         }

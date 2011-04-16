@@ -1,3 +1,4 @@
+
 package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
@@ -10,27 +11,34 @@ import org.tal.redstonechips.util.UnitParser;
  * @author Tal Eisenberg
  */
 public class clock extends Circuit {
-    private long interval;
-    private long onInterval, offInterval;
-
+    private long onDuration, offDuration;
+    private boolean masterToggle;
     private BitSet7 onBits, offBits;
-    private Thread thread = null;
+    private Runnable tickTask;
+    private boolean ticking;
+    private long expectedNextTick;
+    private int taskId = -1;
 
     @Override
     public void inputChange(int inIdx, boolean state) {
-        if (state) { // one of the input pins is turned on.
-            startClock();
-        } else { // all of the input pins are off.
-            if (inputBits.isEmpty()) stopClock();
+        if (masterToggle) {
+            if (inIdx==0) {
+                if (state) startClock();
+                else stopClock();
+            }
+        } else {
+            onBits.set(inIdx, state);
+
+            if (onBits.isEmpty()) stopClock();
+            else startClock();
         }
     }
 
     @Override
-    public boolean init(CommandSender sender, String[] args) {
-        // one argument for duration. number of inputs should match number of outputs.
-        double pulseWidth = 0.5;
-        if (args.length==0) setFreq(1000, pulseWidth); // 1 sec default, 50% pulse width
+    protected boolean init(CommandSender sender, String[] args) {
+        if (args.length==0) setDuration(1000, 0.5); // 1 sec default, 50% pulse width
         else {
+            double pulseWidth = 0.5;
             if (args.length>1) {
                 try {
                     pulseWidth = Double.parseDouble(args[1]);
@@ -42,31 +50,72 @@ public class clock extends Circuit {
 
             try {
                 long freq = Math.round(UnitParser.parse(args[0]));
-                setFreq(freq, pulseWidth);
+                setDuration(freq, pulseWidth);
             } catch (Exception e) {
                 error(sender, "Bad clock frequency: " + args[0]);
                 return false;
             }
         }
 
-        if (inputs.length!=outputs.length) {
-            error(sender, "Expecting the same amount of inputs and outputs.");
+        if (inputs.length!=1 && inputs.length!=outputs.length) {
+            error(sender, "Expecting the same amount of inputs and outputs or 1 input to control all outputs.");
             return false;
         }
 
-        onBits = new BitSet7(inputs.length);
-        offBits = new BitSet7(inputs.length);
+        offBits = new BitSet7(outputs.length);
+        offBits.set(0, outputs.length, false);
 
-        onBits.set(0, inputs.length);
-        offBits.clear();
-        if (interval<100) {
-            error(sender, "Clock is set to tick too fast. Clock frequency is currently limited to 100ms.");
+        onBits = new BitSet7(outputs.length);
+
+        if (inputs.length==1) {
+            masterToggle = true;
+            onBits.set(0, outputs.length);
+        }
+
+        if ((onDuration<50 && onDuration>0) || (offDuration<50 && offDuration>0)) {
+            error(sender, "Clock is set to tick too fast or it's using too narrow pulse width. Speed is currently limited to 50ms per state.");
             return false;
         }
 
-        info(sender, "Clock will tick every " + interval + " milliseconds for " + onInterval + " milliseconds.");
+        info(sender, "Clock will tick every " + (onDuration+offDuration) + " milliseconds for " + onDuration + " milliseconds.");
+
+        tickTask = new TickTask();
+
+        expectedNextTick = -1;
+        ticking = false;
 
         return true;
+    }
+
+    private void setDuration(long duration, double pulseWidth) {
+        this.onDuration = Math.round(duration*pulseWidth);
+        this.offDuration = duration - onDuration;
+    }
+
+    private void startClock() {
+        if (ticking) return;
+
+        if (hasDebuggers()) debug("Turning clock on.");
+
+        ticking = true;
+
+        taskId = redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, tickTask);
+        if (taskId==-1) {
+            if (hasDebuggers()) debug("Tick task schedule failed!");
+            ticking = false;
+        }
+    }
+
+    private void stopClock() {
+        if (!ticking) return;
+
+        if (hasDebuggers()) debug("Turning clock off.");
+
+        redstoneChips.getServer().getScheduler().cancelTask(taskId);
+        ticking = false;
+
+        //clear outputs
+        sendBitSet(offBits);
     }
 
     @Override
@@ -74,110 +123,71 @@ public class clock extends Circuit {
         stopClock();
     }
 
-    @Override
-    public void circuitChunksUnloaded() {
-        super.circuitChunksUnloaded();
-
-        if (redstoneChips.getPrefs().getFreezeOnChunkUnload())
-            stopClock();        
-    }
-
-    @Override
-    public void circuitChunkLoaded() {
-        super.circuitChunkLoaded();
-
-        if (redstoneChips.getPrefs().getFreezeOnChunkUnload() && !inputBits.isEmpty())
-            startClock();
-
-    }
-
-
-    private void startClock() {
-        if (thread==null) {
-            if (onInterval>0)
-                thread = new TickThread();
-            else thread = new ZeroPulseTickThread();
-
-            thread.start();
-        }
-    }
-
-    private void stopClock() {
-        if (thread!=null) {
-            thread.interrupt();
-            thread = null;
-        }
-    }
-
-    private void setFreq(long freq, double pulseWidth) {
-        this.interval = freq;
-        this.onInterval = Math.round(freq*pulseWidth);
-        this.offInterval = freq - onInterval;
-    }
-
-    class TickThread extends Thread {
-        private Runnable updateOutputsTask;
-
-        private boolean state = false;
+    private class TickTask implements Runnable {
+        boolean currentState = true;
 
         @Override
         public void run() {
-            updateOutputsTask = new Runnable() {
-                @Override
-                public void run() {
-                    if (state) { // turn on any output whose input is on
-                        BitSet7 out = (BitSet7)inputBits.clone();
-                        out.and(onBits);
-                        sendBitSet(0, outputs.length, out);
-                    } else { // just clear everything
-                        sendBitSet(0, outputs.length, offBits);
-                    }
-                }
-            };
+            if (!ticking) return;
 
-            state = true;
-            if (hasDebuggers()) debug("Starting clock.");
-            try {
-                while(true) {
-                    redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, updateOutputsTask);
-                    if (state) {
-                        if (onInterval>0) Thread.sleep(onInterval);
-                    } else if (offInterval>0) Thread.sleep(offInterval);
-                    state = !state;
-                }
-            } catch (InterruptedException ie) {
-                if (hasDebuggers()) debug("Stopping clock.");
-                state = false;
-                redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, updateOutputsTask);
+            /*
+            if (redstoneChips.getPrefs().getFreezeOnChunkUnload()) {
+                boolean allChunksLoaded = true;
+            for (ChunkLocation l : circuitChunks) {
+                System.out.println(l + ": " + l.isChunkLoaded());
             }
+
+                for (ChunkLocation l : circuitChunks)
+                    if (!l.isChunkLoaded()) { allChunksLoaded = false; break; }
+
+                if (allChunksLoaded) tick();
+                
+            } else tick();*/
+            
+            tick();
+
+            long delay;
+
+            if (onDuration==0)
+                delay = offDuration;
+            else if(offDuration == 0)
+                delay = onDuration;
+            else
+                delay = (currentState?onDuration:offDuration);
+
+            long correction = 0;
+            if (expectedNextTick!=-1) {
+                correction = expectedNextTick - System.currentTimeMillis();
+            }
+
+            if (correction<=-delay) correction = correction % delay;
+            delay += correction;
+            expectedNextTick = System.currentTimeMillis() + delay;
+            long tickDelay = Math.round(delay/50.0);
+
+            int id = redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, tickTask, tickDelay);
+
+            if (id!=-1) {
+                taskId = id;
+            } else {
+                if (hasDebuggers()) {
+                    debug("Tick task schedule failed!");
+                }
+            }
+
+            currentState = !currentState;
         }
-    }
 
-    class ZeroPulseTickThread extends Thread {
-        private Runnable updateOutputsTask;
-
-        @Override
-        public void run() {
-            updateOutputsTask = new Runnable() {
-                @Override
-                public void run() {
-                    BitSet7 out = (BitSet7)inputBits.clone();
-                    out.and(onBits);
-                    sendBitSet(0, outputs.length, out);
-                    sendBitSet(0, outputs.length, offBits);
-                }
-            };
-
-            if (hasDebuggers()) debug("Starting clock.");
-            try {
-                while(true) {
-                    redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, updateOutputsTask);
-                    Thread.sleep(interval);
-                }
-            } catch (InterruptedException ie) {
-                if (hasDebuggers()) debug("Stopping clock.");
+        private void tick() {
+            if (onDuration>0 && offDuration>0)
+                sendBitSet(currentState?onBits:offBits);
+            else if (onDuration>0) {
+                sendBitSet(offBits);
+                sendBitSet(onBits);
+            } else if (offDuration>0) {
+                sendBitSet(onBits);
+                sendBitSet(offBits);
             }
-
         }
     }
 }

@@ -29,7 +29,7 @@ public class receiver extends ReceivingCircuit {
                 this.parseChannelString(args[0]);
                 dataPin = (outputs.length==1?0:1);
 
-                info(sender, "Receiver will broadcast over channel " +
+                info(sender, "Receiver will listen on channel " +
                         ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefs().getInfoColor() + " bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()-1) + ".");
 
                 return true;

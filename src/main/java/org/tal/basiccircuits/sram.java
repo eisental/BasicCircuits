@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -92,10 +93,10 @@ public class sram extends Circuit implements rcTypeReceiver {
         addressLength = inputs.length-2-wordLength;
 
         if (outputs.length==0) {
-            sender.sendMessage("Exepcting at least 1 output pin.");
+            error(sender, "Exepcting at least 1 output pin.");
         }
         if (addressLength<1) {
-            sender.sendMessage("Expecting at least 1 address input pin, 2 control pins and " + wordLength + " data pins.");
+            error(sender, "Expecting at least 1 address input pin, 2 control pins and " + wordLength + " data pins.");
             return false;
         }
 
@@ -117,11 +118,16 @@ public class sram extends Circuit implements rcTypeReceiver {
 
         try {
             readMemoryFile();
-        } catch (FileNotFoundException ex) { }
+        } catch (FileNotFoundException ex) {
+            String msg = "Memory file " + getMemoryFile(memId) + " was not found. Creating a new one.";
+            if (sender != null)
+                info(sender, msg);
+            else redstoneChips.log(Level.WARNING, msg);
+        }
         
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
 
-        info(sender, "sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + getMemoryFile(memId).getPath());
+        info(sender, "This sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + getMemoryFile(memId).getPath());
 
         return true;
     }
@@ -133,13 +139,8 @@ public class sram extends Circuit implements rcTypeReceiver {
         memory = (Map<Integer,Integer>) yaml.load(new FileInputStream(data));
     }
 
-    @Override
-    protected boolean isStateless() {
-        return false;
-    }
-
-    private File getMemoryFile(String index) {
-        return new File(redstoneChips.getDataFolder(), "sram-" + index + ".data");
+    private File getMemoryFile(String id) {
+        return new File(redstoneChips.getDataFolder(), "sram-" + id + ".data");
     }
 
     private String findFreeRamID() {
@@ -182,27 +183,51 @@ public class sram extends Circuit implements rcTypeReceiver {
     @Override
     public void type(String[] words, Player player) {
         int curIdx = 0;
-        for (String word : words) {
-            // either idx:value or just value
-            int colonIdx = word.indexOf(":");
-            try {
-                if (colonIdx==-1) {
-                    // use running index
+        if (words.length>0 && words[0].equalsIgnoreCase("ascii")) {
+            StringBuilder b = new StringBuilder();
+            for (int i=1; i<words.length; i++)
+                b.append(words[i]);
 
-                    int value = Integer.decode(word);
-                    memory.put(curIdx, value);
-                    curIdx++;
-                } else {
-                    int address = Integer.decode(word.substring(0, colonIdx));
-                    int value = Integer.decode(word.substring(colonIdx+1));
-                    memory.put(address, value);
+            String ascii = b.toString();
+            for (int i=0; i<ascii.length(); i++)
+                memory.put(i, (int)ascii.charAt(i));
+        } else {
+            for (String word : words) {
+                // either idx:value or just value
+                int colonIdx = word.indexOf(":");
+                try {
+                    if (colonIdx==-1) {
+                        // use running index
+
+                        int value = parseData(player, word);
+                        memory.put(curIdx, value);
+                        curIdx++;
+                    } else {
+                        int address = Integer.decode(word.substring(0, colonIdx));
+                        int value = parseData(player, word.substring(colonIdx+1));
+                        memory.put(address, value);
+                    }
+                } catch (NumberFormatException ne) {
+                    error(player, "Bad entry. Expecting either an integer value or <address>:<int value> - " + word);
+                    return;
                 }
-            } catch (NumberFormatException ne) {
-                error(player, "Bad entry. Expecting either an integer value or <address>:<int value> - " + word);
-                return;
             }
         }
 
         info(player, "Successfully written to memory.");
+    }
+
+    private Integer parseData(CommandSender sender, String data) {
+        try {
+            int ret = Integer.decode(data);
+            return ret;
+        } catch (NumberFormatException ne) {
+            if (data.length()!=1) {
+                error(sender, "Bad data: " + data + ". Expecting either a number or 1 ascii character.");
+                return null;
+            } else {
+                return (int)data.charAt(0);
+            }
+        }
     }
 }

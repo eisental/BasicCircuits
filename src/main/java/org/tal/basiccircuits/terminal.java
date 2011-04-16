@@ -46,8 +46,8 @@ public class terminal extends Circuit implements rcTypeReceiver {
         }
 
         if (type==DataType.ascii) {
-            if (outputs.length!=9) {
-                error(sender, "Expecting 9 outputs. 1 clock output and 8 data outputs.");
+            if (outputs.length!=9 && outputs.length!=10) {
+                error(sender, "Expecting 9-10 outputs. 1 clock output an optional end-of-text output and 8 data outputs.");
                 return false;
             }
         } else if (type==DataType.num) {
@@ -85,14 +85,28 @@ public class terminal extends Circuit implements rcTypeReceiver {
         for (String a : words)
             typeString += a + " ";
         if (type==DataType.ascii) {
+            int datapin = (outputs.length==9?1:2);
+
             for (int i=0; i<typeString.length()-1; i++) {
                 buf[0] = typeString.charAt(i);
                 outBuf = BitSet7.valueOf(buf);
                 if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, 8));
-                this.sendBitSet(1, 8, outBuf);
+                this.sendBitSet(datapin, 8, outBuf);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
             }
+           
+            if (datapin==2) {
+                // pulse the EOT output pin if exists.
+                this.sendOutput(1, true);
+                this.sendOutput(1, false);
+            } else {
+                // send an EOT (end of text character - 0x3)
+                this.sendInt(datapin, 8, 0x3);
+                this.sendOutput(0, true);
+                this.sendOutput(0, false);
+            }
+
         } else if (type==DataType.num) {
             try {
                 int i = Integer.decode(typeString.trim());
