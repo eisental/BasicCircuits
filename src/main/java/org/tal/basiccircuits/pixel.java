@@ -5,13 +5,12 @@ import java.util.List;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
-import org.bukkit.util.Vector;
 import org.tal.redstonechips.channels.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.util.Locations;
 
 /**
  * // dyes wool if present on output block
@@ -49,15 +48,16 @@ public class pixel extends ReceivingCircuit {
                         int val = Integer.decode(args[i]);
                         colorList.add((byte)val);
                     } catch (NumberFormatException ne) {
-                        // not dye number also, treat as broadcast channel if last;
-                        if (i==args.length-1) channelString = args[i];
-                        else if ((args[i].startsWith("d{") || args[i].startsWith("dist{")) && args[i].endsWith("}")) {
+                        // not dye number also, treat as broadcast channel if last or distance argument;
+                        if ((args[i].startsWith("d{") || args[i].startsWith("dist{")) && args[i].endsWith("}")) {
                             try {
                                 distance = Integer.decode(args[i].substring(args[i].indexOf("{")+1, args[i].length()-1));
                             } catch (NumberFormatException ne2) {
                                 error(sender, "Bad distance argument: " + args[i] + ". Expecting d{<distance>} or dist{<distance>}.");
                                 return false;
                             }
+                        } else if (i==args.length-1) {
+                            channelString = args[i];
                         } else {
                             error(sender, "Unknown color name: " + args[i]);
                             return false;
@@ -116,15 +116,15 @@ public class pixel extends ReceivingCircuit {
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
         for (Location l : interfaceBlocks)
-            colorBlocks(world.getBlockAt(l), color);
+            colorBlocks(l, color);
 
     }
 
-    private void colorBlocks(Block block, byte color) {
-        List<Block> wool = new ArrayList<Block>();
-        findWoolAround(block.getLocation().toVector(), block, block, wool, distance, 0);
-        for (Block b : wool) {
-            b.setData(color);
+    private void colorBlocks(Location origin, byte color) {
+        List<Location> wool = new ArrayList<Location>();
+        findWoolAround(origin, origin, wool, distance, 0);
+        for (Location l : wool) {
+            l.getBlock().setData(color);
         }
 }
 
@@ -141,17 +141,17 @@ public class pixel extends ReceivingCircuit {
         updatePixel();
     }
 
-    private void findWoolAround(Vector origin, Block originBlock, Block b, List<Block> wool, int range, int curDist) {
+    private void findWoolAround(Location origin, Location curLocation, List<Location> wool, int range, int curDist) {
         if (curDist>=range) {
             return;
         } else {
             curDist++;
             for (BlockFace face : faces) {
-                Block f = b.getFace(face);
-                if (f.getType()==Material.WOOL) {
-                    if (!wool.contains(f) && origin.distanceSquared(f.getLocation().toVector())<4 && f!=originBlock)
+                Location f = Locations.getFace(curLocation, face);
+                if (world.getBlockTypeIdAt(f)==Material.WOOL.getId()) {
+                    if (!wool.contains(f) && !f.equals(origin))
                         wool.add(f);
-                    findWoolAround(origin, originBlock, f, wool, range, curDist);
+                    findWoolAround(origin, f, wool, range, curDist);
                 }
             }
         }

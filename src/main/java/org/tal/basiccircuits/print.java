@@ -1,6 +1,7 @@
 package org.tal.basiccircuits;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.bukkit.material.MaterialData;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.util.Locations;
 
 
 
@@ -49,8 +51,11 @@ public class print extends Circuit implements rcTypeReceiver {
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inIdx==clockPin && state) {
-            updateText(convertInputs());
-            updateSigns();
+            String s = convertInputs();
+            if (s!=null) {
+                updateText(s);
+                updateSigns();
+            }
         } else if (inIdx==clearPin && state && (display==Display.scroll || display==Display.add)) {
             clearSign();
         } else if (inIdx==scrollPin && state && display==Display.scroll) {
@@ -81,7 +86,7 @@ public class print extends Circuit implements rcTypeReceiver {
     }
 
     private String convertInputs() {
-        String text = "";
+        String text = null;
 
         if (type==Type.num || type==Type.unsigned) {
             text = Integer.toString(BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin));
@@ -94,7 +99,9 @@ public class print extends Circuit implements rcTypeReceiver {
         } else if (type==Type.bin) {
             text = BitSetUtils.bitSetToBinaryString(inputBits, dataPin, inputs.length-dataPin);
         } else if (type==Type.ascii) {
-            text = "" + (char)BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin);
+            char c = (char)BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin);
+            if (!Character.isISOControl(c)) text = Character.toString(c);
+            else if (hasDebuggers()) debug("Ignoring control character 0x" + Integer.toHexString(c));
         }
 
         return text;
@@ -122,7 +129,7 @@ public class print extends Circuit implements rcTypeReceiver {
     private void prepWrapLines() {
         if (textBuffer.length()>LineSize*3) {
             String line4 = textBuffer.substring(LineSize*3);
-            if (line4.length()>LineSize) line4.substring(0, LineSize);
+            if (line4.length()>LineSize) line4 = line4.substring(0, LineSize);
 
             lines[0] = textBuffer.substring(0, LineSize);
             lines[1] = textBuffer.substring(LineSize, LineSize*2);
@@ -212,35 +219,40 @@ public class print extends Circuit implements rcTypeReceiver {
         }
 
         List<Sign> signs = new ArrayList<Sign>();
+        List<Location> locs = new ArrayList<Location>();
+        locs.addAll(Arrays.asList(structure));
 
-        for (Location l : interfaceBlocks) {
-            Block i = world.getBlockAt(l);
-            Block north = i.getFace(BlockFace.NORTH);
-            Block south = i.getFace(BlockFace.SOUTH);
-            Block west = i.getFace(BlockFace.WEST);
-            Block east = i.getFace(BlockFace.EAST);
-            Block up = i.getFace(BlockFace.UP);
+        for (Location loc : interfaceBlocks) {
+            Location north = Locations.getFace(loc, BlockFace.NORTH);
+            Location south = Locations.getFace(loc, BlockFace.SOUTH);
+            Location west = Locations.getFace(loc, BlockFace.WEST);
+            Location east = Locations.getFace(loc, BlockFace.EAST);
+            Location up = Locations.getFace(loc, BlockFace.UP);
 
+            Block i = loc.getBlock();
             Sign nsign = checkBlock(i, north);
-            if (nsign!=null) signs.add(nsign);
+            if (nsign!=null) { locs.add(north); signs.add(nsign); }
 
             Sign ssign = checkBlock(i, south);
-            if (ssign!=null) signs.add(ssign);
+            if (ssign!=null) { locs.add(south); signs.add(ssign); }
 
             Sign wsign = checkBlock(i, west);
-            if (wsign!=null) signs.add(wsign);
+            if (wsign!=null) { locs.add(west); signs.add(wsign); }
 
             Sign esign = checkBlock(i, east);
-            if (esign!=null) signs.add(esign);
+            if (esign!=null) { locs.add(east); signs.add(esign); }
 
             Sign usign = checkBlock(i, up);
-            if (usign!=null) signs.add(usign);
+            if (usign!=null) { locs.add(up); signs.add(usign); }
         }
 
         if (signs.isEmpty()) {
             error(sender, "Couldn't find any signs attached to the chip's interface blocks.");
             return false;
-        } else info(sender, "Found " + signs.size() + " sign(s) to print on.");
+        } else {
+            structure = locs.toArray(new Location[locs.size()]);
+            info(sender, "Found " + signs.size() + " sign(s) to print on.");
+        }
 
         signUpdateTask = new SignUpdateTask(signs.toArray(new Sign[signs.size()]));
 
@@ -253,12 +265,14 @@ public class print extends Circuit implements rcTypeReceiver {
         return true;
     }
 
-    private Sign checkBlock(Block i, Block s) {
-        MaterialData data = s.getState().getData();
+    private Sign checkBlock(Block i, Location s) {
+        // TODO: Check whether this method loads the chunk or not.
+        Block sign = s.getBlock();
+        MaterialData data = sign.getState().getData();
         if (data instanceof org.bukkit.material.Sign) {
             org.bukkit.material.Sign signData = (org.bukkit.material.Sign)data;
-            if (s.getFace(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
-                return (Sign)s.getState();
+            if (sign.getFace(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
+                return (Sign)sign.getState();
             else return null;
 
         } else return null;

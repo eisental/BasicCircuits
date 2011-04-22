@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.tal.basiccircuits;
 
@@ -13,7 +9,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -33,9 +28,10 @@ public class sram extends Circuit implements rcTypeReceiver {
     int wordLength;
     int readWritePin = 0;
     int disablePin = 1;
-
-    int currentAddress = 0;
-    int currentData = 0;
+    int addressPin;
+    int dataPin;
+    
+    boolean readOnlyMode;
 
     boolean disabled = false;
     boolean readWrite = false;
@@ -47,7 +43,9 @@ public class sram extends Circuit implements rcTypeReceiver {
     public void inputChange(int inIdx, boolean state) {
         if (inIdx==readWritePin) {
             readWrite = state;
+            int currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, wordLength);
             if (readWrite && !disabled) { // store current data inputs when readWrite goes high.
+                int currentAddress = BitSetUtils.bitSetToUnsignedInt(inputBits, addressPin, addressLength);
                 if (hasDebuggers()) debug("Writing " + currentData + " at address 0x" + Integer.toHexString(currentAddress));
                 memory.put(currentAddress, currentData);
             } else {
@@ -61,17 +59,18 @@ public class sram extends Circuit implements rcTypeReceiver {
                 if (readWrite) {
                     readMemory();
                 } else {
+                    int currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, wordLength);
                     sendInt(0, wordLength, currentData);
                 }
             }
+
             sendBitSet(outputBits);
-        } else if (inIdx>=2 && inIdx<2+addressLength) {
-            currentAddress = BitSetUtils.bitSetToUnsignedInt(inputBits, 2, addressLength);
+        } else if (inIdx>=addressPin && inIdx<addressPin+addressLength) {
             if (readWrite && !disabled) {
                 readMemory();
             }
-        } else if (inIdx>=2+addressLength && inIdx<inputs.length) {
-            currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, 2+addressLength, wordLength);
+        } else if (inIdx>=dataPin && inIdx<dataPin+wordLength) {
+            int currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, wordLength);
             if (!readWrite && !disabled) {
                 // copy data inputs to outputs
                 sendInt(0, wordLength, currentData);
@@ -81,6 +80,8 @@ public class sram extends Circuit implements rcTypeReceiver {
 
     private void readMemory() {
         // update outputs according to address.
+        int currentAddress = BitSetUtils.bitSetToUnsignedInt(inputBits, addressPin, addressLength);
+
         Integer storedData = memory.get(currentAddress);
         if (storedData==null) storedData = 0;
         if (hasDebuggers()) debug("Reading " + storedData + " from address 0x" + Integer.toHexString(currentAddress));
@@ -90,13 +91,35 @@ public class sram extends Circuit implements rcTypeReceiver {
     @Override
     protected boolean init(CommandSender sender, String[] args) {
         wordLength = outputs.length;
-        addressLength = inputs.length-2-wordLength;
+
+        if (args.length>1 && args[1].equalsIgnoreCase("readonly")) {
+            readOnlyMode = true;
+            addressLength = inputs.length-1;
+            addressPin = 1;
+            disablePin = 0;
+            dataPin = -1;
+            readWritePin = -1;
+            readWrite = true;
+        } else {
+            readOnlyMode = false;
+            addressLength = inputs.length-2-wordLength;
+            addressPin = 2;
+            disablePin = 1;
+            readWritePin = 0;
+            dataPin = addressPin + addressLength;
+        }
+
 
         if (outputs.length==0) {
             error(sender, "Exepcting at least 1 output pin.");
         }
+
         if (addressLength<1) {
-            error(sender, "Expecting at least 1 address input pin, 2 control pins and " + wordLength + " data pins.");
+            if (readOnlyMode)
+                error(sender, "Expecting at least 1 address input pin and 1 control pin.");
+            else
+                error(sender, "Expecting at least 1 address input pin, 2 control pins, and " + wordLength + " data pins.");
+
             return false;
         }
 
@@ -110,10 +133,11 @@ public class sram extends Circuit implements rcTypeReceiver {
             }
         }
 
-        memory = new HashMap<Integer, Integer>();
-        currentAddress = BitSetUtils.bitSetToUnsignedInt(inputBits, 2, addressLength);
-        currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, 2+addressLength, wordLength);
-        readWrite = inputBits.get(readWritePin);
+        memory = new HashMap<Integer, Integer>();        
+
+        if (!readOnlyMode) {
+            readWrite = inputBits.get(readWritePin);
+        }
         disabled = inputBits.get(disablePin);
 
         try {
@@ -159,7 +183,7 @@ public class sram extends Circuit implements rcTypeReceiver {
         if (anonymous) {
             File data = getMemoryFile(memId);
             if (!data.delete()) {
-                Logger.getLogger("Minecraft").severe("Could not delete memory file: " + data);
+                redstoneChips.log(Level.SEVERE, "Could not delete memory file: " + data);
             }
         }
     }
@@ -176,7 +200,7 @@ public class sram extends Circuit implements rcTypeReceiver {
         try {
             yaml.dump(memory, new FileWriter(data));
         } catch (IOException ex) {
-            Logger.getLogger("Minecraft").severe("While saving memory to file: " + ex.getMessage());
+            redstoneChips.log(Level.SEVERE, "While saving memory to file: " + ex.getMessage());
         }
     }
 
@@ -199,12 +223,14 @@ public class sram extends Circuit implements rcTypeReceiver {
                     if (colonIdx==-1) {
                         // use running index
 
-                        int value = parseData(player, word);
+                        Integer value = parseData(player, word);
+                        if (value==null) return;
                         memory.put(curIdx, value);
                         curIdx++;
                     } else {
                         int address = Integer.decode(word.substring(0, colonIdx));
-                        int value = parseData(player, word.substring(colonIdx+1));
+                        Integer value = parseData(player, word.substring(colonIdx+1));
+                        if (value==null) return;
                         memory.put(address, value);
                     }
                 } catch (NumberFormatException ne) {
@@ -222,12 +248,28 @@ public class sram extends Circuit implements rcTypeReceiver {
             int ret = Integer.decode(data);
             return ret;
         } catch (NumberFormatException ne) {
-            if (data.length()!=1) {
+            if (data.length()==1) return (int)data.charAt(0);
+            else if (data.startsWith("b")) {
+                String bits = data.substring(1);
+                int ret = 0;
+                for (int i=0; i<bits.length(); i++) { // 1st char is MSB
+                    if (bits.charAt(i)!='0' && bits.charAt(i)!='1') {
+                        error(sender, "Invalid binary number: " + data.substring(1) + ".");
+                        return null;
+                    }
+                    ret += (bits.charAt(i)=='0'?0:1) * Math.pow(2, bits.length()-1-i);
+                }
+
+                return ret;
+            } else {
                 error(sender, "Bad data: " + data + ". Expecting either a number or 1 ascii character.");
                 return null;
-            } else {
-                return (int)data.charAt(0);
             }
         }
+    }
+
+    @Override
+    protected boolean isStateless() {
+        return false;
     }
 }

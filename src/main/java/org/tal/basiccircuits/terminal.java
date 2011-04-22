@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.tal.basiccircuits;
 
@@ -25,6 +21,7 @@ public class terminal extends Circuit implements rcTypeReceiver {
     private BitSet7 outBuf;
     private long[] buf = new long[1];
     private DataType type = DataType.ascii;
+    private boolean eot;
 
     @Override
     public void inputChange(int inIdx, boolean high) {
@@ -37,17 +34,26 @@ public class terminal extends Circuit implements rcTypeReceiver {
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
+        eot = false;
+
         if (args.length>0) {
             try {
                 type = DataType.valueOf(args[0]);
             } catch (IllegalArgumentException ie) {
                 error(sender, "Unknown data type argument: " + args[0]);
+                return false;
+            }
+
+            if (args.length>1) {
+                if (args[1].equalsIgnoreCase("eot")) {
+                    eot = true;
+                } else error(sender, "Unknodwn argument: " + args[1]);
             }
         }
 
         if (type==DataType.ascii) {
             if (outputs.length!=9 && outputs.length!=10) {
-                error(sender, "Expecting 9-10 outputs. 1 clock output an optional end-of-text output and 8 data outputs.");
+                error(sender, "Expecting 9-10 outputs. 1 clock output, an optional end-of-text output and 8 data outputs.");
                 return false;
             }
         } else if (type==DataType.num) {
@@ -96,17 +102,18 @@ public class terminal extends Circuit implements rcTypeReceiver {
                 this.sendOutput(0, false);
             }
            
-            if (datapin==2) {
-                // pulse the EOT output pin if exists.
-                this.sendOutput(1, true);
-                this.sendOutput(1, false);
-            } else {
+            if (eot) {
                 // send an EOT (end of text character - 0x3)
                 this.sendInt(datapin, 8, 0x3);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
             }
 
+            if (datapin==2) {
+                // pulse the EOT output pin if exists.
+                this.sendOutput(1, true);
+                this.sendOutput(1, false);
+            }
         } else if (type==DataType.num) {
             try {
                 int i = Integer.decode(typeString.trim());

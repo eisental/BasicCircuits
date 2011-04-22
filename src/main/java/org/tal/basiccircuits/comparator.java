@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.tal.basiccircuits;
 
@@ -34,20 +30,24 @@ public class comparator extends Circuit {
 
     private void compare(int a, int b) {
         if (identityMode) {
+            if (hasDebuggers()) debug(a + " is " + (a==b?"":"not ") + "equal to " + b);
             sendOutput(0, a==b);
         } else {
             if (a<b) {
+                if (hasDebuggers()) debug(a + " is less than " + b);
                 sendOutput(0, true);
                 sendOutput(1, false);
                 sendOutput(2, false);
             } else if (a==b) {
+                if (hasDebuggers()) debug(a + " is equal to " + b);
                 sendOutput(0, false);
                 sendOutput(1, true);
-                sendOutput(2, false);
+                sendOutput(2, false);                
             } else if (a>b) {
+                if (hasDebuggers()) debug(a + " is greater than " + b);
                 sendOutput(0, false);
                 sendOutput(1, false);
-                sendOutput(2, true);
+                sendOutput(2, true);                
             }
         }
     }
