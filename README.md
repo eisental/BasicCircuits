@@ -15,6 +15,25 @@ Installation
 
 Changelog
 ---------
+#### BasicCircuits 0.9 (23/04/11)
+- Updated to work with RedstoneChips 0.9.
+- New bintobcd circuit for converting binary to bcd for numbers of any size.
+- Small change in receiver and transmitter activation message.
+- __counter__: Changed debug messages and possibly fixed the way it updates its outputs.
+- __clock__: Rewrote the circuit without using threads. Added latency compensation to prevent overall timing drift and tick rounding errors. It's now possible to use 1 input to control any number of clock outputs. Pulse width of 1 also works, and like 0 pulse width, result in lower cpu use.
+- __pixel__: It's now possible to change the wool painting distance of the pixel circuit using sign arguments. To set, add an argument anywhere with d{<distance>} or dist{<distance>}. The distance is the number of steps away from its interface blocks that the circuit will reach when painting wool blocks.
+- __sram__: Added the option to use ascii strings in /rctype by typing /rctype ascii <text> and use ascii characters instead of numbers as word values. Added binary input to /rctype by using bXXXXX as a data value. For ex: /rctype 0:b0101. New readonly mode by adding readonly as 2nd sign argument. When used the chip doesn't have a read/write input control pin and data input pins. /rctype can still be used to edit memory contents.
+- __terminal__: When an eot argument is added as a 2nd argument in ascii mode it will send an EOT ascii character (0x03 or ^C) after all characters were sent out. Added an optional EOT (end of transmission) output pin to the terminal circuit in ascii mode that is triggered after the last character is sent out. 
+- __print__: The circuit will ignore ascii control characters (0-0x1F). The circuit's signs are now part of the circuit's structure. Breaking them will deactivate the circuit.
+- __comparator__: Added debug messages.
+
+bug fixes:
+
+- Fixed bug when trying to use a the print circuit with no signs attached. print will not activate unless it has at least 1 sign to print on. The signs must be actually attached to the interface block now. Post signs can be used when placing them on top of the interface block.
+- Fixed the zero wordlength crash bug in adder, multiplier and divider (thanks @Badzilla)
+- sram will properly load its state after a server restart. An error is sent to the console when the circuit's memory file is not found.
+- Fixed a bug where print circuit would print more than 15 characters on the 4th sign line.
+
 #### BasicCircuits 0.88 (07/04/11)
 - Updated to work with RC0.88.
 - Decoder is less strict now, and can be built with less than the amount of outputs required for the number of inputs.

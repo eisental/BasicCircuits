@@ -142,17 +142,15 @@ public class pixel extends ReceivingCircuit {
     }
 
     private void findWoolAround(Location origin, Location curLocation, List<Location> wool, int range, int curDist) {
-        if (curDist>=range) {
-            return;
-        } else {
-            curDist++;
-            for (BlockFace face : faces) {
-                Location f = Locations.getFace(curLocation, face);
-                if (world.getBlockTypeIdAt(f)==Material.WOOL.getId()) {
-                    if (!wool.contains(f) && !f.equals(origin))
-                        wool.add(f);
-                    findWoolAround(origin, f, wool, range, curDist);
-                }
+        if (curDist>=range) return;
+
+        curDist++;
+        for (BlockFace face : faces) {
+            Location f = Locations.getFace(curLocation, face);
+            if (world.getBlockTypeIdAt(f)==Material.WOOL.getId()) {
+                if (!wool.contains(f) && !f.equals(origin) && inCube(origin, f, range))
+                    wool.add(f);
+                findWoolAround(origin, f, wool, range, curDist);
             }
         }
     }
@@ -169,5 +167,16 @@ public class pixel extends ReceivingCircuit {
         else {
             return (int)Math.ceil(Math.log(colorIndex.length)/Math.log(2));
         }
+    }
+
+    private boolean inCube(Location origin, Location f, int rad) {
+        int dx = (int)Math.abs(origin.getX()-f.getX());
+        int dy = (int)Math.abs(origin.getY()-f.getY());
+        int dz = (int)Math.abs(origin.getZ()-f.getZ());
+
+        if (rad>2) rad--;
+        else rad++;
+
+        return (dx<rad && dy<rad && dz<rad);
     }
 }

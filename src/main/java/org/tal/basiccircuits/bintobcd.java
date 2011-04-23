@@ -10,22 +10,19 @@ import org.tal.redstonechips.util.BitSetUtils;
  */
 public class bintobcd extends Circuit {
     int digits;
-    boolean hexMode;
 
     @Override
     public void inputChange(int inIdx, boolean state) {
         String value;
         
-        if (!hexMode) 
-            value = Integer.toString(BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputs.length));
-        else value = Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputs.length));
+        value = Integer.toString(BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputs.length));
 
         for (int i=0; i<digits; i++) {
             String d;
             int digit;
 
             if (i<value.length()) {
-                d = (hexMode?"0x":"") + value.charAt(value.length()-i-1);
+                d = Character.toString(value.charAt(value.length()-i-1));
                 digit = Integer.decode(d);
             } else
                 digit = 0;
@@ -48,14 +45,6 @@ public class bintobcd extends Circuit {
         }
 
         digits = outputs.length/4;
-
-        if (args.length>0) {
-            if (args[0].equalsIgnoreCase("hex")) hexMode = true;
-            else {
-                error(sender, "Bad argument: " + args[0] + ". Expecting 'hex'");
-                return false;
-            }
-        } else hexMode = false;
 
         return true;
     }
