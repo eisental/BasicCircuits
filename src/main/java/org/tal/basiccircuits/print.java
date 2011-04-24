@@ -280,10 +280,12 @@ public class print extends Circuit implements rcTypeReceiver {
 
     @Override
     public void setInternalState(Map<String, String> state) {
-        String text = state.get("text");
+        Object text = state.get("text");
+
         if (text!=null) {
+            String t = text.toString();
             textBuffer.setLength(0);
-            textBuffer.append(text);
+            textBuffer.append(t);
         }
     }
 
