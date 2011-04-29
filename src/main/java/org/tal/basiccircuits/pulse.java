@@ -87,8 +87,14 @@ public class pulse extends Circuit {
     }
 
     private void pulseSequence() {
-        for (int i=0; i<outputs.length; i++) {
-            pulse(i);
+        if (interval==0) {
+            for (int i=0; i<outputs.length; i++) {
+                sendOutput(i, true);
+                sendOutput(i, false);
+            }
+        } else {
+            sendOutput(0, true);
+            redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, pulseOffs[0], intervalInTicks);
         }
     }
 
@@ -100,6 +106,10 @@ public class pulse extends Circuit {
         @Override
         public void run() {
             sendOutput(index, false);
+            if (inputs.length!=outputs.length && pulseOffs.length>index+1) {
+                sendOutput(index+1, true);
+                redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, pulseOffs[index+1], intervalInTicks);
+            }
         }
 
     }
