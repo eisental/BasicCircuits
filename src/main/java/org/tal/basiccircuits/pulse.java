@@ -9,6 +9,7 @@ import org.tal.redstonechips.util.UnitParser;
  * @author Tal Eisenberg
  */
 public class pulse extends Circuit {
+
     public enum EdgeTriggering { positive, negative, doubleEdge };
 
     private EdgeTriggering trigger = EdgeTriggering.positive;
@@ -18,18 +19,23 @@ public class pulse extends Circuit {
     private long intervalInTicks;
 
     @Override
-    public void inputChange(final int inIdx, boolean high) {
-        if (high && (trigger==EdgeTriggering.positive || trigger==EdgeTriggering.doubleEdge))
-            pulse(inIdx);
-        else if (!high && (trigger==EdgeTriggering.negative || trigger==EdgeTriggering.doubleEdge))
-            pulse(inIdx);
+    public void inputChange(final int inIdx, boolean on) {
+        if (on && (trigger==EdgeTriggering.positive || trigger==EdgeTriggering.doubleEdge)) {
+            if (inputs.length==outputs.length)
+                pulse(inIdx);
+            else pulseSequence();
+        } else if (!on && (trigger == EdgeTriggering.negative || trigger == EdgeTriggering.doubleEdge)) {
+            if (inputs.length==outputs.length)
+                pulse(inIdx);
+            else pulseSequence();
+        }
 
     }
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
-        if (inputs.length!=outputs.length) {
-            error(sender, "Expecting the same number of inputs and outputs.");
+        if (inputs.length!=outputs.length && inputs.length!=1) {
+            error(sender, "Expecting the same number of inputs and outputs or 1 input.");
             return false;
         }
 
@@ -70,14 +76,20 @@ public class pulse extends Circuit {
         return true;
     }
 
-    private void pulse(final int inIdx) {
-        sendOutput(inIdx, true);
+    private void pulse(final int idx) {
+        sendOutput(idx, true);
         if (interval==0) {
-            sendOutput(inIdx, false);
+            sendOutput(idx, false);
         } else {
-            redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, pulseOffs[inIdx], intervalInTicks);
+            redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, pulseOffs[idx], intervalInTicks);
         }
 
+    }
+
+    private void pulseSequence() {
+        for (int i=0; i<outputs.length; i++) {
+            pulse(i);
+        }
     }
 
     class PulseOff implements Runnable {
