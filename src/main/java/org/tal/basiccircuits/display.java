@@ -205,7 +205,7 @@ public class display extends ReceivingCircuit {
 
         pixelWidth = (int)Math.ceil(phyWidth/width);
         pixelHeight = (int)Math.ceil(phyHeight/height);
-        pixels = new Location[width][height][pixelWidth*pixelHeight];
+        pixels = new Location[width][height][Math.abs(pixelWidth*pixelHeight)];
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
