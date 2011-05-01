@@ -15,7 +15,7 @@ public class BasicCircuits extends CircuitLibrary {
                 shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class,
                 synth.class, srnor.class, terminal.class, router.class, ringcounter.class, iptransmitter.class, ipreceiver.class,
                 comparator.class, delay.class, repeater.class, nand.class, nor.class, xnor.class, segdriver.class, dregister.class, 
-                sram.class, bintobcd.class };
+                sram.class, bintobcd.class, display.class };
     }
 
     @Override

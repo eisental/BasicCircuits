@@ -80,8 +80,6 @@ public class pixel extends ReceivingCircuit {
             }
         }
 
-
-
         if (inputs.length>5) {
             error(sender, "Too many inputs. Requires 1 clock pin and no more than 4 data pins.");
             return false;
