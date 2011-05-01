@@ -106,7 +106,7 @@ public class display extends ReceivingCircuit {
             colorWordlength = calculateBpp();
 
             int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
-            if (inputs.length!=expectedInputs) {
+            if (inputs.length!=expectedInputs && (inputs.length!=0 || getChannel()==null)) {
                 error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s) and " + yWordlength + " y address input(s), and " + colorWordlength + " color data inputs.");
                 return false;
             }
