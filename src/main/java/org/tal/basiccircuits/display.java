@@ -28,7 +28,6 @@ public class display extends ReceivingCircuit {
     private int width, height;
     private int pixelWidth, pixelHeight;
     private Location[][][] pixels;
-    private BitSet7 channelBits;
     private int xWordlength, yWordlength, colorWordlength;
 
     @Override
@@ -95,7 +94,6 @@ public class display extends ReceivingCircuit {
 
                 if (channelString!=null) {
                     parseChannelString(channelString);
-                    channelBits = new BitSet7(getLength());
                     info(sender, "Display will listen on broadcast channel " + getChannel().name + ".");
                 }
             }
@@ -147,17 +145,10 @@ public class display extends ReceivingCircuit {
         Location origin;
 
         if (dx==0) { // zy plane
-            if (dz>=dy) {
-                phyWidth = (dz+1)*zsign;
-                phyHeight = (dy+1)*ysign;
-                widthAxis = Axis.Z;
-                heightAxis = Axis.Y;
-            } else {
-                phyWidth = (dy+1)*ysign;
-                phyHeight = (dz+1)*zsign;
-                widthAxis = Axis.Y;
-                heightAxis = Axis.Z;
-            }
+            phyWidth = (dz+1)*zsign;
+            phyHeight = (dy+1)*ysign;
+            widthAxis = Axis.Z;
+            heightAxis = Axis.Y;
 
             if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId())
                 origin = new Location(world, x1+1, y1, z1);
@@ -184,17 +175,10 @@ public class display extends ReceivingCircuit {
                 origin = new Location(world, x1, y1-1, z1);
             else throw new IllegalArgumentException("Can't find origin wool block.");
         } else if (dz==0) { // xy plane
-            if (dx>=dy) {
-                phyWidth = (dx+1)*xsign;
-                phyHeight = (dy+1)*ysign;
-                widthAxis = Axis.X;
-                heightAxis = Axis.Y;
-            } else {
-                phyWidth = (dy+1)*ysign;
-                phyHeight = (dx+1)*xsign;
-                widthAxis = Axis.Y;
-                heightAxis = Axis.X;
-            }
+            phyWidth = (dx+1)*xsign;
+            phyHeight = (dy+1)*ysign;
+            widthAxis = Axis.X;
+            heightAxis = Axis.Y;
 
             if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId())
                 origin = new Location(world, x1, y1, z1+1);
@@ -222,10 +206,7 @@ public class display extends ReceivingCircuit {
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
                 int index = (y*width+x)*colorWordlength;
-                if (channelBits.get(index)!=bits.get(index)) {
-                    setPixel(x,y,BitSetUtils.bitSetToUnsignedInt(bits, (y*width+x)*colorWordlength, colorWordlength));
-                    channelBits.set(index, bits.get(index));
-                }
+                setPixel(x,y,BitSetUtils.bitSetToUnsignedInt(bits, index, colorWordlength));
             }
         }
     }
