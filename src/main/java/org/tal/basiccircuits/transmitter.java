@@ -17,7 +17,7 @@ public class transmitter extends TransmittingCircuit {
         if (inputs.length==1) { // no clock pin
             transmit(inputBits, getStartBit(), inputs.length);
         } else { // has a clock pin
-            if (inIdx==0 && high) {
+            if (inputBits.get(0)) {
                 transmit(inputBits.get(1, inputs.length), getStartBit(), inputs.length-1);
             }
         }
@@ -36,7 +36,7 @@ public class transmitter extends TransmittingCircuit {
         }
         if (args.length>0) {
             try {
-                this.parseChannelString(args[0]);
+                this.initWireless(args[0]);
 
                 String bits;
                 if (this.getLength()>1)

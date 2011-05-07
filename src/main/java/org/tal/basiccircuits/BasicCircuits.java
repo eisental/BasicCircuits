@@ -1,5 +1,7 @@
 package org.tal.basiccircuits;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.tal.redstonechips.RedstoneChips;
 import org.tal.redstonechips.circuit.CircuitLibrary;
 

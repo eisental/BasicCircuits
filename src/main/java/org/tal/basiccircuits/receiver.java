@@ -26,7 +26,7 @@ public class receiver extends ReceivingCircuit {
         
         if (args.length>0) {
             try {
-                this.parseChannelString(args[0]);
+                this.initWireless(args[0]);
                 dataPin = (outputs.length==1?0:1);
                 String bits;
                 if (this.getLength()>1)

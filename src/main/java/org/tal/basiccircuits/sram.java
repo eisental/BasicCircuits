@@ -2,32 +2,26 @@
 package org.tal.basiccircuits;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
+import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  *
  * @author Tal Eisenberg
  */
 public class sram extends Circuit implements rcTypeReceiver {
-    Map<Integer,Integer> memory;
+    Memory memory;
     int addressLength;
     int wordLength;
-    int readWritePin = 0;
-    int disablePin = 1;
+    int readWritePin;
+    int disablePin;
     int addressPin;
     int dataPin;
     
@@ -43,25 +37,22 @@ public class sram extends Circuit implements rcTypeReceiver {
     public void inputChange(int inIdx, boolean state) {
         if (inIdx==readWritePin) {
             readWrite = state;
-            int currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, wordLength);
+            BitSet7 data = inputBits.get(dataPin, dataPin+wordLength);
+
             if (readWrite && !disabled) { // store current data inputs when readWrite goes high.
-                int currentAddress = BitSetUtils.bitSetToUnsignedInt(inputBits, addressPin, addressLength);
-                if (hasDebuggers()) debug("Writing " + currentData + " at address 0x" + Integer.toHexString(currentAddress));
-                memory.put(currentAddress, currentData);
+                BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
+                if (hasDebuggers()) debug("Writing " + BitSetUtils.bitSetToUnsignedInt(data, 0, wordLength) + " to address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
+                memory.write(address, data);
             } else {
-                this.sendInt(0, wordLength, currentData);
+                this.sendBitSet(data);
             }
         } else if (inIdx==disablePin) {
             disabled = state;
             if (disabled) {
                 outputBits.clear();
             } else {
-                if (readWrite) {
-                    readMemory();
-                } else {
-                    int currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, wordLength);
-                    sendInt(0, wordLength, currentData);
-                }
+                if (readWrite) readMemory();
+                else sendBitSet(inputBits.get(dataPin, dataPin+wordLength));
             }
 
             sendBitSet(outputBits);
@@ -70,22 +61,11 @@ public class sram extends Circuit implements rcTypeReceiver {
                 readMemory();
             }
         } else if (inIdx>=dataPin && inIdx<dataPin+wordLength) {
-            int currentData = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, wordLength);
             if (!readWrite && !disabled) {
                 // copy data inputs to outputs
-                sendInt(0, wordLength, currentData);
+                sendBitSet(inputBits.get(dataPin, dataPin+wordLength));
             }
         }
-    }
-
-    private void readMemory() {
-        // update outputs according to address.
-        int currentAddress = BitSetUtils.bitSetToUnsignedInt(inputBits, addressPin, addressLength);
-
-        Integer storedData = memory.get(currentAddress);
-        if (storedData==null) storedData = 0;
-        if (hasDebuggers()) debug("Reading " + storedData + " from address 0x" + Integer.toHexString(currentAddress));
-        sendInt(0, wordLength, storedData);
     }
 
     @Override
@@ -109,7 +89,6 @@ public class sram extends Circuit implements rcTypeReceiver {
             dataPin = addressPin + addressLength;
         }
 
-
         if (outputs.length==0) {
             error(sender, "Exepcting at least 1 output pin.");
         }
@@ -123,44 +102,49 @@ public class sram extends Circuit implements rcTypeReceiver {
             return false;
         }
 
-        if (memId==null) {
-            if (args.length>0) {
+        if (args.length>0) {
+            if (!isLegalId(args[0])) {
+                error(sender, "Bad memory id: " + args[0]);
+                return false;
+            } else
                 memId = args[0];
-                anonymous = false;
-            } else {
-                memId = findFreeRamID();
-                anonymous = true;
-            }
+
+            anonymous = false;
+        } else {
+            memId = findFreeRamID();
+            anonymous = true;
         }
 
-        memory = new HashMap<Integer, Integer>();        
+        if (!Memory.memories.containsKey(memId)) {
+            memory = new Ram();
+            memory.init(memId);
+
+            File file = getMemoryFile(memId);
+            try {
+                if (file.exists()) {
+                    memory.load(file);
+                } else {
+                    file.createNewFile();
+                }
+            } catch (IOException ex) {
+                String msg = "While creating new memory file: " + ex;
+                if (sender != null)
+                    info(sender, msg);
+                else redstoneChips.log(Level.WARNING, msg);
+            }
+
+        } else memory = Memory.memories.get(memId);
 
         if (!readOnlyMode) {
             readWrite = inputBits.get(readWritePin);
         }
         disabled = inputBits.get(disablePin);
 
-        try {
-            readMemoryFile();
-        } catch (FileNotFoundException ex) {
-            String msg = "Memory file " + getMemoryFile(memId) + " was not found. Creating a new one.";
-            if (sender != null)
-                info(sender, msg);
-            else redstoneChips.log(Level.WARNING, msg);
-        }
-        
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
 
         info(sender, "This sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + getMemoryFile(memId).getPath());
 
         return true;
-    }
-
-    private void readMemoryFile() throws FileNotFoundException {
-        File data = getMemoryFile(memId);
-        Yaml yaml = new Yaml();
-
-        memory = (Map<Integer,Integer>) yaml.load(new FileInputStream(data));
     }
 
     private File getMemoryFile(String id) {
@@ -191,14 +175,10 @@ public class sram extends Circuit implements rcTypeReceiver {
     @Override
     public void save() {
          // store data in file.
-        File data = getMemoryFile(memId);
-
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
-        Yaml yaml = new Yaml(options);
+        File file = getMemoryFile(memId);
 
         try {
-            yaml.dump(memory, new FileWriter(data));
+            memory.store(file);
         } catch (IOException ex) {
             redstoneChips.log(Level.SEVERE, "While saving memory to file: " + ex.getMessage());
         }
@@ -214,7 +194,7 @@ public class sram extends Circuit implements rcTypeReceiver {
 
             String ascii = b.toString();
             for (int i=0; i<ascii.length(); i++)
-                memory.put(i, (int)ascii.charAt(i));
+                memory.write(BitSetUtils.intToBitSet(i, addressLength), BitSetUtils.intToBitSet((int)ascii.charAt(i), wordLength));
         } else {
             for (String word : words) {
                 // either idx:value or just value
@@ -222,16 +202,15 @@ public class sram extends Circuit implements rcTypeReceiver {
                 try {
                     if (colonIdx==-1) {
                         // use running index
-
-                        Integer value = parseData(player, word);
+                        BitSet7 value = parseData(player, word);
                         if (value==null) return;
-                        memory.put(curIdx, value);
+                        memory.write(BitSetUtils.intToBitSet(curIdx, addressLength), value);
                         curIdx++;
                     } else {
                         int address = Integer.decode(word.substring(0, colonIdx));
-                        Integer value = parseData(player, word.substring(colonIdx+1));
+                        BitSet7 value = parseData(player, word.substring(colonIdx+1));
                         if (value==null) return;
-                        memory.put(address, value);
+                        memory.write(BitSetUtils.intToBitSet(address, addressLength), value);
                     }
                 } catch (NumberFormatException ne) {
                     error(player, "Bad entry. Expecting either an integer value or <address>:<int value> - " + word);
@@ -243,30 +222,34 @@ public class sram extends Circuit implements rcTypeReceiver {
         info(player, "Successfully written to memory.");
     }
 
-    private Integer parseData(CommandSender sender, String data) {
+    private void readMemory() {
+        BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
+        BitSet7 data = memory.read(address);
+        if (data==null) data = new BitSet7();
+        if (hasDebuggers()) debug("Reading " + BitSetUtils.bitSetToUnsignedInt(data, 0, wordLength) + " from address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
+        sendBitSet(0, wordLength, data);
+    }
+
+    private BitSet7 parseData(CommandSender sender, String data) {
         try {
             int ret = Integer.decode(data);
-            return ret;
+            return BitSetUtils.intToBitSet(ret, wordLength);
         } catch (NumberFormatException ne) {
-            if (data.length()==1) return (int)data.charAt(0);
+            if (data.length()==1) return BitSetUtils.intToBitSet((int)data.charAt(0), wordLength);
             else if (data.startsWith("b")) {
                 String bits = data.substring(1);
-                int ret = 0;
-                for (int i=0; i<bits.length(); i++) { // 1st char is MSB
-                    if (bits.charAt(i)!='0' && bits.charAt(i)!='1') {
-                        error(sender, "Invalid binary number: " + data.substring(1) + ".");
-                        return null;
-                    }
-                    ret += (bits.charAt(i)=='0'?0:1) * Math.pow(2, bits.length()-1-i);
-                }
-
-                return ret;
+                return BitSetUtils.stringToBitSet(bits);
             } else {
                 error(sender, "Bad data: " + data + ". Expecting either a number or 1 ascii character.");
                 return null;
             }
         }
     }
+
+    private boolean isLegalId(String string) {
+        return string.matches("^[a-zA-Z_][a-zA-Z0-9_]*$");
+    }
+
 
     @Override
     protected boolean isStateless() {

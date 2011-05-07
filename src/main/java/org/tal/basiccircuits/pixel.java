@@ -75,7 +75,7 @@ public class pixel extends ReceivingCircuit {
             }
 
             if (channelString!=null) {
-                parseChannelString(channelString);
+                initWireless(channelString);
                 info(sender, "Pixel will listen on broadcast channel " + getChannel().name + ".");
             }
         }

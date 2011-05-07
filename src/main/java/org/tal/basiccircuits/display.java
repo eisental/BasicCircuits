@@ -93,7 +93,7 @@ public class display extends ReceivingCircuit {
                 }
 
                 if (channelString!=null) {
-                    parseChannelString(channelString);
+                    initWireless(channelString);
                     info(sender, "Display will listen on broadcast channel " + getChannel().name + ".");
                 }
             }
