@@ -238,6 +238,11 @@ public class display extends ReceivingCircuit {
         }
         else color = data;
 
+        if (x>=width || y>=height) {
+            if (hasDebuggers()) debug("Pixel (" + x + ", " + y + ") is out of bounds.");
+            return;
+        }
+        
         Location[] pixel = pixels[x][y];
 
         for (Location l : pixel) {

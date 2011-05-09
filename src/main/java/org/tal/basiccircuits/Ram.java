@@ -19,7 +19,9 @@ public class Ram extends Memory {
 
     @Override
     public BitSet7 read(BitSet7 address) {
-        return words.get(address);
+        BitSet7 data = words.get(address);
+        if (data==null) data = new BitSet7();
+        return data;
     }
 
     @Override

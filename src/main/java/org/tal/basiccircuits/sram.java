@@ -9,8 +9,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
+import org.tal.redstonechips.commands.CommandUtils;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.util.Range;
 
 /**
  *
@@ -186,8 +188,10 @@ public class sram extends Circuit implements rcTypeReceiver {
 
     @Override
     public void type(String[] words, Player player) {
+        if (words.length==0) return;
         int curIdx = 0;
-        if (words.length>0 && words[0].equalsIgnoreCase("ascii")) {
+
+        if (words[0].equalsIgnoreCase("ascii")) {
             StringBuilder b = new StringBuilder();
             for (int i=1; i<words.length; i++)
                 b.append(words[i]);
@@ -195,6 +199,18 @@ public class sram extends Circuit implements rcTypeReceiver {
             String ascii = b.toString();
             for (int i=0; i<ascii.length(); i++)
                 memory.write(BitSetUtils.intToBitSet(i, addressLength), BitSetUtils.intToBitSet((int)ascii.charAt(i), wordLength));
+        } else if (words[0].equalsIgnoreCase("notes")) {
+        } else if (words[0].equalsIgnoreCase("dump")) {
+            if (words.length==1) {
+                dumpMemory(player, null);
+            } else {
+                try {
+                    dumpMemory(player, words[1]);
+                } catch (IllegalArgumentException ie) {
+                    player.sendMessage("Bad range argument: " + words[1]);
+                }
+            }
+
         } else {
             for (String word : words) {
                 // either idx:value or just value
@@ -217,15 +233,15 @@ public class sram extends Circuit implements rcTypeReceiver {
                     return;
                 }
             }
+            info(player, "Successfully written to memory.");
         }
 
-        info(player, "Successfully written to memory.");
+        
     }
 
     private void readMemory() {
         BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
         BitSet7 data = memory.read(address);
-        if (data==null) data = new BitSet7();
         if (hasDebuggers()) debug("Reading " + BitSetUtils.bitSetToUnsignedInt(data, 0, wordLength) + " from address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
         sendBitSet(0, wordLength, data);
     }
@@ -254,5 +270,37 @@ public class sram extends Circuit implements rcTypeReceiver {
     @Override
     protected boolean isStateless() {
         return false;
+    }
+
+    private void dumpMemory(Player player, String srange) {
+        int firstAddress, lastAddress;
+
+        if (srange==null) {
+            firstAddress = 0;
+            lastAddress = (int)Math.pow(2, addressLength);
+        } else {
+            Range range = new Range(srange, Range.Type.OPEN_ALLOWED);
+            firstAddress = (int)(range.hasLowerLimit()?range.getOrderedRange()[0]:0);
+            lastAddress = (int)(range.hasUpperLimit()?range.getOrderedRange()[1]:Math.pow(2, addressLength));
+        }
+
+        String[] lines = new String[lastAddress-firstAddress+1];
+
+        if (firstAddress>=0 && lastAddress>=0) {
+            for (int a = firstAddress; a<=lastAddress; a++) {
+                String value;
+                BitSet7 data = memory.read(BitSetUtils.intToBitSet(a, addressLength));
+                if (wordLength>32) value = Integer.toHexString(BitSetUtils.bitSetToSignedInt(data, 0, wordLength));
+                else value = BitSetUtils.bitSetToBinaryString(data, 0, wordLength);
+                lines[a-firstAddress] = ChatColor.YELLOW.toString() + a + ": " + ChatColor.WHITE + value;
+            }
+            String titleRange;
+            if (firstAddress==lastAddress)
+                titleRange = Integer.toString(firstAddress);
+            else titleRange = firstAddress + "-" + lastAddress;
+            CommandUtils.pageMaker(player, "sram " + memId + " memory (" + titleRange + ")", "rctype dump", lines, redstoneChips.getPrefs().getInfoColor(), redstoneChips.getPrefs().getErrorColor());
+        } else {
+            player.sendMessage(redstoneChips.getPrefs().getErrorColor() + "Invalid address range: " + firstAddress + ".." + lastAddress);
+        }
     }
 }
