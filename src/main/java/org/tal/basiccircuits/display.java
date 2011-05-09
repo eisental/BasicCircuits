@@ -10,6 +10,7 @@ import java.util.List;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.channels.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -237,13 +238,16 @@ public class display extends ReceivingCircuit {
         }
         else color = data;
 
-        if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));
-        
         Location[] pixel = pixels[x][y];
 
         for (Location l : pixel) {
-            if (world.getBlockTypeIdAt(l)==Material.WOOL.getId())
-                world.getBlockAt(l).setData((byte)color);
+            if (world.getBlockTypeIdAt(l)==Material.WOOL.getId()) {
+                Block b = world.getBlockAt(l);
+                if (b.getData()!=color) {
+                    if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));
+                    b.setData((byte)color);
+                }
+            }
         }
     }
 
