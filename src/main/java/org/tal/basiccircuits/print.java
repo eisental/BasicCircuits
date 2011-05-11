@@ -18,7 +18,6 @@ import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Locations;
 
 
-
 /**
  *
  * @author Tal Eisenberg

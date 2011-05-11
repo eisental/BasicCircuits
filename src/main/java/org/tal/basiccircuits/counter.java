@@ -10,7 +10,7 @@ import org.tal.redstonechips.circuit.Circuit;
  * @author Tal Eisenberg
  */
 public class counter extends Circuit {
-    private static final int inputPin = 0;
+    private static final int incPin = 0;
     private static final int resetPin = 1;
     private static final int directionPin = 2;
 
@@ -23,7 +23,7 @@ public class counter extends Circuit {
 
     @Override
     public void inputChange(int inIdx, boolean on) {
-        if (inIdx==inputPin && on) {
+        if (inIdx==incPin && on) {
             if (direction==1 && count>=max) {
                 if (updown) {
                     direction = -1;
