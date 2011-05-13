@@ -27,8 +27,7 @@ public class terminal extends Circuit implements rcTypeReceiver {
     public void inputChange(int inIdx, boolean high) {
         if (inIdx==0 && high) {
             // clear pin
-            for (int i=0; i<outputs.length; i++)
-                sendOutput(i, false);
+            this.sendBitSet(BitSetUtils.clearBitSet);
         }
     }
 

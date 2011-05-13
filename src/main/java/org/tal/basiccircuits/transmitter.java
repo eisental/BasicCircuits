@@ -3,7 +3,7 @@ package org.tal.basiccircuits;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.channels.TransmittingCircuit;
+import org.tal.redstonechips.channel.TransmittingCircuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 

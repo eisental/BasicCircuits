@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 
 /**
@@ -16,6 +17,10 @@ public class comparator extends Circuit {
     private int constant;
 
     private int wordLength;
+
+    private static final BitSet7 lessThan = BitSetUtils.intToBitSet(1, 3);
+    private static final BitSet7 equals = BitSetUtils.intToBitSet(2, 3);
+    private static final BitSet7 greaterThan = BitSetUtils.intToBitSet(4, 3);
 
     @Override
     public void inputChange(int inIdx, boolean state) {
@@ -35,19 +40,13 @@ public class comparator extends Circuit {
         } else {
             if (a<b) {
                 if (hasDebuggers()) debug(a + " is less than " + b);
-                sendOutput(0, true);
-                sendOutput(1, false);
-                sendOutput(2, false);
+                sendBitSet(lessThan);
             } else if (a==b) {
                 if (hasDebuggers()) debug(a + " is equal to " + b);
-                sendOutput(0, false);
-                sendOutput(1, true);
-                sendOutput(2, false);                
+                sendBitSet(equals);
             } else if (a>b) {
                 if (hasDebuggers()) debug(a + " is greater than " + b);
-                sendOutput(0, false);
-                sendOutput(1, false);
-                sendOutput(2, true);                
+                sendBitSet(greaterThan);
             }
         }
     }

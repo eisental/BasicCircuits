@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -15,12 +16,9 @@ public class dregister extends Circuit {
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inIdx==clockIdx && state) {
-            for (int i=0; i<outputs.length; i++) {
-                sendOutput(i, inputBits.get(i+2));
-            }
+            sendBitSet(inputBits.get(2, outputs.length+2));
         } else if (inIdx==resetIdx && state) {
-            outputBits.clear();
-            this.sendBitSet(outputBits);
+            this.sendBitSet(BitSetUtils.clearBitSet);
         }
     }
 

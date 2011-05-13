@@ -3,6 +3,7 @@ package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 
 /**
@@ -10,24 +11,24 @@ import org.tal.redstonechips.util.BitSetUtils;
  * @author Tal Eisenberg
  */
 public class segdriver extends Circuit {
-    public final static boolean[] zero = new boolean[] {true,true,true,true,true,true,false};
-    public final static boolean[] one = new boolean[] {false,true,true,false,false,false,false};
-    public final static boolean[] two = new boolean[] {true,true,false,true,true,false,true};
-    public final static boolean[] three = new boolean[] {true,true,true,true,false,false,true};
-    public final static boolean[] four = new boolean[] {false,true,true,false,false,true,true};
-    public final static boolean[] five = new boolean[] {true,false,true,true,false,true,true};
-    public final static boolean[] six = new boolean[] {true,false,true,true,true,true,true};
-    public final static boolean[] seven = new boolean[] {true,true,true,false,false,false,false};
-    public final static boolean[] eight = new boolean[] {true,true,true,true,true,true,true};
-    public final static boolean[] nine = new boolean[] {true,true,true,true,false,true,true};
-    public final static boolean[] a = new boolean[] {true,true,true,false,true,true,true};
-    public final static boolean[] b = new boolean[] {false,false,true,true,true,true,true};
-    public final static boolean[] c = new boolean[] {true,false,false,true,true,true,false};
-    public final static boolean[] d = new boolean[] {false,true,true,true,true,false,true};
-    public final static boolean[] e = new boolean[] {true,false,false,true,true,true,true};
-    public final static boolean[] f = new boolean[] {true,false,false,false,true,true,true};
+    public final static BitSet7 zero = BitSetUtils.stringToBitSet("0111111");
+    public final static BitSet7 one = BitSetUtils.stringToBitSet("0000110");
+    public final static BitSet7 two = BitSetUtils.stringToBitSet("1011011");
+    public final static BitSet7 three = BitSetUtils.stringToBitSet("1001111");
+    public final static BitSet7 four = BitSetUtils.stringToBitSet("1100110");
+    public final static BitSet7 five = BitSetUtils.stringToBitSet("1101101");
+    public final static BitSet7 six = BitSetUtils.stringToBitSet("1111101");
+    public final static BitSet7 seven = BitSetUtils.stringToBitSet("0000111");
+    public final static BitSet7 eight = BitSetUtils.stringToBitSet("1111111");
+    public final static BitSet7 nine = BitSetUtils.stringToBitSet("1101111");
+    public final static BitSet7 a = BitSetUtils.stringToBitSet("1110111");
+    public final static BitSet7 b = BitSetUtils.stringToBitSet("1111100");
+    public final static BitSet7 c = BitSetUtils.stringToBitSet("0111001");
+    public final static BitSet7 d = BitSetUtils.stringToBitSet("1011110");
+    public final static BitSet7 e = BitSetUtils.stringToBitSet("1111001");
+    public final static BitSet7 f = BitSetUtils.stringToBitSet("1110001");
 
-    public final static boolean[][] map = new boolean[][] { zero,one,two,three,four,five,six,seven,eight,nine,a,b,c,d,e,f };
+    public final static BitSet7[] map = new BitSet7[] {zero, one, two, three, four, five, six, seven, eight, nine, a, b, c, d, e, f};
 
     private int blankPin = -1;
     private int dataPin = 0;
@@ -50,6 +51,14 @@ public class segdriver extends Circuit {
                 printInput();
             }
         }
+    }
+
+    private String toSegmentLetters(BitSet7 segments) {
+        String letters = "";
+        for (int i=0; i<7; i++)
+            if (segments.get(i)) letters += toSegmentLetter(i);
+
+        return letters;
     }
 
     private String toSegmentLetter(int i) {
@@ -115,14 +124,11 @@ public class segdriver extends Circuit {
 
     private void printInput() {
         int input = BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin);
-        boolean[] segments = map[input];
-        String seglist = "";
-        for (int i=0; i<outputs.length; i++) {
-            sendOutput(i, segments[i]);
-            if (hasDebuggers() && segments[i]) seglist += toSegmentLetter(i);
+        BitSet7 segments = map[input];
+        if (hasDebuggers()) {
+            debug("Printing " + Integer.toHexString(input) + ": " + toSegmentLetters(segments));
         }
-
-        if (hasDebuggers()) debug("Printing " + input + ": " + seglist);
+        sendBitSet(segments);
     }
 
 }
