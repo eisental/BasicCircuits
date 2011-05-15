@@ -1,7 +1,6 @@
 package org.tal.basiccircuits;
 
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.channel.TransmittingCircuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -23,7 +22,7 @@ public class transmitter extends TransmittingCircuit {
         } else { // has a clock pin
             if (selectMode) {
                 int select = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, selectLength);
-                this.setStartBit(baseStartBit + select*getLength());
+                this.setStartBit(baseStartBit + select*getChannelLength());
             }
             
             if (inputBits.get(0)) {
@@ -45,14 +44,6 @@ public class transmitter extends TransmittingCircuit {
         }
         if (args.length>0) {
             try {
-                this.initWireless(args[0]);
-                baseStartBit = getStartBit();
-
-                String bits;
-                if (this.getLength()>1)
-                    bits = "bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()-1);
-                else bits = "bit " + this.getStartBit();
-
                 if (args.length>1) {
                     selectMode = true;
                     try {
@@ -66,11 +57,12 @@ public class transmitter extends TransmittingCircuit {
                     }
                 }
 
-                info(sender, "Transmitter will broadcast over channel " + 
-                        ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefs().getInfoColor() + " " + bits + ".");
+                this.initWireless(sender, args[0]);
+                baseStartBit = getStartBit();
                 if (selectMode) {
                     info(sender, "Inputs 1-" + 1+selectLength + " are channel bit select pins.");
                 }
+
                 return true;
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());
@@ -88,7 +80,7 @@ public class transmitter extends TransmittingCircuit {
     }
 
     @Override
-    public int getLength() {
+    public int getChannelLength() {
         if (inputs.length==1) return 1;
         else {
             return inputs.length-1-selectLength;

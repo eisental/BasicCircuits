@@ -1,7 +1,6 @@
 package org.tal.basiccircuits;
 
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.channel.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -26,16 +25,8 @@ public class receiver extends ReceivingCircuit {
         
         if (args.length>0) {
             try {
-                this.initWireless(args[0]);
+                this.initWireless(sender, args[0]);
                 dataPin = (outputs.length==1?0:1);
-                String bits;
-                if (this.getLength()>1)
-                    bits = "bits " + this.getStartBit() + "-" + (this.getStartBit() + this.getLength()-1);
-                else bits = "bit " + this.getStartBit();
-
-                info(sender, "Receiver will listen on channel " +
-                        ChatColor.YELLOW + getChannel().name + redstoneChips.getPrefs().getInfoColor() + " " + bits + ".");
-
                 return true;
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());
@@ -63,7 +54,7 @@ public class receiver extends ReceivingCircuit {
     }
 
     @Override
-    public int getLength() {
+    public int getChannelLength() {
         return outputs.length-dataPin;
     }
 

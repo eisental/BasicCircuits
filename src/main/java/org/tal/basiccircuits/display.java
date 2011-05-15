@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.tal.basiccircuits;
 
 import java.util.ArrayList;
@@ -10,7 +5,6 @@ import java.util.List;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.channel.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
@@ -30,6 +24,7 @@ public class display extends ReceivingCircuit {
     private int pixelWidth, pixelHeight;
     private Location[][][] pixels;
     private int xWordlength, yWordlength, colorWordlength;
+    private int[][] memory;
 
     @Override
     public void inputChange(int inIdx, boolean state) {
@@ -47,85 +42,84 @@ public class display extends ReceivingCircuit {
         if (args.length==0) {
             error(sender, "Expecting a display size sign argument");
             return false;
-        } else {
-            String[] split = args[0].split("x");
-            if (split.length!=2) {
-                error(sender, "Bad display argument syntax: " + args[0] + ". Expecting <width>x<height>");
-                return false;
-            }
+        }
 
-            try {
-                width = Integer.decode(split[0]);
-                height = Integer.decode(split[1]);
-            } catch (NumberFormatException ne) {
-                error(sender, "Bad display argument syntax: " + args[0] + ". Expecting <width>x<height>");
-                return false;
-            }
+        String[] split = args[0].split("x");
+        if (split.length!=2) {
+            error(sender, "Bad display argument syntax: " + args[0] + ". Expecting <width>x<height>");
+            return false;
+        }
 
-            if (args.length>1) { // color index
-                String channelString = null;
+        try {
+            width = Integer.decode(split[0]);
+            height = Integer.decode(split[1]);
+        } catch (NumberFormatException ne) {
+            error(sender, "Bad display argument syntax: " + args[0] + ". Expecting <width>x<height>");
+            return false;
+        }
 
-                List<Byte> colorList = new ArrayList<Byte>();
-                for (int i=1; i<args.length; i++) {
+        String channelString = null;
+        if (args.length>1) { // color index
+
+            List<Byte> colorList = new ArrayList<Byte>();
+            for (int i=1; i<args.length; i++) {
+                try {
+                    colorList.add(DyeColor.valueOf(args[i].toUpperCase()).getData());
+                } catch (IllegalArgumentException ie) {
+                    // not dye color
                     try {
-                        colorList.add(DyeColor.valueOf(args[i].toUpperCase()).getData());
-                    } catch (IllegalArgumentException ie) {
-                        // not dye color
-                        try {
-                            int val = Integer.decode(args[i]);
-                            colorList.add((byte)val);
-                        } catch (NumberFormatException ne) {
-                            // not dye number also, treat as broadcast channel if last.
-                            if (i==args.length-1) {
-                                channelString = args[i];
-                            } else {
-                                error(sender, "Unknown color name: " + args[i]);
-                                return false;
-                            }
+                        int val = Integer.decode(args[i]);
+                        colorList.add((byte)val);
+                    } catch (NumberFormatException ne) {
+                        // not dye number also, treat as broadcast channel if last.
+                        if (i==args.length-1) {
+                            channelString = args[i];
+                        } else {
+                            error(sender, "Unknown color name: " + args[i]);
+                            return false;
                         }
                     }
                 }
-
-                if (!colorList.isEmpty()) {
-                    colorIndex = new byte[colorList.size()];
-                    for (int i=0; i<colorList.size(); i++)
-                        colorIndex[i] = colorList.get(i);
-                    indexedColor = true;
-                }
-
-                if (channelString!=null) {
-                    initWireless(channelString);
-                    info(sender, "Display will listen on broadcast channel " + getChannel().name + ".");
-                }
             }
 
-            // expecting 1 clock, enough pins for address width, enough pins for address height, enough pins for color data.
-            xWordlength = calculateRequiredBits(width);
-            yWordlength = calculateRequiredBits(height);
-            colorWordlength = calculateBpp();
-
-            int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
-            if (inputs.length!=expectedInputs && (inputs.length!=0 || getChannel()==null)) {
-                error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s) and " + yWordlength + " y address input(s), and " + colorWordlength + " color data inputs.");
-                return false;
+            if (!colorList.isEmpty()) {
+                colorIndex = new byte[colorList.size()];
+                for (int i=0; i<colorList.size(); i++)
+                    colorIndex[i] = colorList.get(i);
+                indexedColor = true;
             }
+        }
 
-            if (interfaceBlocks.length!=2) {
-                error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
-                return false;
-            }
+        // expecting 1 clock, enough pins for address width, enough pins for address height, enough pins for color data.
+        xWordlength = calculateRequiredBits(width);
+        yWordlength = calculateRequiredBits(height);
+        colorWordlength = calculateBpp();
 
-            try {
-                detectDisplay();
-            } catch (IllegalArgumentException ie) {
-                error(sender, ie.getMessage());
-                return false;
-            }
+        int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
+        if (inputs.length!=expectedInputs && (inputs.length!=0 || channelString==null)) {
+            error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s) and " + yWordlength + " y address input(s), and " + colorWordlength + " color data inputs.");
+            return false;
+        }
+
+        if (interfaceBlocks.length!=2) {
+            error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
+            return false;
+        }
+
+        try {
+            detectDisplay(sender);
+        } catch (IllegalArgumentException ie) {
+            error(sender, ie.getMessage());
+            return false;
+        }
+
+        if (channelString!=null) {
+            initWireless(sender, channelString);
         }
         return true;
     }
 
-    private void detectDisplay() throws IllegalArgumentException {
+    private void detectDisplay(CommandSender sender) throws IllegalArgumentException {
         int x1 = interfaceBlocks[0].getBlockX();
         int x2 = interfaceBlocks[1].getBlockX();
         int y1 = interfaceBlocks[0].getBlockY();
@@ -200,21 +194,25 @@ public class display extends ReceivingCircuit {
                         throw new IllegalArgumentException("Missing wool block at pixel " + x + ", " + y);
             }
         }
+
+        memory = new int[width][height];
+
+        info(sender, "Successfully scanned display. ");
+        info(sender, "The screen is " + Math.abs(phyWidth) + "m wide, " + Math.abs(phyHeight) + "m high. Each pixel is " + Math.abs(pixelWidth) + "m on " + Math.abs(pixelHeight) + "m.");
     }
 
     @Override
     public void receive(BitSet7 bits) {
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
-                int index = (y*width+x)*colorWordlength;
-                setPixel(x,y,BitSetUtils.bitSetToUnsignedInt(bits, index, colorWordlength));
-            }
-        }
+        int x = BitSetUtils.bitSetToUnsignedInt(bits, 0, xWordlength);
+        int y = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength, yWordlength);
+        int data = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength+yWordlength, colorWordlength);
+
+        setPixel(x,y,data);
     }
 
     @Override
-    public int getLength() {
-        return width*height*colorWordlength;
+    public int getChannelLength() {
+        return xWordlength+yWordlength+colorWordlength;
     }
 
     private int calculateBpp() {
@@ -228,15 +226,15 @@ public class display extends ReceivingCircuit {
     }
 
     private void setPixel(int x, int y, int data) {
-        int color;
+        byte color;
         if (indexedColor) {
             if (data>=colorIndex.length) {
                 if (hasDebuggers()) debug("Color index " + data + " is out of bounds.");
                 return;
             } else
                 color = colorIndex[data];
-        }
-        else color = data;
+
+        } else color = (byte)data;
 
         if (x>=width || y>=height) {
             if (hasDebuggers()) debug("Pixel (" + x + ", " + y + ") is out of bounds.");
@@ -245,14 +243,13 @@ public class display extends ReceivingCircuit {
         
         Location[] pixel = pixels[x][y];
 
-        for (Location l : pixel) {
-            if (world.getBlockTypeIdAt(l)==Material.WOOL.getId()) {
-                Block b = world.getBlockAt(l);
-                if (b.getData()!=color) {
-                    if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));
-                    b.setData((byte)color);
-                }
+        if (memory[x][y]!=color) {
+            if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));
+
+            for (Location l : pixel) {
+                l.getBlock().setData(color);
             }
+            memory[x][y] = color;
         }
     }
 
@@ -326,4 +323,8 @@ public class display extends ReceivingCircuit {
         return ret;
     }
 
+    @Override
+    public void circuitShutdown() {
+        redstoneChips.removeReceiver(this);
+    }
 }

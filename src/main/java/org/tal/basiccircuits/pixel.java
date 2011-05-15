@@ -75,8 +75,7 @@ public class pixel extends ReceivingCircuit {
             }
 
             if (channelString!=null) {
-                initWireless(channelString);
-                info(sender, "Pixel will listen on broadcast channel " + getChannel().name + ".");
+                initWireless(sender, channelString);
             }
         }
 
@@ -159,7 +158,7 @@ public class pixel extends ReceivingCircuit {
     }
 
     @Override
-    public int getLength() {
+    public int getChannelLength() {
         if (!indexedColor)
             return 4;
         else {
