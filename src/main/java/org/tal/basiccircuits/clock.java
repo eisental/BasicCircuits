@@ -24,12 +24,18 @@ public class clock extends Circuit {
         if (masterToggle) {
             if (inIdx==0) {
                 if (state) startClock();
-                else stopClock();
+                else {
+                    stopClock();
+                    sendBitSet(offBits);
+                }
             }
         } else {
             onBits.set(inIdx, state);
 
-            if (onBits.isEmpty()) stopClock();
+            if (onBits.isEmpty()) {
+                stopClock();
+                sendBitSet(offBits);
+            }
             else startClock();
         }
     }
@@ -114,8 +120,6 @@ public class clock extends Circuit {
         redstoneChips.getServer().getScheduler().cancelTask(taskId);
         ticking = false;
 
-        //clear outputs
-        sendBitSet(offBits);
     }
 
     @Override

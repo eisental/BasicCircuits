@@ -31,6 +31,7 @@ public class srnor extends Circuit {
             return false;
         }
 
+        if (sender!=null) resetOutputs();;
         return true;
     }
 

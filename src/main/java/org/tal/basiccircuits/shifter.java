@@ -11,28 +11,40 @@ import org.tal.redstonechips.util.BitSetUtils;
  */
 public class shifter extends Circuit {
 
-    BitSet7 output = null;
-
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inputBits.get(0)) { //First Input is Clock
-            if (!inputBits.get(1)) {	//Second Input is Direction
-                output = BitSetUtils.shiftLeft(inputBits.get(1, inputs.length), inputs.length - 1);
-            } else {
-                output = BitSetUtils.shiftRight(inputBits.get(1, inputs.length), inputs.length - 1, false);
-            }
-            this.sendBitSet(output);
+            if (outputBits.isEmpty())
+                shift(inputBits.get(2), inputBits.get(3, inputs.length));
+            else
+                shift(inputBits.get(2), outputBits);
+
+            sendBitSet(outputBits);
+        }
+
+        if (inputBits.get(1)) {
+            sendBitSet(BitSetUtils.clearBitSet);
         }
     }
 
+    public void shift(boolean direction, BitSet7 in) {
+	for(int i=0; i<outputs.length; i++) {
+            if (!direction) {
+                outputBits.set(i, in.get(i+1));
+            } else {
+                outputBits.set(i, in.get(i-1));
+            }
+	}
+}
+
     @Override
     protected boolean init(CommandSender sender, String[] args) {
-        if (outputs.length != inputs.length - 2) {
-            error(sender, "This chip requires two less outputs than inputs.");
+        if (outputs.length != inputs.length - 3) {
+            error(sender, "This chip requires three less outputs than inputs.");
             return false;
         }
-        if (inputs.length <= 3) {
-            error(sender, "This chip requires atleast 4 inputs. 1 clock pin. 1 shift pin. 2 or more data pins.");
+        if (inputs.length < 5) {
+            error(sender, "This chip requires atleast 5 inputs. 1 clock pin. 1 reset pin. 1 shift pin. 2 or more data pins.");
             return false;
         }
 

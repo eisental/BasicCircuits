@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 
 /**
@@ -13,14 +12,13 @@ import org.tal.redstonechips.util.BitSetUtils;
  */
 public class flipflop extends Circuit {
     private boolean resetPinMode = false;
-    private BitSet7 resetBitSet = new BitSet7();
 
     @Override
     public void inputChange(int inIdx, boolean newLevel) {
         if (newLevel) {
             if (resetPinMode) {
                 if (inIdx == 0) { // reset
-                    this.sendBitSet(resetBitSet);
+                    this.sendBitSet(BitSetUtils.clearBitSet);
                 } else {
                     this.sendOutput(inIdx-1, !outputBits.get(inIdx-1));
                 }
@@ -37,6 +35,8 @@ public class flipflop extends Circuit {
         }
 
         resetPinMode = (inputs.length==outputs.length+1);
+
+        if (sender!=null) resetOutputs();
         return true;
     }
 

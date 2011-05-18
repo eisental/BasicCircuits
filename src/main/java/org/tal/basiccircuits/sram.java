@@ -143,7 +143,7 @@ public class sram extends Circuit implements rcTypeReceiver {
         disabled = inputBits.get(disablePin);
 
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
-
+        if (sender!=null) resetOutputs();;
         info(sender, "This sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + getMemoryFile(memId).getPath());
 
         return true;

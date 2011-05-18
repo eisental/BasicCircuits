@@ -15,10 +15,10 @@ public class dregister extends Circuit {
 
     @Override
     public void inputChange(int inIdx, boolean state) {
-        if (inIdx==clockIdx && state) {
-            sendBitSet(inputBits.get(2, outputs.length+2));
-        } else if (inIdx==resetIdx && state) {
+        if (inIdx==resetIdx && state) {
             this.sendBitSet(BitSetUtils.clearBitSet);
+        } else if (inputBits.get(clockIdx)) {
+            sendBitSet(inputBits.get(2, outputs.length+2));
         }
     }
 
@@ -27,8 +27,14 @@ public class dregister extends Circuit {
         if (inputs.length!=outputs.length+2) {
             sender.sendMessage("Expecting 2 more inputs than outputs. Found " + inputs.length + " input(s) and " + outputs.length + " output(s).");
             return false;
-        } else
+        } else {
+            if (sender!=null) resetOutputs();
             return true;
+        }
     }
 
+    @Override
+    protected boolean isStateless() {
+        return false;
+    }
 }

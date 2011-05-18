@@ -34,6 +34,7 @@ public class shiftregister extends Circuit {
             return false;
         }
 
+        if (sender!=null) resetOutputs();
         return true;
 
     }

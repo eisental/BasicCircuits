@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.util.BitSetUtils;
 
 /**
  *
@@ -128,6 +129,7 @@ public class counter extends Circuit {
         if (direction == 1) count = reset = min;
         else count = reset = max;
 
+        resetOutputs();
         return true;
     }
 

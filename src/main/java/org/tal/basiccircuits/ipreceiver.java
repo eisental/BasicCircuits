@@ -35,7 +35,7 @@ public class ipreceiver extends Circuit {
         if (high) {
             try {
                 socket.receive(packet);
-                if (authorizedAddresses.contains(packet.getAddress())) {
+                if (authorizedAddresses==null || authorizedAddresses.contains(packet.getAddress())) {
                     // update data outputs according to the packet.
                     byte[] bytes = packet.getData();
                     BitSet7 bits = BitSet7.valueOf(bytes);
@@ -90,14 +90,18 @@ public class ipreceiver extends Circuit {
         }
 
         // incoming addresses
-        authorizedAddresses = new ArrayList<InetAddress>();
-        
-        for (int i=1; i<args.length; i++) {
-            try {
-                authorizedAddresses.add(InetAddress.getByName(args[i]));
-            } catch (UnknownHostException ex) {
-                error(sender, "Unknown host: " + args[i]);
-                return false;
+        if (args.length==2 && args[1].equalsIgnoreCase("any"))
+            authorizedAddresses = null;
+        else {
+            authorizedAddresses = new ArrayList<InetAddress>();
+
+            for (int i=1; i<args.length; i++) {
+                try {
+                    authorizedAddresses.add(InetAddress.getByName(args[i]));
+                } catch (UnknownHostException ex) {
+                    error(sender, "Unknown host: " + args[i]);
+                    return false;
+                }
             }
         }
 

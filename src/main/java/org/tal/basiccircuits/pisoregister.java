@@ -52,6 +52,7 @@ public class pisoregister extends Circuit {
             return false;
         }
 
+        if (sender!=null) resetOutputs();
         return true;
     }
 
