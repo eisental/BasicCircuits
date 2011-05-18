@@ -2,15 +2,16 @@
 package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.channel.TransmittingCircuit;
 import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.util.ParsingUtils;
 import org.tal.redstonechips.util.UnitParser;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class clock extends Circuit {
+public class clock extends TransmittingCircuit {
     private long onDuration, offDuration;
     private boolean masterToggle;
     private BitSet7 onBits, offBits;
@@ -27,6 +28,7 @@ public class clock extends Circuit {
                 else {
                     stopClock();
                     sendBitSet(offBits);
+                    if (getChannel()!=null) getChannel().transmit(false, getStartBit());
                 }
             }
         } else {
@@ -35,6 +37,7 @@ public class clock extends Circuit {
             if (onBits.isEmpty()) {
                 stopClock();
                 sendBitSet(offBits);
+                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
             }
             else startClock();
         }
@@ -42,6 +45,17 @@ public class clock extends Circuit {
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
+        String channelArg = null;
+        if (args.length>0 && !ParsingUtils.isNumber(args[args.length-1])) {
+            // last argument is a channel name
+            channelArg = args[args.length-1];
+            String[] newArgs = new String[args.length-1];
+            if (newArgs.length>0)
+                System.arraycopy(args, 0, newArgs, 0, newArgs.length);
+
+            args = newArgs;
+        }
+
         if (args.length==0) setDuration(1000, 0.5); // 1 sec default, 50% pulse width
         else {
             double pulseWidth = 0.5;
@@ -83,7 +97,9 @@ public class clock extends Circuit {
             return false;
         }
 
-        info(sender, "Clock will tick every " + (onDuration+offDuration) + " milliseconds for " + onDuration + " milliseconds.");
+        if (channelArg!=null)
+            initWireless(sender, channelArg);
+        info(sender, "The clock will tick every " + (onDuration+offDuration) + " milliseconds for " + onDuration + " milliseconds.");
 
         tickTask = new TickTask();
 
@@ -104,7 +120,8 @@ public class clock extends Circuit {
         if (hasDebuggers()) debug("Turning clock on.");
 
         ticking = true;
-
+        currentState = true;
+        
         taskId = redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, tickTask);
         if (taskId==-1) {
             if (hasDebuggers()) debug("Tick task schedule failed!");
@@ -119,7 +136,6 @@ public class clock extends Circuit {
 
         redstoneChips.getServer().getScheduler().cancelTask(taskId);
         ticking = false;
-
     }
 
     @Override
@@ -127,8 +143,14 @@ public class clock extends Circuit {
         stopClock();
     }
 
+    @Override
+    public int getChannelLength() {
+        return 1;
+    }
+    
+    boolean currentState = true;
     private class TickTask implements Runnable {
-        boolean currentState = true;
+        
 
         @Override
         public void run() {
@@ -183,14 +205,19 @@ public class clock extends Circuit {
         }
 
         private void tick() {
-            if (onDuration>0 && offDuration>0)
+            if (onDuration>0 && offDuration>0) {
                 sendBitSet(currentState?onBits:offBits);
-            else if (onDuration>0) {
+                if (getChannel()!=null) getChannel().transmit(currentState, getStartBit());
+            } else if (onDuration > 0) {
                 sendBitSet(offBits);
+                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
                 sendBitSet(onBits);
+                if (getChannel()!=null) getChannel().transmit(true, getStartBit());
             } else if (offDuration>0) {
                 sendBitSet(onBits);
+                if (getChannel()!=null) getChannel().transmit(true, getStartBit());
                 sendBitSet(offBits);
+                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
             }
         }
     }
