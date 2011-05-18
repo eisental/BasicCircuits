@@ -16,8 +16,9 @@ public class nand extends BitSetCircuit {
 
         for (int i=1; i<this.inputBitSets.length; i++) {
             out.and(inputBitSets[i]);
-            out.flip(0, wordlength);
         }
+        
+        out.flip(0, wordlength);
         this.sendBitSet(out);
 
     }
