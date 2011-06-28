@@ -48,11 +48,11 @@ public class transmitter extends TransmittingCircuit {
                     if (!(args[1].toLowerCase().startsWith("select(") && args[1].toLowerCase().endsWith(")"))) {
                         error(sender, "Bad select mode argument: " + args[1]);
                         return false;
-                    } else args[1] = args[1].substring(7, args[1].length()-1);
+                    }
 
                     selectMode = true;
                     try {
-                        selectLength = Integer.decode(args[1]);
+                        selectLength = Integer.decode(args[1].substring(7, args[1].length()-1));
                         if (inputs.length<1+selectLength+1) {
                             error(sender, "Expecting atleast " + (2+selectLength) + " inputs for select mode.");
                             return false;
@@ -92,5 +92,4 @@ public class transmitter extends TransmittingCircuit {
             return inputs.length-1-selectLength;
         }
     }
-
 }
