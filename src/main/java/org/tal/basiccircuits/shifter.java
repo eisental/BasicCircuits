@@ -14,12 +14,11 @@ public class shifter extends Circuit {
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inputBits.get(0)) { //First Input is Clock
-            if (outputBits.isEmpty())
-                shift(inputBits.get(2), inputBits.get(3, inputs.length));
-            else
-                shift(inputBits.get(2), outputBits);
-
-            sendBitSet(outputBits);
+            if (outputBits.isEmpty()) {
+                shift(inputBits.get(2), inputs);
+          }  else  {
+                shift(inputBits.get(2), outputs);
+        }
         }
 
         if (inputBits.get(1)) {
@@ -27,12 +26,12 @@ public class shifter extends Circuit {
         }
     }
 
-    public void shift(boolean direction, BitSet7 in) {
+    public void shift(boolean direction, int[] in) {
 	for(int i=0; i<outputs.length; i++) {
             if (!direction) {
-                outputBits.set(i, in.get(i+1));
+                outputs[i] = in[i+1];
             } else {
-                outputBits.set(i, in.get(i-1));
+                outputs[i] = in[i-1];
             }
 	}
 }
