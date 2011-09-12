@@ -6,6 +6,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.tal.redstonechips.channel.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -116,6 +117,8 @@ public class display extends ReceivingCircuit {
         if (channelString!=null) {
             initWireless(sender, channelString);
         }
+
+        if (sender instanceof Player) clearDisplay();
         return true;
     }
 
@@ -321,6 +324,14 @@ public class display extends ReceivingCircuit {
         }
 
         return ret;
+    }
+
+    public void clearDisplay() {
+        for (int y=0; y<height; y++) {
+            for (int x=0; x<width; x++) {
+                this.setPixel(x, y, 0);
+            }
+        }
     }
 
     @Override

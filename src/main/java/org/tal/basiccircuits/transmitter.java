@@ -45,16 +45,18 @@ public class transmitter extends TransmittingCircuit {
         if (args.length>0) {
             try {
                 if (args.length>1) {
+                    String sselect;
+
                     if (!(args[1].toLowerCase().startsWith("select(") && args[1].toLowerCase().endsWith(")"))) {
-                        error(sender, "Bad select mode argument: " + args[1]);
+                        error(sender, "Bad select length argument: " + args[1]);
                         return false;
-                    } else args[1] = args[1].substring(7, args[1].length()-1);
+                    } else sselect = args[1].substring(7, args[1].length()-1);
 
                     selectMode = true;
                     try {
-                        selectLength = Integer.decode(args[1]);
+                        selectLength = Integer.decode(sselect);
                         if (inputs.length<1+selectLength+1) {
-                            error(sender, "Expecting atleast " + (2+selectLength) + " inputs for select mode.");
+                            error(sender, "Expecting at least " + (2+selectLength) + " inputs for select mode.");
                             return false;
                         }
                     } catch (NumberFormatException ne) {
@@ -66,7 +68,7 @@ public class transmitter extends TransmittingCircuit {
                 this.initWireless(sender, args[0]);
                 baseStartBit = getStartBit();
                 if (selectMode) {
-                    info(sender, "Inputs 1-" + (1+selectLength) + " are channel bit select pins.");
+                    info(sender, "Inputs 1-" + (selectLength) + " are channel bit select pins.");
                 }
 
                 return true;

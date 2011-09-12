@@ -270,7 +270,7 @@ public class print extends Circuit implements rcTypeReceiver {
         MaterialData data = sign.getState().getData();
         if (data instanceof org.bukkit.material.Sign) {
             org.bukkit.material.Sign signData = (org.bukkit.material.Sign)data;
-            if (sign.getFace(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
+            if (sign.getRelative(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
                 return (Sign)sign.getState();
             else return null;
 
