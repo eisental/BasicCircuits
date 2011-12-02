@@ -75,7 +75,12 @@ public class pixel extends ReceivingCircuit {
             }
 
             if (channelString!=null) {
-                initWireless(sender, channelString);
+                try {
+                    initWireless(sender, channelString);
+                } catch (IllegalArgumentException ie) {
+                    error(sender, ie.getMessage());
+                    return false;
+                }
             }
         }
 

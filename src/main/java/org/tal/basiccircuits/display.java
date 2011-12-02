@@ -115,7 +115,12 @@ public class display extends ReceivingCircuit {
         }
 
         if (channelString!=null) {
-            initWireless(sender, channelString);
+            try {
+                initWireless(sender, channelString);
+            } catch (IllegalArgumentException ie) {
+                error(sender, ie.getMessage());
+                return false;
+            }
         }
 
         if (sender instanceof Player) clearDisplay();

@@ -97,8 +97,14 @@ public class clock extends TransmittingCircuit {
             return false;
         }
 
-        if (channelArg!=null)
-            initWireless(sender, channelArg);
+        if (channelArg!=null) {
+            try {
+                initWireless(sender, channelArg);
+            } catch (IllegalArgumentException ie) {
+                error(sender, ie.getMessage());
+                return false;
+            }
+        }
         info(sender, "The clock will tick every " + (onDuration+offDuration) + " milliseconds for " + onDuration + " milliseconds.");
 
         tickTask = new TickTask();

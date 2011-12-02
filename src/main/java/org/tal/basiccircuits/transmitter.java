@@ -65,7 +65,13 @@ public class transmitter extends TransmittingCircuit {
                     }
                 }
 
-                this.initWireless(sender, args[0]);
+                try {
+                    this.initWireless(sender, args[0]);
+                } catch (IllegalArgumentException ie) {
+                    error(sender, ie.getMessage());
+                    return false;
+                }
+                
                 baseStartBit = getStartBit();
                 if (selectMode) {
                     info(sender, "Inputs 1-" + (selectLength) + " are channel bit select pins.");
