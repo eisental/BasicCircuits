@@ -46,9 +46,9 @@ public class clock extends TransmittingCircuit {
     @Override
     protected boolean init(CommandSender sender, String[] args) {
         String channelArg = null;
-        if (args.length>0 && !ParsingUtils.isNumber(args[args.length-1])) {
+        if (args.length>0 && args[args.length-1].startsWith("#")) {
             // last argument is a channel name
-            channelArg = args[args.length-1];
+            channelArg = args[args.length-1].substring(1);
             String[] newArgs = new String[args.length-1];
             if (newArgs.length>0)
                 System.arraycopy(args, 0, newArgs, 0, newArgs.length);

@@ -50,6 +50,7 @@ public class sram extends Circuit implements rcTypeReceiver {
             }
         } else if (inIdx==disablePin) {
             disabled = state;
+            if (hasDebuggers()) debug("Chip " + (disabled?"disabled.":"enabled"));
             if (disabled) {
                 outputBits.clear();
             } else {
@@ -122,6 +123,7 @@ public class sram extends Circuit implements rcTypeReceiver {
             memory.init(memId);
 
             File file = getMemoryFile(memId);
+
             try {
                 if (file.exists()) {
                     memory.load(file);
@@ -140,10 +142,15 @@ public class sram extends Circuit implements rcTypeReceiver {
         if (!readOnlyMode) {
             readWrite = inputBits.get(readWritePin);
         }
+        
         disabled = inputBits.get(disablePin);
-
+        
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
-        if (sender!=null) resetOutputs();;
+        if (sender!=null) resetOutputs();
+        if (readWrite && !disabled) {
+            readMemory();
+        }
+        
         info(sender, "This sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + getMemoryFile(memId).getPath());
 
         return true;

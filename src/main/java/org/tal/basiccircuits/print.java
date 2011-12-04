@@ -201,10 +201,10 @@ public class print extends Circuit implements rcTypeReceiver {
 
         }
 
-        if (display==Display.add && inputs.length<2) {
+        if (display==Display.replace && inputs.length<2) {
             error(sender, "Expecting at least 2 inputs. 1 clock pin and 1 data pin.");
             return false;
-        } else if (display==Display.replace && inputs.length<3) {
+        } else if (display==Display.add && inputs.length<3) {
             error(sender, "Expecting at least 3 inputs. 1 clock pin, 1 clear pin and 1 data pin.");
             return false;
         } else if (display==Display.scroll && inputs.length<4) {

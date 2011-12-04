@@ -39,9 +39,7 @@ public class Ram extends Memory {
     @Override
     protected void setData(Map data) {
         words.clear();
-
         if (data==null) return;
-        
         for (Object key : data.keySet()) {            
             Object value = data.get(key);
             
