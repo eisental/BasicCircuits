@@ -25,8 +25,8 @@ public class receiver extends ReceivingCircuit {
         
         if (args.length>0) {
             try {
+                dataPin = (outputs.length==1?0:1);                
                 this.initWireless(sender, args[0]);
-                dataPin = (outputs.length==1?0:1);
                 return true;
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());
