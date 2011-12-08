@@ -98,9 +98,9 @@ public class sram extends Circuit implements rcTypeReceiver {
 
         if (addressLength<1) {
             if (readOnlyMode)
-                error(sender, "Expecting at least 1 address input pin and 1 control pin.");
+                error(sender, "Expecting at least 1 control pin, and 1 address input pin.");
             else
-                error(sender, "Expecting at least 1 address input pin, 2 control pins, and " + wordLength + " data pins.");
+                error(sender, "Expecting at least 2 control pins, 1 address input pin, and " + wordLength + " data pins.");
 
             return false;
         }
@@ -284,7 +284,7 @@ public class sram extends Circuit implements rcTypeReceiver {
 
         if (srange==null) {
             firstAddress = 0;
-            lastAddress = (int)Math.pow(2, addressLength);
+            lastAddress = (int)Math.pow(2, addressLength)-1;
         } else {
             Range range = new Range(srange, Range.Type.OPEN_ALLOWED);
             firstAddress = (int)(range.hasLowerLimit()?range.getOrderedRange()[0]:0);
@@ -296,10 +296,11 @@ public class sram extends Circuit implements rcTypeReceiver {
         if (firstAddress>=0 && lastAddress>=0) {
             for (int a = firstAddress; a<=lastAddress; a++) {
                 String value;
+                String address = zeroPad(a, (int)Math.pow(2, addressLength)-1);
                 BitSet7 data = memory.read(BitSetUtils.intToBitSet(a, addressLength));
                 if (wordLength>32) value = Integer.toHexString(BitSetUtils.bitSetToSignedInt(data, 0, wordLength));
                 else value = BitSetUtils.bitSetToBinaryString(data, 0, wordLength);
-                lines[a-firstAddress] = ChatColor.YELLOW.toString() + a + ": " + ChatColor.WHITE + value;
+                lines[a-firstAddress] = ChatColor.YELLOW.toString() + address + ": " + ChatColor.WHITE + value;
             }
             String titleRange;
             if (firstAddress==lastAddress)
@@ -309,5 +310,13 @@ public class sram extends Circuit implements rcTypeReceiver {
         } else {
             player.sendMessage(redstoneChips.getPrefs().getErrorColor() + "Invalid address range: " + firstAddress + ".." + lastAddress);
         }
+    }
+    
+    private String zeroPad(int a, int max) {
+        String pad = "";
+        String address = Integer.toString(a);
+        int charCount = Integer.toString(max).length();
+        for (int i=0; i<charCount-address.length(); i++) pad += "0";
+        return pad + address;
     }
 }
