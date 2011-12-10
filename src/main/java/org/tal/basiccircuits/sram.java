@@ -29,7 +29,7 @@ public class sram extends Circuit implements rcTypeReceiver {
     
     boolean readOnlyMode;
 
-    boolean disabled = false;
+    boolean sramDisable = false;
     boolean readWrite = false;
 
     boolean anonymous = true;
@@ -41,7 +41,7 @@ public class sram extends Circuit implements rcTypeReceiver {
             readWrite = state;
             BitSet7 data = inputBits.get(dataPin, dataPin+wordLength);
 
-            if (readWrite && !disabled) { // store current data inputs when readWrite goes high.
+            if (readWrite && !sramDisable) { // store current data inputs when readWrite goes high.
                 BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
                 if (hasDebuggers()) debug("Writing " + BitSetUtils.bitSetToUnsignedInt(data, 0, wordLength) + " to address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
                 memory.write(address, data);
@@ -49,9 +49,9 @@ public class sram extends Circuit implements rcTypeReceiver {
                 this.sendBitSet(data);
             }
         } else if (inIdx==disablePin) {
-            disabled = state;
-            if (hasDebuggers()) debug("Chip " + (disabled?"disabled.":"enabled"));
-            if (disabled) {
+            sramDisable = state;
+            if (hasDebuggers()) debug("Chip " + (sramDisable?"disabled.":"enabled"));
+            if (sramDisable) {
                 outputBits.clear();
             } else {
                 if (readWrite) readMemory();
@@ -60,11 +60,11 @@ public class sram extends Circuit implements rcTypeReceiver {
 
             sendBitSet(outputBits);
         } else if (inIdx>=addressPin && inIdx<addressPin+addressLength) {
-            if (readWrite && !disabled) {
+            if (readWrite && !sramDisable) {
                 readMemory();
             }
         } else if (inIdx>=dataPin && inIdx<dataPin+wordLength) {
-            if (!readWrite && !disabled) {
+            if (!readWrite && !sramDisable) {
                 // copy data inputs to outputs
                 sendBitSet(inputBits.get(dataPin, dataPin+wordLength));
             }
@@ -143,11 +143,11 @@ public class sram extends Circuit implements rcTypeReceiver {
             readWrite = inputBits.get(readWritePin);
         }
         
-        disabled = inputBits.get(disablePin);
+        sramDisable = inputBits.get(disablePin);
         
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
         if (sender!=null) resetOutputs();
-        if (readWrite && !disabled) {
+        if (readWrite && !sramDisable) {
             readMemory();
         }
         
@@ -236,7 +236,7 @@ public class sram extends Circuit implements rcTypeReceiver {
                         memory.write(BitSetUtils.intToBitSet(address, addressLength), value);
                     }
                 } catch (NumberFormatException ne) {
-                    error(player, "Bad entry. Expecting either an integer value or <address>:<int value> - " + word);
+                    error(player, "Bad entry. Expecting either a value or <address>:<value> - " + word);
                     return;
                 }
             }
@@ -291,7 +291,7 @@ public class sram extends Circuit implements rcTypeReceiver {
             lastAddress = (int)(range.hasUpperLimit()?range.getOrderedRange()[1]:Math.pow(2, addressLength));
         }
 
-        String[] lines = new String[lastAddress-firstAddress+1];
+        String lines = "";
 
         if (firstAddress>=0 && lastAddress>=0) {
             for (int a = firstAddress; a<=lastAddress; a++) {
@@ -300,12 +300,14 @@ public class sram extends Circuit implements rcTypeReceiver {
                 BitSet7 data = memory.read(BitSetUtils.intToBitSet(a, addressLength));
                 if (wordLength>32) value = Integer.toHexString(BitSetUtils.bitSetToSignedInt(data, 0, wordLength));
                 else value = BitSetUtils.bitSetToBinaryString(data, 0, wordLength);
-                lines[a-firstAddress] = ChatColor.YELLOW.toString() + address + ": " + ChatColor.WHITE + value;
+                lines += ChatColor.YELLOW.toString() + address + ": " + ChatColor.WHITE + value + "\n";
             }
+            
             String titleRange;
             if (firstAddress==lastAddress)
                 titleRange = Integer.toString(firstAddress);
             else titleRange = firstAddress + "-" + lastAddress;
+            
             CommandUtils.pageMaker(player, "sram " + memId + " memory (" + titleRange + ")", "rctype dump", lines, redstoneChips.getPrefs().getInfoColor(), redstoneChips.getPrefs().getErrorColor());
         } else {
             player.sendMessage(redstoneChips.getPrefs().getErrorColor() + "Invalid address range: " + firstAddress + ".." + lastAddress);
