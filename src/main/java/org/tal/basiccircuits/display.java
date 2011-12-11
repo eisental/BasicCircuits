@@ -25,7 +25,7 @@ public class display extends ReceivingCircuit {
     private int pixelWidth, pixelHeight;
     private Location[][][] pixels;
     private int xWordlength, yWordlength, colorWordlength;
-    private int[][] memory;
+    private byte[][] memory;
 
     @Override
     public void inputChange(int inIdx, boolean state) {
@@ -128,12 +128,12 @@ public class display extends ReceivingCircuit {
     }
 
     private void detectDisplay(CommandSender sender) throws IllegalArgumentException {
-        int x1 = interfaceBlocks[0].getBlockX();
-        int x2 = interfaceBlocks[1].getBlockX();
-        int y1 = interfaceBlocks[0].getBlockY();
-        int y2 = interfaceBlocks[1].getBlockY();
-        int z1 = interfaceBlocks[0].getBlockZ();
-        int z2 = interfaceBlocks[1].getBlockZ();
+        int x1 = interfaceBlocks[0].getLocation().getBlockX();
+        int x2 = interfaceBlocks[1].getLocation().getBlockX();
+        int y1 = interfaceBlocks[0].getLocation().getBlockY();
+        int y2 = interfaceBlocks[1].getLocation().getBlockY();
+        int z1 = interfaceBlocks[0].getLocation().getBlockZ();
+        int z2 = interfaceBlocks[1].getLocation().getBlockZ();
 
         int dx = Math.abs(x2-x1);
         int dy = Math.abs(y2-y1);
@@ -203,7 +203,7 @@ public class display extends ReceivingCircuit {
             }
         }
 
-        memory = new int[width][height];
+        memory = new byte[width][height];
 
         info(sender, "Successfully scanned display. ");
         info(sender, "The screen is " + Math.abs(phyWidth) + "m wide, " + Math.abs(phyHeight) + "m high. Each pixel is " + Math.abs(pixelWidth) + "m on " + Math.abs(pixelHeight) + "m.");

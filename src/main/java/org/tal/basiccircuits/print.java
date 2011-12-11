@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.circuit.InterfaceBlock;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Locations;
@@ -221,7 +222,8 @@ public class print extends Circuit implements rcTypeReceiver {
         List<Location> locs = new ArrayList<Location>();
         locs.addAll(Arrays.asList(structure));
 
-        for (Location loc : interfaceBlocks) {
+        for (InterfaceBlock ib : interfaceBlocks) {
+            Location loc = ib.getLocation();
             Location north = Locations.getFace(loc, BlockFace.NORTH);
             Location south = Locations.getFace(loc, BlockFace.SOUTH);
             Location west = Locations.getFace(loc, BlockFace.WEST);

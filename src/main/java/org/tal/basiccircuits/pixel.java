@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.channel.ReceivingCircuit;
+import org.tal.redstonechips.circuit.InterfaceBlock;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Locations;
@@ -117,8 +118,8 @@ public class pixel extends ReceivingCircuit {
 
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
-        for (Location l : interfaceBlocks)
-            colorBlocks(l, color);
+        for (InterfaceBlock i : interfaceBlocks)
+            colorBlocks(i.getLocation(), color);
 
     }
 
