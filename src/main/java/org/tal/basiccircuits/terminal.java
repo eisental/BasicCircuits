@@ -95,7 +95,7 @@ public class terminal extends Circuit implements rcTypeReceiver {
             for (int i=0; i<typeString.length()-1; i++) {
                 buf[0] = typeString.charAt(i);
                 outBuf = BitSet7.valueOf(buf);
-                if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, 8));
+                if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, 8) + "(" + (char)buf[0] + ")");
                 this.sendBitSet(datapin, 8, outBuf);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);

@@ -43,7 +43,7 @@ public class sram extends Circuit implements rcTypeReceiver {
 
             if (readWrite && !sramDisable) { // store current data inputs when readWrite goes high.
                 BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
-                if (hasDebuggers()) debug("Writing " + BitSetUtils.bitSetToUnsignedInt(data, 0, wordLength) + " to address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
+                if (hasDebuggers()) debug("Writing " + BitSetUtils.bitSetToBinaryString(data, 0, wordLength) + " to address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
                 memory.write(address, data);
             } else {
                 this.sendBitSet(data);
@@ -249,7 +249,7 @@ public class sram extends Circuit implements rcTypeReceiver {
     private void readMemory() {
         BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
         BitSet7 data = memory.read(address);
-        if (hasDebuggers()) debug("Reading " + BitSetUtils.bitSetToUnsignedInt(data, 0, wordLength) + " from address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
+        if (hasDebuggers()) debug("Reading " + BitSetUtils.bitSetToBinaryString(data, 0, wordLength) + " from address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
         sendBitSet(0, wordLength, data);
     }
 

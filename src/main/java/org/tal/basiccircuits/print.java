@@ -218,9 +218,9 @@ public class print extends Circuit implements rcTypeReceiver {
             return false;
         }
 
-        List<Sign> signs = new ArrayList<Sign>();
-        List<Location> locs = new ArrayList<Location>();
-        locs.addAll(Arrays.asList(structure));
+        List<Location> str = new ArrayList<Location>();
+        List<Location> signs = new ArrayList<Location>();
+        str.addAll(Arrays.asList(this.structure));
 
         for (InterfaceBlock ib : interfaceBlocks) {
             Location loc = ib.getLocation();
@@ -231,31 +231,22 @@ public class print extends Circuit implements rcTypeReceiver {
             Location up = Locations.getFace(loc, BlockFace.UP);
 
             Block i = loc.getBlock();
-            Sign nsign = checkBlock(i, north);
-            if (nsign!=null) { locs.add(north); signs.add(nsign); }
-
-            Sign ssign = checkBlock(i, south);
-            if (ssign!=null) { locs.add(south); signs.add(ssign); }
-
-            Sign wsign = checkBlock(i, west);
-            if (wsign!=null) { locs.add(west); signs.add(wsign); }
-
-            Sign esign = checkBlock(i, east);
-            if (esign!=null) { locs.add(east); signs.add(esign); }
-
-            Sign usign = checkBlock(i, up);
-            if (usign!=null) { locs.add(up); signs.add(usign); }
+            if (checkBlock(i, north)) { str.add(north); signs.add(north); }
+            if (checkBlock(i, south)) { str.add(south); signs.add(south); }
+            if (checkBlock(i, west)) { str.add(west); signs.add(west); }
+            if (checkBlock(i, east)) { str.add(east); signs.add(east); }
+            if (checkBlock(i, up)) { str.add(up); signs.add(up); }
         }
 
         if (signs.isEmpty()) {
             error(sender, "Couldn't find any signs attached to the chip's interface blocks.");
             return false;
         } else {
-            structure = locs.toArray(new Location[locs.size()]);
+            this.structure = str.toArray(new Location[str.size()]);
             info(sender, "Found " + signs.size() + " sign(s) to print on.");
         }
 
-        signUpdateTask = new SignUpdateTask(signs.toArray(new Sign[signs.size()]));
+        signUpdateTask = new SignUpdateTask(signs.toArray(new Location[signs.size()]));
 
         if (display==Display.replace) dataPin = 1;
         else if (display==Display.add) dataPin = 2;
@@ -266,17 +257,17 @@ public class print extends Circuit implements rcTypeReceiver {
         return true;
     }
 
-    private Sign checkBlock(Block i, Location s) {
+    private boolean checkBlock(Block i, Location s) {
         // TODO: Check whether this method loads the chunk or not.
         Block sign = s.getBlock();
         MaterialData data = sign.getState().getData();
         if (data instanceof org.bukkit.material.Sign) {
             org.bukkit.material.Sign signData = (org.bukkit.material.Sign)data;
             if (sign.getRelative(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
-                return (Sign)sign.getState();
-            else return null;
+                return true;
+            else return false;
 
-        } else return null;
+        } else return false;
     }
 
     @Override
@@ -299,14 +290,14 @@ public class print extends Circuit implements rcTypeReceiver {
 
 
     class SignUpdateTask implements Runnable {
-        Sign[] signList;
+        Location[] signList;
         int curSign = 0;
         long lastRunTime = -1;
 
         @Override
         public void run() {
-            //if (world.getTime()==lastRunTime) return;
-            Sign s = signList[curSign];
+            //if (world.getTime()==lastRunTime) return;            
+            Sign s = (Sign)signList[curSign].getBlock().getState();
             s.setLine(0, lines[0]);
             s.setLine(1, lines[1]);
             s.setLine(2, lines[2]);
@@ -323,7 +314,7 @@ public class print extends Circuit implements rcTypeReceiver {
 
         }
 
-        public SignUpdateTask(Sign[] signList) throws IllegalArgumentException {
+        public SignUpdateTask(Location[] signList) throws IllegalArgumentException {
             this.signList = signList;
         }
     }
