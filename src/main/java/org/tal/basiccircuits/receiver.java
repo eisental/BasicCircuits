@@ -58,4 +58,8 @@ public class receiver extends ReceivingCircuit {
         return outputs.length-dataPin;
     }
 
+    @Override
+    protected boolean isStateless() {
+        return false;
+    }
 }

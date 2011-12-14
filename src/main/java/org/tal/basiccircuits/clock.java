@@ -4,7 +4,6 @@ package org.tal.basiccircuits;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.channel.TransmittingCircuit;
 import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.ParsingUtils;
 import org.tal.redstonechips.util.UnitParser;
 
 /**
@@ -93,7 +92,7 @@ public class clock extends TransmittingCircuit {
         }
 
         if ((onDuration<50 && onDuration>0) || (offDuration<50 && offDuration>0)) {
-            error(sender, "Clock is set to tick too fast or it's using too narrow pulse width. Speed is currently limited to 50ms per state.");
+            error(sender, "Clock frequency is currently limited to 50ms per state. Use a lower freq argument or try setting pulse-width to 0.");
             return false;
         }
 

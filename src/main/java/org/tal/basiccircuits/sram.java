@@ -35,6 +35,8 @@ public class sram extends Circuit implements rcTypeReceiver {
     boolean anonymous = true;
     String memId;
 
+    public static File dataFolder;
+    
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inIdx==readWritePin) {
@@ -152,12 +154,12 @@ public class sram extends Circuit implements rcTypeReceiver {
         }
         
         info(sender, "This sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + getMemoryFile(memId).getPath());
-
+        
         return true;
     }
 
     private File getMemoryFile(String id) {
-        return new File(redstoneChips.getDataFolder(), "sram-" + id + ".data");
+        return new File(dataFolder, "sram-" + id + ".data");
     }
 
     private String findFreeRamID() {

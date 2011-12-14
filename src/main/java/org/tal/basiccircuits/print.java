@@ -8,6 +8,7 @@ import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -43,7 +44,8 @@ public class print extends Circuit implements rcTypeReceiver {
     private String[] lines = new String[4];
     private StringBuffer textBuffer = new StringBuffer();
     private SignUpdateTask signUpdateTask;
-
+    private Location[] signList;
+    
     private static final int LineSize = 15;
 
     int scrollPos = 0;
@@ -123,7 +125,16 @@ public class print extends Circuit implements rcTypeReceiver {
             debug(lines[3]);
         }
 
-        redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, signUpdateTask);
+        for (Location l : signList) {
+            Sign s = (Sign)l.getBlock().getState();
+            s.setLine(0, lines[0]);
+            s.setLine(1, lines[1]);
+            s.setLine(2, lines[2]);
+            s.setLine(3, lines[3]);
+            s.update();
+        }
+        
+        //redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, signUpdateTask);
     }
 
     private void prepWrapLines() {
@@ -246,7 +257,8 @@ public class print extends Circuit implements rcTypeReceiver {
             info(sender, "Found " + signs.size() + " sign(s) to print on.");
         }
 
-        signUpdateTask = new SignUpdateTask(signs.toArray(new Location[signs.size()]));
+        signList = signs.toArray(new Location[signs.size()]);
+        //signUpdateTask = new SignUpdateTask(signs.toArray(new Location[signs.size()]));
 
         if (display==Display.replace) dataPin = 1;
         else if (display==Display.add) dataPin = 2;
@@ -290,13 +302,10 @@ public class print extends Circuit implements rcTypeReceiver {
 
 
     class SignUpdateTask implements Runnable {
-        Location[] signList;
         int curSign = 0;
-        long lastRunTime = -1;
 
         @Override
         public void run() {
-            //if (world.getTime()==lastRunTime) return;            
             Sign s = (Sign)signList[curSign].getBlock().getState();
             s.setLine(0, lines[0]);
             s.setLine(1, lines[1]);
@@ -304,18 +313,12 @@ public class print extends Circuit implements rcTypeReceiver {
             s.setLine(3, lines[3]);
             s.update();
             
-
-            lastRunTime = world.getTime();
             if (curSign<signList.length-1) {
                 curSign++;
 
                 redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, signUpdateTask, 1);
             } else curSign=0;
 
-        }
-
-        public SignUpdateTask(Location[] signList) throws IllegalArgumentException {
-            this.signList = signList;
         }
     }
 
