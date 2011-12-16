@@ -145,6 +145,7 @@ public class clock extends TransmittingCircuit {
 
     @Override
     public void circuitShutdown() {
+        super.circuitShutdown();
         stopClock();
     }
 

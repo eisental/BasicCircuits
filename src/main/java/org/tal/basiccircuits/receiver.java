@@ -49,11 +49,6 @@ public class receiver extends ReceivingCircuit {
     }
 
     @Override
-    public void circuitShutdown() {
-        if (getChannel()!=null) redstoneChips.removeReceiver(this);
-    }
-
-    @Override
     public int getChannelLength() {
         return outputs.length-dataPin;
     }

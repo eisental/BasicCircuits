@@ -22,7 +22,6 @@ public class BasicCircuits extends CircuitLibrary {
 
     @Override
     public void onRedstoneChipsEnable(RedstoneChips rc) {
-        System.out.println("XXXXXXXX");
         // add new pref keys.
         rc.getPrefs().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
 

@@ -159,11 +159,6 @@ public class pixel extends ReceivingCircuit {
     }
 
     @Override
-    public void circuitShutdown() {
-        if (getChannel() != null) redstoneChips.removeReceiver(this);
-    }
-
-    @Override
     public int getChannelLength() {
         if (!indexedColor)
             return 4;

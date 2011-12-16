@@ -338,9 +338,4 @@ public class display extends ReceivingCircuit {
             }
         }
     }
-
-    @Override
-    public void circuitShutdown() {
-        redstoneChips.removeReceiver(this);
-    }
 }

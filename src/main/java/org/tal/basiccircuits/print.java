@@ -8,14 +8,14 @@ import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
-import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.channel.ReceivingCircuit;
 import org.tal.redstonechips.circuit.InterfaceBlock;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
+import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Locations;
 
@@ -24,7 +24,7 @@ import org.tal.redstonechips.util.Locations;
  *
  * @author Tal Eisenberg
  */
-public class print extends Circuit implements rcTypeReceiver {
+public class print extends ReceivingCircuit implements rcTypeReceiver {
     private final static int clockPin = 0;
     private final static int scrollPin = 2;
     private final static int clearPin = 1;
@@ -53,25 +53,30 @@ public class print extends Circuit implements rcTypeReceiver {
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inIdx==clockPin && state) {
-            String s = convertInputs();
-            if (s!=null) {
-                updateText(s);
-                updateSigns();
-            }
+            clock(inputBits, dataPin, inputs.length-dataPin);
         } else if (inIdx==clearPin && state && (display==Display.scroll || display==Display.add)) {
             clearSign();
         } else if (inIdx==scrollPin && state && display==Display.scroll) {
-            if (scrollPos>=textBuffer.length()-1)
-                scrollPos = 0;
-            else
-                scrollPos++;
-            
-            prepScrollLines();
-
-            updateSigns();
+            scroll();
         }
     }
 
+    @Override
+    public void receive(BitSet7 bits) {
+        if ((display==Display.scroll || display==Display.add) && bits.get(clearPin-1))
+            clearSign();
+        if (display==Display.scroll && bits.get(scrollPin-1))
+            scroll();
+        
+        clock(bits, dataPin-1, getChannelLength()-(dataPin-1));
+    }
+
+    @Override
+    public int getChannelLength() {
+        return dataPin-1 + (type==Type.ascii?8:32);
+    }
+
+    
     private void updateText(String text) {
         if (display==Display.add) {
             add(text);
@@ -87,23 +92,42 @@ public class print extends Circuit implements rcTypeReceiver {
         }
     }
 
-    private String convertInputs() {
+    private void scroll() {
+        if (scrollPos>=textBuffer.length()-1)
+            scrollPos = 0;
+        else
+            scrollPos++;
+
+        prepScrollLines();
+
+        updateSigns();        
+    }
+    
+    private void clock(BitSet7 bits, int start, int length) {
+        String s = convertBits(bits, start, length);
+        if (s!=null) {
+            updateText(s);
+            updateSigns();
+        }        
+    }
+    
+    private String convertBits(BitSet7 bits, int start, int length) {
         String text = null;
 
         if (type==Type.num || type==Type.unsigned) {
-            text = Integer.toString(BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin));
+            text = Integer.toString(BitSetUtils.bitSetToUnsignedInt(bits, start, length));
         } else if (type==Type.signed) {
-            text = Integer.toString(BitSetUtils.bitSetToSignedInt(inputBits, dataPin, inputs.length-dataPin));
+            text = Integer.toString(BitSetUtils.bitSetToSignedInt(bits, start, length));
         } else if (type==Type.hex) {
-            text = Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin));
+            text = Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(bits, start, length));
         } else if (type==Type.oct) {
-            text = Integer.toOctalString(BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin));
+            text = Integer.toOctalString(BitSetUtils.bitSetToUnsignedInt(bits, start, length));
         } else if (type==Type.bin) {
-            text = BitSetUtils.bitSetToBinaryString(inputBits, dataPin, inputs.length-dataPin);
+            text = BitSetUtils.bitSetToBinaryString(bits, start, length);
         } else if (type==Type.ascii) {
-            char c = (char)BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin);
+            char c = (char)BitSetUtils.bitSetToUnsignedInt(bits, start, length);
             if (!Character.isISOControl(c)) text = Character.toString(c);
-            else if (hasDebuggers()) debug("Ignoring control character 0x" + Integer.toHexString(c));
+            else if (c==0 && hasDebuggers()) debug("Ignoring control character 0x" + Integer.toHexString(c));
         }
 
         return text;
@@ -193,16 +217,24 @@ public class print extends Circuit implements rcTypeReceiver {
     }
 
     @Override
-    public boolean init(CommandSender sender, String[] args) {
-        if (args.length>0) {
-            try {
-                type = Type.valueOf(args[0]);
-            } catch (IllegalArgumentException ie) {
-                error(sender, "Unknown type: " + args[0]);
-                return false;
+    public boolean init(CommandSender sender, String[] args) {        
+        String channel = null;
+        
+        if (args.length>0) {            
+            if (args[args.length-1].startsWith("#")) { // channel arg
+                channel = args[args.length-1].substring(1);
+            }
+            
+            if (args.length>=(channel!=null?2:1)) {
+                try {
+                    type = Type.valueOf(args[0]);
+                } catch (IllegalArgumentException ie) {
+                    error(sender, "Unknown type: " + args[0]);
+                    return false;
+                }
             }
 
-            if (args.length>1) {
+            if (args.length>=(channel!=null?3:2)) {
                 try {
                     display = Display.valueOf(args[1]);
                 } catch (IllegalArgumentException ie) {
@@ -210,18 +242,19 @@ public class print extends Circuit implements rcTypeReceiver {
                     return false;
                 }
             }
-
         }
 
-        if (display==Display.replace && inputs.length<2) {
-            error(sender, "Expecting at least 2 inputs. 1 clock pin and 1 data pin.");
-            return false;
-        } else if (display==Display.add && inputs.length<3) {
-            error(sender, "Expecting at least 3 inputs. 1 clock pin, 1 clear pin and 1 data pin.");
-            return false;
-        } else if (display==Display.scroll && inputs.length<4) {
-            error(sender, "Expecting at least 4 inputs. 1 clock pin, 1 clear pin, 1 scroll pin and 1 data pin.");
-            return false;
+        if (channel==null) { 
+            if (display==Display.replace && inputs.length<2) {
+                error(sender, "Expecting at least 2 inputs. 1 clock pin and 1 data pin.");
+                return false;
+            } else if (display==Display.add && inputs.length<3) {
+                error(sender, "Expecting at least 3 inputs. 1 clock pin, 1 clear pin and 1 data pin.");
+                return false;
+            } else if (display==Display.scroll && inputs.length<4) {
+                error(sender, "Expecting at least 4 inputs. 1 clock pin, 1 clear pin, 1 scroll pin and 1 data pin.");
+                return false;
+            }
         }
 
         if (interfaceBlocks.length==0) {
@@ -229,6 +262,18 @@ public class print extends Circuit implements rcTypeReceiver {
             return false;
         }
 
+        if (display==Display.replace) dataPin = 1;
+        else if (display==Display.add) dataPin = 2;
+        else if (display==Display.scroll) dataPin = 3;
+        
+        if (channel!=null) {
+            try {
+                this.initWireless(sender, channel);
+            } catch (IllegalArgumentException e) {
+                error(sender, e.getMessage());
+            }
+        }
+        
         List<Location> str = new ArrayList<Location>();
         List<Location> signs = new ArrayList<Location>();
         str.addAll(Arrays.asList(this.structure));
@@ -260,12 +305,8 @@ public class print extends Circuit implements rcTypeReceiver {
         signList = signs.toArray(new Location[signs.size()]);
         //signUpdateTask = new SignUpdateTask(signs.toArray(new Location[signs.size()]));
 
-        if (display==Display.replace) dataPin = 1;
-        else if (display==Display.add) dataPin = 2;
-        else if (display==Display.scroll) dataPin = 3;
-
         redstoneChips.registerRcTypeReceiver(activationBlock, this);
-
+        
         return true;
     }
 
