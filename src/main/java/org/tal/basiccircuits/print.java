@@ -46,6 +46,8 @@ public class print extends ReceivingCircuit implements rcTypeReceiver {
     private SignUpdateTask signUpdateTask;
     private Location[] signList;
     
+    private int channelLength;
+    
     private static final int LineSize = 15;
 
     int scrollPos = 0;
@@ -73,7 +75,7 @@ public class print extends ReceivingCircuit implements rcTypeReceiver {
 
     @Override
     public int getChannelLength() {
-        return dataPin-1 + (type==Type.ascii?8:32);
+        return channelLength;
     }
 
     
@@ -268,9 +270,11 @@ public class print extends ReceivingCircuit implements rcTypeReceiver {
         
         if (channel!=null) {
             try {
+                channelLength = dataPin-1 + (type==Type.ascii?8:32);
                 this.initWireless(sender, channel);
             } catch (IllegalArgumentException e) {
                 error(sender, e.getMessage());
+                return false;
             }
         }
         

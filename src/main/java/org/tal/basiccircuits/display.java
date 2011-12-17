@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.tal.redstonechips.channel.ReceivingCircuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.util.ParsingUtils;
 
 /**
  *
@@ -40,30 +41,75 @@ public class display extends ReceivingCircuit {
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
-        if (args.length==0) {
-            error(sender, "Expecting a display size sign argument");
-            return false;
-        }
-
-        String[] split = args[0].split("x");
-        if (split.length!=2) {
-            error(sender, "Bad display argument syntax: " + args[0] + ". Expecting <width>x<height>");
-            return false;
+        String channel = null;
+        boolean hasSize = false;
+        
+        if (args.length>0) {
+            hasSize = parseSizeArg(args[0]);
+            channel = parseColorAndChannel(hasSize, args);
         }
 
         try {
-            width = Integer.decode(split[0]);
-            height = Integer.decode(split[1]);
-        } catch (NumberFormatException ne) {
-            error(sender, "Bad display argument syntax: " + args[0] + ". Expecting <width>x<height>");
+            detectDisplay(sender, hasSize);
+        } catch (IllegalArgumentException ie) {
+            error(sender, ie.getMessage());
+            return false;
+        }
+        
+        // expecting 1 clock, enough pins for address width, enough pins for address height, enough pins for color data.
+        xWordlength = calculateRequiredBits(width);
+        yWordlength = calculateRequiredBits(height);
+        colorWordlength = calculateBpp();
+
+        int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
+        if (inputs.length!=expectedInputs && (inputs.length!=0 || channel==null)) {
+            error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s), " + yWordlength + " y address input(s), and " + colorWordlength + " color data inputs.");
+            return false;
+        } 
+        
+        if (interfaceBlocks.length!=2) {
+            error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
             return false;
         }
 
-        String channelString = null;
-        if (args.length>1) { // color index
+        if (sender instanceof Player) {
+            info(sender, "inputs: 0: clock, 1-" + xWordlength + ": x address, " + (xWordlength+1) + "-" + 
+                    (xWordlength+yWordlength) + " : y address, " + (xWordlength+yWordlength+1) + "-" + 
+                    (xWordlength+yWordlength+colorWordlength) + ": color");
+        }
+        
+        if (channel!=null) {
+            try {
+                initWireless(sender, channel);
+            } catch (IllegalArgumentException ie) {
+                error(sender, ie.getMessage());
+                return false;
+            }
+        }
 
+        if (sender instanceof Player) clearDisplay();
+        return true;
+    }
+
+    private boolean parseSizeArg(String arg) {
+        String[] split = arg.split("x");
+        if (split.length==2 && ParsingUtils.isInt((split[0])) && ParsingUtils.isInt((split[1]))) {
+            width = Integer.decode(split[0]);
+            height = Integer.decode(split[1]);
+            return true;
+        } else {
+            return false;
+        }        
+    }
+    
+    private String parseColorAndChannel(boolean hasSize, String[] args) {
+        String channelString = null;
+        int start = hasSize?1:0;
+        if (args.length>start) { // color index
+            
             List<Byte> colorList = new ArrayList<Byte>();
-            for (int i=1; i<args.length; i++) {
+            
+            for (int i=start; i<args.length; i++) {
                 try {
                     colorList.add(DyeColor.valueOf(args[i].toUpperCase()).getData());
                 } catch (IllegalArgumentException ie) {
@@ -75,10 +121,9 @@ public class display extends ReceivingCircuit {
                         // not dye number also, treat as broadcast channel if last.
                         if (i==args.length-1) {
                             channelString = args[i];
-                        } else {
-                            error(sender, "Unknown color name: " + args[i]);
-                            return false;
-                        }
+                        } else 
+                            throw new IllegalArgumentException ("Unknown color name: " + args[i]);
+                        
                     }
                 }
             }
@@ -90,44 +135,12 @@ public class display extends ReceivingCircuit {
                 indexedColor = true;
             }
         }
-
-        // expecting 1 clock, enough pins for address width, enough pins for address height, enough pins for color data.
-        xWordlength = calculateRequiredBits(width);
-        yWordlength = calculateRequiredBits(height);
-        colorWordlength = calculateBpp();
-
-        int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
-        if (inputs.length!=expectedInputs && (inputs.length!=0 || channelString==null)) {
-            error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s) and " + yWordlength + " y address input(s), and " + colorWordlength + " color data inputs.");
-            return false;
-        }
-
-        if (interfaceBlocks.length!=2) {
-            error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
-            return false;
-        }
-
-        try {
-            detectDisplay(sender);
-        } catch (IllegalArgumentException ie) {
-            error(sender, ie.getMessage());
-            return false;
-        }
-
-        if (channelString!=null) {
-            try {
-                initWireless(sender, channelString);
-            } catch (IllegalArgumentException ie) {
-                error(sender, ie.getMessage());
-                return false;
-            }
-        }
-
-        if (sender instanceof Player) clearDisplay();
-        return true;
+        
+        return channelString;
+        
     }
-
-    private void detectDisplay(CommandSender sender) throws IllegalArgumentException {
+    
+    private void detectDisplay(CommandSender sender, boolean hasSize) throws IllegalArgumentException {
         int x1 = interfaceBlocks[0].getLocation().getBlockX();
         int x2 = interfaceBlocks[1].getLocation().getBlockX();
         int y1 = interfaceBlocks[0].getLocation().getBlockY();
@@ -190,6 +203,11 @@ public class display extends ReceivingCircuit {
             else throw new IllegalArgumentException("Can't find origin wool block.");
         } else throw new IllegalArgumentException("Both interface blocks must be on the same plane.");
 
+        if (!hasSize) {
+            width = Math.abs(phyWidth);
+            height = Math.abs(phyHeight);
+        }
+        
         pixelWidth = (int)Math.ceil(phyWidth/width);
         pixelHeight = (int)Math.ceil(phyHeight/height);
         pixels = new Location[width][height][Math.abs(pixelWidth*pixelHeight)];
