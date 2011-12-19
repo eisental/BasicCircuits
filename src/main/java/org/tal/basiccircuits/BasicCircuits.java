@@ -33,6 +33,7 @@ public class BasicCircuits extends CircuitLibrary {
         }
 
         // move any sram files in rc data folder.
+        if (rc.getDataFolder()==null || !rc.getDataFolder().exists() || rc.getDataFolder().listFiles()==null) return;
         for (File f : rc.getDataFolder().listFiles()) {
             if (f.isFile() && f.getName().startsWith("sram-") &&
                     f.getName().endsWith(".data")) {
