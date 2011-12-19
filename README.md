@@ -7,14 +7,22 @@ __For much more information, visit the [circuitdocs](http://eisental.github.com/
 
 Installation
 -------------
-* Make sure you have the core [RedstoneChips](http://eisental.github.com/RedstoneChips) plugin installed in your craftbukkit plugins folder.
-* Download the latest BasicCircuits jar file.
-* Copy jar file to the plugins folder of your craftbukkit installation.
-
-
+* [Download](http://eisental.github.com/RedstoneChips) the latest RedstoneChips version bundle.
+* Copy all jar file to the plugins folder of your craftbukkit installation.
 
 Changelog
 ---------
+#### BasicCircuits 0.93 (19/12/11)
+- Updated to work with RC0.93.
+- __display__: size argument is now optional. 
+- __synth__: Added wireless support.
+- __print__: Added wireless support.
+- __print__: Removed scheduling of sign update. Seems to work. If your server freezes let me know…
+- __print__: Fixed a bug that caused print to malfunction after a chunk reload.
+- __sram__: Some bug fixes and added zero padding to `/rctype dump` address numbers.
+- __sram__: Moved sram data files into their own folder. Should automatically move data files to the right place.
+- __receiver__: Fixed channel length calculation (it was off by 1 before). 
+
 #### BasicCircuits 0.92 (4/12/11)
 - Updated to work with RedstoneChips 0.92.
 - Fixed an NPE bug in wireless chips.
