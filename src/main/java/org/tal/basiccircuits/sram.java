@@ -19,6 +19,7 @@ import org.tal.redstonechips.util.Range;
  * @author Tal Eisenberg
  */
 public class sram extends Circuit implements rcTypeReceiver {
+
     Memory memory;
     int addressLength;
     int wordLength;
@@ -126,6 +127,9 @@ public class sram extends Circuit implements rcTypeReceiver {
 
             File file = getMemoryFile(memId);
 
+            if (dataFolder==null || !dataFolder.exists())
+                setupDataFolder(redstoneChips.getDataFolder());
+            
             try {
                 if (file.exists()) {
                     memory.load(file);
@@ -187,7 +191,10 @@ public class sram extends Circuit implements rcTypeReceiver {
     public void save() {
          // store data in file.
         File file = getMemoryFile(memId);
-
+        
+        if (sram.dataFolder==null || !sram.dataFolder.exists()) 
+            sram.setupDataFolder(redstoneChips.getDataFolder());
+        
         try {
             memory.store(file);
         } catch (IOException ex) {
@@ -316,6 +323,14 @@ public class sram extends Circuit implements rcTypeReceiver {
         }
     }
     
+    public static void setupDataFolder(File pluginFolder) {
+        dataFolder = new File(pluginFolder, "sram");
+        if (!sram.dataFolder.exists()) {
+            if (!sram.dataFolder.mkdirs()) 
+                throw new RuntimeException("Can't make folder " + sram.dataFolder.getAbsolutePath());
+        }        
+    }
+    
     private String zeroPad(int a, int max) {
         String pad = "";
         String address = Integer.toString(a);
@@ -323,4 +338,6 @@ public class sram extends Circuit implements rcTypeReceiver {
         for (int i=0; i<charCount-address.length(); i++) pad += "0";
         return pad + address;
     }
+    
+    
 }

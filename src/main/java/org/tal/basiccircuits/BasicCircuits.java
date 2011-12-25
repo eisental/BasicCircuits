@@ -25,19 +25,23 @@ public class BasicCircuits extends CircuitLibrary {
         // add new pref keys.
         rc.getPrefs().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
 
+        if (rc.getDataFolder()==null || !rc.getDataFolder().exists()) return;
+        
         // set sram data folder.
-        sram.dataFolder = new File(rc.getDataFolder(), "sram");
-        if (!sram.dataFolder.exists()) {
-            if (sram.dataFolder.mkdir()) rc.log(Level.INFO, "[BasicCircuits] Created new sram folder: " + sram.dataFolder.getAbsolutePath());
-            else rc.log(Level.SEVERE, "[BasicCircuits] Can't make folder " + sram.dataFolder.getAbsolutePath());
+        try {
+            sram.setupDataFolder(rc.getDataFolder());
+            rc.log(Level.INFO, "[BasicCircuits] Created new sram folder: " + sram.dataFolder.getAbsolutePath());
+        } catch (Exception e) {
+            rc.log(Level.INFO, "[BasicCircuits] " + e.getMessage());
         }
 
         // move any sram files in rc data folder.
-        if (rc.getDataFolder()==null || !rc.getDataFolder().exists() || rc.getDataFolder().listFiles()==null) return;
-        for (File f : rc.getDataFolder().listFiles()) {
-            if (f.isFile() && f.getName().startsWith("sram-") &&
-                    f.getName().endsWith(".data")) {
-                f.renameTo(new File(sram.dataFolder, f.getName()));
+        if (rc.getDataFolder().listFiles()!=null) {
+            for (File f : rc.getDataFolder().listFiles()) {
+                if (f.isFile() && f.getName().startsWith("sram-") &&
+                        f.getName().endsWith(".data")) {
+                    f.renameTo(new File(sram.dataFolder, f.getName()));
+                }
             }
         }
     }
