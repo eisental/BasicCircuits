@@ -98,7 +98,8 @@ public class pixel extends ReceivingCircuit {
     }
 
     private void updatePixel() {
-        if (!isCircuitChunkLoaded()) return;
+        for (InterfaceBlock i : interfaceBlocks)
+            if (!i.getLocation().getChunk().isLoaded()) return;
 
         int val;
         if (inputs.length<=1) val = BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputBits.length());

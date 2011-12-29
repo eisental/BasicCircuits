@@ -40,7 +40,7 @@ public class receiver extends ReceivingCircuit {
 
     @Override
     public void receive(BitSet7 bits) {        
-        if (hasDebuggers()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 1, outputs.length-1));
+        if (hasDebuggers()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, getChannelLength()));
         this.sendBitSet(dataPin, outputs.length-dataPin, bits);
         if (outputs.length>1) {
             this.sendOutput(0, true);
