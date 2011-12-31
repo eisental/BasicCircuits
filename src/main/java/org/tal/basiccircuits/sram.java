@@ -1,4 +1,3 @@
-
 package org.tal.basiccircuits;
 
 import java.io.File;
@@ -96,7 +95,7 @@ public class sram extends Circuit implements rcTypeReceiver {
         }
 
         if (outputs.length==0) {
-            error(sender, "Exepcting at least 1 output pin.");
+            error(sender, "Expecting at least 1 output pin.");
         }
 
         if (addressLength<1) {
