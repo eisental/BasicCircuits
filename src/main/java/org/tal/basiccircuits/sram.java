@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.command.CommandUtils;
+import org.tal.redstonechips.command.LineSource;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Range;
@@ -96,7 +97,7 @@ public class sram extends Circuit implements rcTypeReceiver {
         }
 
         if (outputs.length==0) {
-            error(sender, "Exepcting at least 1 output pin.");
+            error(sender, "Expecting at least 1 output pin.");
         }
 
         if (addressLength<1) {
@@ -300,24 +301,17 @@ public class sram extends Circuit implements rcTypeReceiver {
             lastAddress = (int)(range.hasUpperLimit()?range.getOrderedRange()[1]:Math.pow(2, addressLength));
         }
 
-        String lines = "";
-
         if (firstAddress>=0 && lastAddress>=0) {
-            for (int a = firstAddress; a<=lastAddress; a++) {
-                String value;
-                String address = zeroPad(a, (int)Math.pow(2, addressLength)-1);
-                BitSet7 data = memory.read(BitSetUtils.intToBitSet(a, addressLength));
-                if (wordLength>32) value = Integer.toHexString(BitSetUtils.bitSetToSignedInt(data, 0, wordLength));
-                else value = BitSetUtils.bitSetToBinaryString(data, 0, wordLength);
-                lines += ChatColor.YELLOW.toString() + address + ": " + ChatColor.WHITE + value + "\n";
-            }
-            
             String titleRange;
             if (firstAddress==lastAddress)
                 titleRange = Integer.toString(firstAddress);
             else titleRange = firstAddress + "-" + lastAddress;
             
-            CommandUtils.pageMaker(player, "sram " + memId + " memory (" + titleRange + ")", "rctype dump", lines, redstoneChips.getPrefs().getInfoColor(), redstoneChips.getPrefs().getErrorColor());
+            MemoryLineSource l = new MemoryLineSource(firstAddress, lastAddress-firstAddress+1);
+            
+            CommandUtils.pageMaker(player, "sram " + memId + " memory (" + titleRange + ")", "rctype dump", 
+                    l, redstoneChips.getPrefs().getInfoColor(), redstoneChips.getPrefs().getErrorColor(), 
+                    CommandUtils.MaxLines);
         } else {
             player.sendMessage(redstoneChips.getPrefs().getErrorColor() + "Invalid address range: " + firstAddress + ".." + lastAddress);
         }
@@ -330,13 +324,40 @@ public class sram extends Circuit implements rcTypeReceiver {
                 throw new RuntimeException("Can't make folder " + sram.dataFolder.getAbsolutePath());
         }        
     }
-    
-    private String zeroPad(int a, int max) {
-        String pad = "";
-        String address = Integer.toString(a);
-        int charCount = Integer.toString(max).length();
-        for (int i=0; i<charCount-address.length(); i++) pad += "0";
-        return pad + address;
+        
+    class MemoryLineSource implements LineSource {
+        int offset;
+        int length;
+        
+        public MemoryLineSource(int offset, int length) {
+            this.offset = offset;
+            this.length = length;
+        }
+        
+        @Override
+        public String getLine(int idx) {
+            String value;
+            String address = zeroPad(idx+offset, (int)Math.pow(2, addressLength)-1);
+            BitSet7 data = memory.read(BitSetUtils.intToBitSet(idx+offset, addressLength));
+            if (wordLength>32) value = Integer.toHexString(BitSetUtils.bitSetToSignedInt(data, 0, wordLength));
+            else value = BitSetUtils.bitSetToBinaryString(data, 0, wordLength);
+            return ChatColor.YELLOW.toString() + address + ": " + ChatColor.WHITE + value + "\n";
+        }
+
+        @Override
+        public float getLineCount() {
+            return length;
+        }
+        
+        private String zeroPad(int a, int max) {
+            String pad = "";
+            String address = Integer.toString(a);
+            int charCount = Integer.toString(max).length();
+            for (int i=0; i<charCount-address.length(); i++) pad += "0";
+            return pad + address;
+        }
+        
+        
     }
     
     
