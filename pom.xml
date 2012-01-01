@@ -33,11 +33,6 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-        <dependency>
-            <groupId>org.tal</groupId>
-            <artifactId>RedstoneChips</artifactId>
-            <version>beta</version>
-        </dependency>
     </dependencies>
     <version>beta</version>
 </project>
