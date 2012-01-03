@@ -29,10 +29,10 @@ public class BasicCircuits extends CircuitLibrary {
         
         // set sram data folder.
         try {
-            sram.setupDataFolder(rc.getDataFolder());
-            rc.log(Level.INFO, "[BasicCircuits] Created new sram folder: " + sram.dataFolder.getAbsolutePath());
+            boolean s = sram.setupDataFolder(rc.getDataFolder());
+            if (s) logger.log(Level.INFO, "[BasicCircuits] Created new sram folder: " + sram.dataFolder.getAbsolutePath());
         } catch (Exception e) {
-            rc.log(Level.INFO, "[BasicCircuits] " + e.getMessage());
+            logger.log(Level.INFO, "[BasicCircuits] " + e.getMessage());
         }
 
         // move any sram files in rc data folder.

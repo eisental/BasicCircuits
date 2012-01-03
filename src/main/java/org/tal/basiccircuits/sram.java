@@ -317,11 +317,14 @@ public class sram extends Circuit implements rcTypeReceiver {
         }
     }
     
-    public static void setupDataFolder(File pluginFolder) {
+    public static boolean setupDataFolder(File pluginFolder) {
         dataFolder = new File(pluginFolder, "sram");
         if (!sram.dataFolder.exists()) {
             if (!sram.dataFolder.mkdirs()) 
                 throw new RuntimeException("Can't make folder " + sram.dataFolder.getAbsolutePath());
+            else return true;
+        } else {
+            return false;
         }        
     }
         

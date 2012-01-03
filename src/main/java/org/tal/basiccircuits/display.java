@@ -45,10 +45,20 @@ public class display extends ReceivingCircuit {
         boolean hasSize = false;
         
         if (args.length>0) {
-            hasSize = parseSizeArg(args[0]);
-            channel = parseColorAndChannel(hasSize, args);
+            try {
+                hasSize = parseSizeArg(args[0]);
+                channel = parseColorAndChannel(hasSize, args);
+            } catch (IllegalArgumentException e) {
+                error(sender, e.getMessage());
+                return false;
+            }
         }
 
+        if (interfaceBlocks.length!=2) {
+            error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
+            return false;
+        }
+        
         try {
             detectDisplay(sender, hasSize);
         } catch (IllegalArgumentException ie) {
@@ -63,19 +73,15 @@ public class display extends ReceivingCircuit {
 
         int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
         if (inputs.length!=expectedInputs && (inputs.length!=0 || channel==null)) {
-            error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s), " + yWordlength + " y address input(s), and " + colorWordlength + " color data inputs.");
+            error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s)" + (yWordlength!=0?", " + yWordlength + "y address input(s)":"") + 
+                    ", and " + colorWordlength + " color data inputs.");
             return false;
         } 
         
-        if (interfaceBlocks.length!=2) {
-            error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
-            return false;
-        }
-
         if (sender instanceof Player) {
-            info(sender, "inputs: 0: clock, 1-" + xWordlength + ": x address, " + (xWordlength+1) + "-" + 
-                    (xWordlength+yWordlength) + " : y address, " + (xWordlength+yWordlength+1) + "-" + 
-                    (xWordlength+yWordlength+colorWordlength) + ": color");
+            info(sender, "inputs: clock - 0, x: 1-" + xWordlength + (yWordlength!=0?", y: " + (xWordlength+1) + "-" + 
+                    (xWordlength+yWordlength):"") + ", color: " + (xWordlength+yWordlength+1) + "-" + 
+                    (xWordlength+yWordlength+colorWordlength) + ".");
         }
         
         if (channel!=null) {
@@ -160,7 +166,7 @@ public class display extends ReceivingCircuit {
         Axis widthAxis, heightAxis;
         Location origin;
 
-        if (dx==0) { // zy plane
+        if (dx==0 && dy!=0 && dz!=0) { // zy plane
             phyWidth = (dz+1)*zsign;
             phyHeight = (dy+1)*ysign;
             widthAxis = Axis.Z;
@@ -172,7 +178,7 @@ public class display extends ReceivingCircuit {
                 origin = new Location(world, x1-1, y1, z1);
             else throw new IllegalArgumentException("Can't find origin wool block.");
 
-        } else if (dy==0) { // xz plane
+        } else if (dx!=0 && dy==0 && dz!=0) { // xz plane
             if (dx>=dz) {
                 phyWidth = (dx+1)*xsign;
                 phyHeight = (dz+1)*zsign;
@@ -190,7 +196,7 @@ public class display extends ReceivingCircuit {
             else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId())
                 origin = new Location(world, x1, y1-1, z1);
             else throw new IllegalArgumentException("Can't find origin wool block.");
-        } else if (dz==0) { // xy plane
+        } else if (dx!=0 && dy!=0 && dz==0) { // xy plane
             phyWidth = (dx+1)*xsign;
             phyHeight = (dy+1)*ysign;
             widthAxis = Axis.X;
@@ -201,6 +207,60 @@ public class display extends ReceivingCircuit {
             else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId())
                 origin = new Location(world, x1, y1, z1-1);
             else throw new IllegalArgumentException("Can't find origin wool block.");
+        } else if (dx==0 && dy!=0 && dz==0) { // y line
+            phyWidth = (dy+1)*ysign;
+            phyHeight = 1;
+            widthAxis = Axis.Y;
+            
+            if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Z;
+                origin = new Location(world, x1+1, y1, z1);
+            } else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Z;
+                origin = new Location(world, x1-1, y1, z1);
+            } else if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId()) {
+                heightAxis = Axis.X;
+                origin = new Location(world, x1, y1, z1+1);
+            } else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId()) {
+                heightAxis = Axis.X;
+                origin = new Location(world, x1, y1, z1-1);
+            } else throw new IllegalArgumentException("Can't find origin wool block.");
+        } else if (dx!=0 && dy==0 && dz==0) { // x line
+            phyWidth = (dx+1)*xsign;
+            phyHeight = 1;
+            widthAxis = Axis.X;
+            
+            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Z;
+                origin = new Location(world, x1, y1+1, z1);
+            } else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Z;
+                origin = new Location(world, x1, y1-1, z1);
+            } else if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Y;
+                origin = new Location(world, x1, y1, z1+1);
+            } else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Y;
+                origin = new Location(world, x1, y1, z1-1);
+            } else throw new IllegalArgumentException("Can't find origin wool block.");
+        } else if (dx==0 && dy==0 && dz!=0) { // z line
+            phyWidth = (dz+1)*zsign;
+            phyHeight = 1;
+            widthAxis = Axis.Z;
+            
+            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.X;
+                origin = new Location(world, x1, y1+1, z1);
+            } else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.X;
+                origin = new Location(world, x1, y1-1, z1);
+            } else if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Y;
+                origin = new Location(world, x1+1, y1, z1);
+            } else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId()) {
+                heightAxis = Axis.Y;
+                origin = new Location(world, x1-1, y1, z1-1);
+            } else throw new IllegalArgumentException("Can't find origin wool block.");            
         } else throw new IllegalArgumentException("Both interface blocks must be on the same plane.");
 
         if (!hasSize) {
