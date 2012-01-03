@@ -35,7 +35,7 @@ public class display extends ReceivingCircuit {
             int y = BitSetUtils.bitSetToUnsignedInt(inputBits, 1+xWordlength, yWordlength);
             int data = BitSetUtils.bitSetToUnsignedInt(inputBits, 1+xWordlength+yWordlength, colorWordlength);
 
-            setPixel(x,y,data);
+            setPixel(x,y,data, true);
         }
     }
 
@@ -293,7 +293,7 @@ public class display extends ReceivingCircuit {
         int y = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength, yWordlength);
         int data = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength+yWordlength, colorWordlength);
 
-        setPixel(x,y,data);
+        setPixel(x, y, data, true);
     }
 
     @Override
@@ -311,7 +311,7 @@ public class display extends ReceivingCircuit {
         return (int)Math.ceil(Math.log(numOfValues)/Math.log(2));
     }
 
-    private void setPixel(int x, int y, int data) {
+    private void setPixel(int x, int y, int data, boolean checkMemory) {
         byte color;
         if (indexedColor) {
             if (data>=colorIndex.length) {
@@ -329,7 +329,7 @@ public class display extends ReceivingCircuit {
         
         Location[] pixel = pixels[x][y];
 
-        if (memory[x][y]!=color) {
+        if (memory[x][y]!=color || !checkMemory) {
             if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));
 
             for (Location l : pixel) {
@@ -412,7 +412,7 @@ public class display extends ReceivingCircuit {
     public void clearDisplay() {
         for (int y=0; y<height; y++) {
             for (int x=0; x<width; x++) {
-                this.setPixel(x, y, 0);
+                this.setPixel(x, y, 0, false);
             }
         }
     }
