@@ -376,9 +376,4 @@ public class print extends Circuit implements rcTypeReceiver {
         }
     }
 
-    @Override
-    public void circuitShutdown() {
-        if (receiver!=null) receiver.shutdown();
-    }    
-    
 }

@@ -150,7 +150,6 @@ public class clock extends Circuit {
     @Override
     public void circuitShutdown() {
         stopClock();
-        if (transmitter!=null) transmitter.shutdown();
     }
 
     boolean currentState = true;

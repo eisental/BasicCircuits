@@ -188,9 +188,4 @@ public class synth extends Circuit {
         else throw new IllegalArgumentException();
     }
     
-    @Override
-    public void circuitShutdown() {
-        if (receiver!=null) receiver.shutdown();
-    }    
-    
 }

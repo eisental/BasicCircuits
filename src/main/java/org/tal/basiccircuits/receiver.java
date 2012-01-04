@@ -59,8 +59,4 @@ public class receiver extends Circuit {
         return false;
     }
 
-    @Override
-    public void circuitShutdown() {
-        if (rec!=null) rec.shutdown();
-    }    
 }

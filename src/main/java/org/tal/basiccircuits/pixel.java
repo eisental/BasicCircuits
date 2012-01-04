@@ -183,9 +183,4 @@ public class pixel extends Circuit {
         return (dx<rad && dy<rad && dz<rad);
     }
     
-    @Override
-    public void circuitShutdown() {
-        if (receiver!=null) receiver.shutdown();
-    }    
-    
 }

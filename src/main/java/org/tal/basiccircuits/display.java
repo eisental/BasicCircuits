@@ -420,9 +420,4 @@ public class display extends Circuit {
         }
     }
     
-    @Override
-    public void circuitShutdown() {
-        if (receiver!=null) receiver.shutdown();
-    }    
-    
 }

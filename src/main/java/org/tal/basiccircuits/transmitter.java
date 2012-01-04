@@ -96,9 +96,4 @@ public class transmitter extends Circuit {
             return false;
         }
     }
-
-    @Override
-    public void circuitShutdown() {
-        if (trans!=null) trans.shutdown();
-    }    
 }
