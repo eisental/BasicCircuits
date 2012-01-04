@@ -2,38 +2,41 @@ package org.tal.basiccircuits;
 
 
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.channel.TransmittingCircuit;
+import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.wireless.Transmitter;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class transmitter extends TransmittingCircuit {
+public class transmitter extends Circuit {
     boolean selectMode = false;
     int selectLength = 0;
     int baseStartBit;
 
+    Transmitter trans;
+    
     @Override
     public void inputChange(int inIdx, boolean high) {
         if (inputs.length==1) { // no clock pin and no select
-            transmit(inputBits, getStartBit(), inputs.length);
+            transmit(inputBits, 1);
         } else { // has a clock pin
             if (selectMode) {
                 int select = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, selectLength);
-                this.setStartBit(baseStartBit + select*getChannelLength());
+                trans.setStartBit(baseStartBit + select*trans.getChannelLength());
             }
             
             if (inputBits.get(0)) {
-                transmit(inputBits.get(1+selectLength, inputs.length), getStartBit(), inputs.length-1-selectLength);
+                transmit(inputBits.get(1+selectLength, inputs.length), inputs.length-1-selectLength);
             }
         }
     }
 
-    private void transmit(BitSet7 bits, int startBit, int length) {
-        if (hasDebuggers()) debug("Transmitting " + BitSetUtils.bitSetToBinaryString(bits, 0, length) + " on " + getChannel().name + ":" + getStartBit());
-        getChannel().transmit(bits, startBit, length);
+    private void transmit(BitSet7 bits, int length) {
+        if (hasDebuggers()) debug("Transmitting " + BitSetUtils.bitSetToBinaryString(bits, 0, length) + " on " + trans.getChannel().name + ":" + trans.getStartBit());
+        trans.transmit(bits, length);
     }
 
     @Override
@@ -66,13 +69,19 @@ public class transmitter extends TransmittingCircuit {
                 }
 
                 try {
-                    this.initWireless(sender, args[0]);
+                    trans = new Transmitter();
+                    int len;
+                    if (inputs.length==1) len = 1;
+                    else len = inputs.length-1-selectLength;
+                    
+
+                    trans.init(sender, args[0], len, this);
                 } catch (IllegalArgumentException ie) {
                     error(sender, ie.getMessage());
                     return false;
                 }
                 
-                baseStartBit = getStartBit();
+                baseStartBit = trans.getStartBit();
                 if (selectMode) {
                     info(sender, "Inputs 1-" + (selectLength) + " are channel bit select pins.");
                 }
@@ -89,11 +98,7 @@ public class transmitter extends TransmittingCircuit {
     }
 
     @Override
-    public int getChannelLength() {
-        if (inputs.length==1) return 1;
-        else {
-            return inputs.length-1-selectLength;
-        }
-    }
-
+    public void circuitShutdown() {
+        if (trans!=null) trans.shutdown();
+    }    
 }

@@ -6,19 +6,21 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.channel.ReceivingCircuit;
+import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.InterfaceBlock;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.wireless.Receiver;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class synth extends ReceivingCircuit {
+public class synth extends Circuit {
     private boolean indexedPitch = false;
     private byte[] pitchIndex;
-    private int channelLength;
+    
+    private Receiver receiver;
     
     public static final Pattern MIDINOTE_PATTERN = Pattern.compile("[a-gA-G][#b]?\\-?[0-8]+");
 
@@ -31,16 +33,13 @@ public class synth extends ReceivingCircuit {
         }
     }
 
-    @Override
-    public void receive(BitSet7 bits) {
-        playNote(bits, 0, channelLength);
+    class SynthReceiver extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {
+            playNote(bits, 0, receiver.getChannelLength());
+        }
     }
 
-    @Override
-    public int getChannelLength() {
-        return channelLength;
-    }
-    
     @Override
     protected boolean init(CommandSender sender, String[] args) {
         // needs to have 5 inputs 1 clock 4 data
@@ -76,10 +75,13 @@ public class synth extends ReceivingCircuit {
         }
 
         if (channel!=null) {
-            if (indexedPitch) channelLength = (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2));
-            else channelLength = 5;
+            int len;
+            if (indexedPitch) len = (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2));
+            else len = 5;
+            
             try {
-                this.initWireless(sender, channel);
+                receiver = new SynthReceiver();
+                receiver.init(sender, channel, len, this);
             } catch (IllegalArgumentException e) {
                 error(sender, e.getMessage());
                 return false;
@@ -185,4 +187,10 @@ public class synth extends ReceivingCircuit {
         else if (keynum==11) return "b" + octave;
         else throw new IllegalArgumentException();
     }
+    
+    @Override
+    public void circuitShutdown() {
+        if (receiver!=null) receiver.shutdown();
+    }    
+    
 }

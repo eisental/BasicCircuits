@@ -2,15 +2,16 @@
 package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.channel.TransmittingCircuit;
+import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.UnitParser;
+import org.tal.redstonechips.wireless.Transmitter;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class clock extends TransmittingCircuit {
+public class clock extends Circuit {
     private long onDuration, offDuration;
     private boolean masterToggle;
     private BitSet7 onBits, offBits;
@@ -19,6 +20,8 @@ public class clock extends TransmittingCircuit {
     private long expectedNextTick;
     private int taskId = -1;
 
+    private Transmitter transmitter;
+    
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (masterToggle) {
@@ -27,7 +30,7 @@ public class clock extends TransmittingCircuit {
                 else {
                     stopClock();
                     sendBitSet(offBits);
-                    if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                    if (transmitter!=null) transmitter.transmit(false);
                 }
             }
         } else {
@@ -36,7 +39,7 @@ public class clock extends TransmittingCircuit {
             if (onBits.isEmpty()) {
                 stopClock();
                 sendBitSet(offBits);
-                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                if (transmitter!=null) transmitter.transmit(false);
             }
             else startClock();
         }
@@ -98,7 +101,8 @@ public class clock extends TransmittingCircuit {
 
         if (channelArg!=null) {
             try {
-                initWireless(sender, channelArg);
+                transmitter = new Transmitter();
+                transmitter.init(sender, channelArg, 1, this);
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());
                 return false;
@@ -145,15 +149,10 @@ public class clock extends TransmittingCircuit {
 
     @Override
     public void circuitShutdown() {
-        super.circuitShutdown();
         stopClock();
+        if (transmitter!=null) transmitter.shutdown();
     }
 
-    @Override
-    public int getChannelLength() {
-        return 1;
-    }
-    
     boolean currentState = true;
     private class TickTask implements Runnable {
         
@@ -213,18 +212,19 @@ public class clock extends TransmittingCircuit {
         private void tick() {
             if (onDuration>0 && offDuration>0) {
                 sendBitSet(currentState?onBits:offBits);
-                if (getChannel()!=null) getChannel().transmit(currentState, getStartBit());
+                if (transmitter!=null) transmitter.transmit(currentState);
             } else if (onDuration > 0) {
                 sendBitSet(offBits);
-                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                if (transmitter!=null) transmitter.transmit(false);
                 sendBitSet(onBits);
-                if (getChannel()!=null) getChannel().transmit(true, getStartBit());
+                if (transmitter!=null) transmitter.transmit(true);
             } else if (offDuration>0) {
                 sendBitSet(onBits);
-                if (getChannel()!=null) getChannel().transmit(true, getStartBit());
+                if (transmitter!=null) transmitter.transmit(true);
                 sendBitSet(offBits);
-                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                if (transmitter!=null) transmitter.transmit(false);
             }
         }
     }
+        
 }

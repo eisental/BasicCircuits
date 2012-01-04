@@ -8,16 +8,17 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.tal.redstonechips.channel.ReceivingCircuit;
+import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.ParsingUtils;
+import org.tal.redstonechips.wireless.Receiver;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class display extends ReceivingCircuit {
+public class display extends Circuit {
 
     private enum Axis {X,Y,Z};
 
@@ -28,7 +29,8 @@ public class display extends ReceivingCircuit {
     private Location[][][] pixels;
     private int xWordlength, yWordlength, colorWordlength;
     private byte[][] memory;
-
+    private Receiver receiver;
+    
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inputBits.get(0)) {
@@ -87,7 +89,9 @@ public class display extends ReceivingCircuit {
         
         if (channel!=null) {
             try {
-                initWireless(sender, channel);
+                receiver = new DisplayReceiver();
+                int len = xWordlength+yWordlength+colorWordlength;
+                receiver.init(sender, channel, len, this);
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());
                 return false;
@@ -285,18 +289,17 @@ public class display extends ReceivingCircuit {
         info(sender, "The screen is " + Math.abs(phyWidth) + "m wide, " + Math.abs(phyHeight) + "m high. Each pixel is " + Math.abs(pixelWidth) + "m on " + Math.abs(pixelHeight) + "m.");
     }
 
-    @Override
-    public void receive(BitSet7 bits) {
-        int x = BitSetUtils.bitSetToUnsignedInt(bits, 0, xWordlength);
-        int y = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength, yWordlength);
-        int data = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength+yWordlength, colorWordlength);
+    class DisplayReceiver extends Receiver {
 
-        setPixel(x, y, data, true);
-    }
+        @Override
+        public void receive(BitSet7 bits) {
+            int x = BitSetUtils.bitSetToUnsignedInt(bits, 0, xWordlength);
+            int y = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength, yWordlength);
+            int data = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength+yWordlength, colorWordlength);
 
-    @Override
-    public int getChannelLength() {
-        return xWordlength+yWordlength+colorWordlength;
+            setPixel(x, y, data, true);
+        }
+        
     }
 
     private int calculateBpp() {
@@ -416,4 +419,10 @@ public class display extends ReceivingCircuit {
             }
         }
     }
+    
+    @Override
+    public void circuitShutdown() {
+        if (receiver!=null) receiver.shutdown();
+    }    
+    
 }

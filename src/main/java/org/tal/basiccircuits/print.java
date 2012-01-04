@@ -12,19 +12,20 @@ import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
-import org.tal.redstonechips.channel.ReceivingCircuit;
+import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.InterfaceBlock;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Locations;
+import org.tal.redstonechips.wireless.Receiver;
 
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class print extends ReceivingCircuit implements rcTypeReceiver {
+public class print extends Circuit implements rcTypeReceiver {
     private final static int clockPin = 0;
     private final static int scrollPin = 2;
     private final static int clearPin = 1;
@@ -45,13 +46,13 @@ public class print extends ReceivingCircuit implements rcTypeReceiver {
     private StringBuffer textBuffer = new StringBuffer();
     private SignUpdateTask signUpdateTask;
     private Location[] signList;
-    
-    private int channelLength;
-    
+        
     private static final int LineSize = 15;
 
     int scrollPos = 0;
 
+    private Receiver receiver;
+    
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (inIdx==clockPin && state) {
@@ -63,22 +64,6 @@ public class print extends ReceivingCircuit implements rcTypeReceiver {
         }
     }
 
-    @Override
-    public void receive(BitSet7 bits) {
-        if ((display==Display.scroll || display==Display.add) && bits.get(clearPin-1))
-            clearSign();
-        if (display==Display.scroll && bits.get(scrollPin-1))
-            scroll();
-        
-        clock(bits, dataPin-1, getChannelLength()-(dataPin-1));
-    }
-
-    @Override
-    public int getChannelLength() {
-        return channelLength;
-    }
-
-    
     private void updateText(String text) {
         if (display==Display.add) {
             add(text);
@@ -270,8 +255,9 @@ public class print extends ReceivingCircuit implements rcTypeReceiver {
         
         if (channel!=null) {
             try {
-                channelLength = dataPin-1 + (type==Type.ascii?8:32);
-                this.initWireless(sender, channel);
+                receiver = new PrintReceiver();
+                int len = dataPin-1 + (type==Type.ascii?8:32);
+                receiver.init(sender, channel, len, this);
             } catch (IllegalArgumentException e) {
                 error(sender, e.getMessage());
                 return false;
@@ -378,5 +364,21 @@ public class print extends ReceivingCircuit implements rcTypeReceiver {
         updateSigns();
     }
 
+    class PrintReceiver extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {
+            if ((display==Display.scroll || display==Display.add) && bits.get(clearPin-1))
+                clearSign();
+            if (display==Display.scroll && bits.get(scrollPin-1))
+                scroll();
 
+            clock(bits, dataPin-1, getChannelLength()-(dataPin-1));
+        }
+    }
+
+    @Override
+    public void circuitShutdown() {
+        if (receiver!=null) receiver.shutdown();
+    }    
+    
 }
