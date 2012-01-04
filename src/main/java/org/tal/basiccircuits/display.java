@@ -330,16 +330,15 @@ public class display extends Circuit {
         
         Location[] pixel = pixels[x][y];
 
+        if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));        
         if (memory[x][y]!=color || !checkMemory) {
-            if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));
-
             for (Location l : pixel) {
                 Block b = l.getBlock();
                 if (b.getType()==Material.WOOL)
                     b.setData(color);
             }
             memory[x][y] = color;
-        }
+        } 
     }
 
     private Location[] findPixelBlocks(Location origin, int x, int y, Axis widthAxis, Axis heightAxis, int pixelWidth, int pixelHeight) {

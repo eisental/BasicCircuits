@@ -211,7 +211,7 @@ public class sram extends Circuit implements rcTypeReceiver {
         if (words[0].equalsIgnoreCase("ascii")) {
             StringBuilder b = new StringBuilder();
             for (int i=1; i<words.length; i++)
-                b.append(words[i]);
+               b.append(words[i]);
 
             String ascii = b.toString();
             for (int i=0; i<ascii.length(); i++)

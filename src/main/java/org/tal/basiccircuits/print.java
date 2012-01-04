@@ -13,7 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.circuit.InterfaceBlock;
+import org.tal.redstonechips.circuit.io.InterfaceBlock;
 import org.tal.redstonechips.circuit.rcTypeReceiver;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
@@ -55,13 +55,15 @@ public class print extends Circuit implements rcTypeReceiver {
     
     @Override
     public void inputChange(int inIdx, boolean state) {
-        if (inIdx==clockPin && state) {
+        if (inIdx==clockPin) {
+            if (state) clock(inputBits, dataPin, inputs.length-dataPin);
+        } else if (inIdx==clearPin && (display==Display.scroll || display==Display.add)) {
+            if (state) clearSign();
+        } else if (inIdx==scrollPin && display==Display.scroll) {
+            if (state) scroll();
+        } else if (inputBits.get(clockPin))
             clock(inputBits, dataPin, inputs.length-dataPin);
-        } else if (inIdx==clearPin && state && (display==Display.scroll || display==Display.add)) {
-            clearSign();
-        } else if (inIdx==scrollPin && state && display==Display.scroll) {
-            scroll();
-        }
+        
     }
 
     private void updateText(String text) {
@@ -114,7 +116,7 @@ public class print extends Circuit implements rcTypeReceiver {
         } else if (type==Type.ascii) {
             char c = (char)BitSetUtils.bitSetToUnsignedInt(bits, start, length);
             if (!Character.isISOControl(c)) text = Character.toString(c);
-            else if (c==0 && hasDebuggers()) debug("Ignoring control character 0x" + Integer.toHexString(c));
+            else if (hasDebuggers()) debug("Ignoring control character 0x" + Integer.toHexString(c));
         }
 
         return text;
