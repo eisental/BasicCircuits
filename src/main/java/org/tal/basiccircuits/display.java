@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.channel.ReceivingCircuit;
@@ -275,9 +276,6 @@ public class display extends ReceivingCircuit {
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
                 pixels[x][y] = findPixelBlocks(origin, x, y, widthAxis, heightAxis, pixelWidth, pixelHeight);
-                for (Location l : pixels[x][y])
-                    if (world.getBlockAt(l).getType()!=Material.WOOL)
-                        throw new IllegalArgumentException("Missing wool block at pixel " + x + ", " + y);
             }
         }
 
@@ -333,7 +331,9 @@ public class display extends ReceivingCircuit {
             if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));
 
             for (Location l : pixel) {
-                l.getBlock().setData(color);
+                Block b = l.getBlock();
+                if (b.getType()==Material.WOOL)
+                    b.setData(color);
             }
             memory[x][y] = color;
         }
