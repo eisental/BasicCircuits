@@ -29,8 +29,8 @@ public class BasicCircuits extends CircuitLibrary {
         
         // set sram data folder.
         try {
-            boolean s = sram.setupDataFolder(rc.getDataFolder());
-            if (s) logger.log(Level.INFO, "[BasicCircuits] Created new sram folder: " + sram.dataFolder.getAbsolutePath());
+            boolean s = Ram.setupDataFolder(rc.getDataFolder());
+            if (s) logger.log(Level.INFO, "[BasicCircuits] Created new sram folder: " + Ram.dataFolder.getAbsolutePath());
         } catch (Exception e) {
             logger.log(Level.INFO, "[BasicCircuits] " + e.getMessage());
         }
@@ -40,7 +40,7 @@ public class BasicCircuits extends CircuitLibrary {
             for (File f : rc.getDataFolder().listFiles()) {
                 if (f.isFile() && f.getName().startsWith("sram-") &&
                         f.getName().endsWith(".data")) {
-                    f.renameTo(new File(sram.dataFolder, f.getName()));
+                    f.renameTo(new File(Ram.dataFolder, f.getName()));
                 }
             }
         }

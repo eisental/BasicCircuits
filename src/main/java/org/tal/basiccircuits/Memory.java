@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSet7Constructor;
 import org.tal.redstonechips.util.BitSet7Representer;
@@ -20,6 +21,8 @@ import org.yaml.snakeyaml.Yaml;
  * @author Tal Eisenberg
  */
 public abstract class Memory {
+    public static final Pattern MemIDPattern = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");
+    
     public static Map<String,Memory> memories = new HashMap<String,Memory>();
 
     private String id;
@@ -50,4 +53,9 @@ public abstract class Memory {
     protected abstract Map getData();
 
     protected abstract void setData(Map data);
+    
+    public static boolean isValidId(String string) {
+        return MemIDPattern.matcher(string).matches();
+    }
+    
 }

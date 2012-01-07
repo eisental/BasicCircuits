@@ -7,22 +7,25 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.io.InterfaceBlock;
-import org.tal.redstonechips.circuit.rcTypeReceiver;
+import org.tal.redstonechips.circuit.RCTypeReceiver;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.wireless.Transmitter;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class terminal extends Circuit implements rcTypeReceiver {
+public class terminal extends Circuit implements RCTypeReceiver {
     private enum DataType { ascii, num }
 
     private BitSet7 outBuf;
     private long[] buf = new long[1];
     private DataType type = DataType.ascii;
     private boolean eot;
-
+    
+    private Transmitter transmitter;
+    
     @Override
     public void inputChange(int inIdx, boolean high) {
         if (inIdx==0 && high) {
@@ -34,7 +37,19 @@ public class terminal extends Circuit implements rcTypeReceiver {
     @Override
     protected boolean init(CommandSender sender, String[] args) {
         eot = false;
+        String channelArg = null;
+        
+        if (args.length>0 && args[args.length-1].startsWith("#")) {
+            // last argument is a channel name
+            channelArg = args[args.length-1].substring(1);
+            String[] newArgs = new String[args.length-1];
+            if (newArgs.length>0)
+                System.arraycopy(args, 0, newArgs, 0, newArgs.length);
 
+            args = newArgs;            
+        } 
+
+        
         if (args.length>0) {
             try {
                 type = DataType.valueOf(args[0]);
@@ -46,19 +61,21 @@ public class terminal extends Circuit implements rcTypeReceiver {
             if (args.length>1) {
                 if (args[1].equalsIgnoreCase("eot")) {
                     eot = true;
-                } else error(sender, "Unknodwn argument: " + args[1]);
+                } else error(sender, "Unknown argument: " + args[1]);
             }
         }
 
-        if (type==DataType.ascii) {
-            if (outputs.length!=9 && outputs.length!=10) {
-                error(sender, "Expecting 9-10 outputs. 1 clock output, an optional end-of-text output and 8 data outputs.");
-                return false;
-            }
-        } else if (type==DataType.num) {
-            if (outputs.length<2) {
-                error(sender, "Expecting at least 2 outputs. 1 clock output and 1 or more data outputs.");
-                return false;
+        if (channelArg==null) {
+            if (type==DataType.ascii) {
+                if (outputs.length!=9 && outputs.length!=10) {
+                    error(sender, "Expecting 9-10 outputs. 1 clock output, an optional end-of-text output and 8 data outputs.");
+                    return false;
+                }
+            } else if (type==DataType.num) {
+                if (outputs.length<2) {
+                    error(sender, "Expecting at least 2 outputs. 1 clock output and 1 or more data outputs.");
+                    return false;
+                }
             }
         }
 
@@ -68,20 +85,34 @@ public class terminal extends Circuit implements rcTypeReceiver {
         }
 
         for (InterfaceBlock i : interfaceBlocks)
-            redstoneChips.registerRcTypeReceiver(i.getLocation(), this);
+            redstoneChips.addRCTypeReceiver(i.getLocation(), this);
 
+        if (channelArg!=null) {
+            int len;
+            if (type==DataType.ascii) {
+                if (eot) len = 9;
+                else len = 8;
+            } else {
+                if (eot) len = 33;
+                else len = 32;
+            }
+            
+            transmitter = new Transmitter();
+            transmitter.init(sender, channelArg, len, this);
+        }
+        
         return true;
     }
 
     @Override
     public void circuitShutdown() {
-        redstoneChips.removeRcTypeReceiver(this);
+        redstoneChips.removeRCTypeReceiver(this);
     }
 
     @Override
     public void type(String[] words, Player player) {
         if (words.length==0) {
-            error(player, "You didn't type anything after the command name.");
+            error(player, "Nothing to type.");
             return;
         }
 
@@ -89,6 +120,7 @@ public class terminal extends Circuit implements rcTypeReceiver {
 
         for (String a : words)
             typeString += a + " ";
+        
         if (type==DataType.ascii) {
             int datapin = (outputs.length==9?1:2);
 
@@ -99,6 +131,8 @@ public class terminal extends Circuit implements rcTypeReceiver {
                 this.sendBitSet(datapin, 8, outBuf);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
+                
+                if (transmitter!=null) transmitter.send(outBuf, datapin-1, 8);
             }
            
             if (eot) {
@@ -106,12 +140,19 @@ public class terminal extends Circuit implements rcTypeReceiver {
                 this.sendInt(datapin, 8, 0x3);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
+                
+                if (transmitter!=null) transmitter.send(0x3, datapin-1, 8);                
             }
 
             if (datapin==2) {
                 // pulse the EOT output pin if exists.
                 this.sendOutput(1, true);
                 this.sendOutput(1, false);
+                
+                if (transmitter!=null) {
+                    transmitter.send(true, 0);
+                    transmitter.send(false, 0);
+                }
             }
         } else if (type==DataType.num) {
             try {
@@ -122,6 +163,10 @@ public class terminal extends Circuit implements rcTypeReceiver {
                 this.sendBitSet(1, outputs.length-1, outBuf);
                 this.sendOutput(0, true);
                 this.sendOutput(0, false);
+                
+                if (transmitter!=null) 
+                    transmitter.send(outBuf, 0, transmitter.getChannelLength());
+                
             } catch (NumberFormatException ne) {
                 error(player, "Not a number: " + typeString.trim() + ". use ascii data type (1st sign arg), for sending ascii symbols.");
             }

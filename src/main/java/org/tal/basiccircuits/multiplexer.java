@@ -29,7 +29,7 @@ public class multiplexer extends Circuit {
             int expectedInputs = incount*outputs.length + selectSize;
 
             if (inputs.length!=expectedInputs) {
-                error(sender, "Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
+                error(sender, "Wrong number of inputs (" + inputs.length + "). expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
                 return false;
             }
 

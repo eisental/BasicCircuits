@@ -17,6 +17,7 @@ public class and extends BitSetCircuit {
         for (int i=1; i<this.inputBitSets.length; i++) {
             out.and(inputBitSets[i]);
         }
+        
         this.sendBitSet(out);
     }
 
