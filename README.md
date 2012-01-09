@@ -1,7 +1,7 @@
 BasicCircuits
 =============
 
-The basic circuit package for [RedstoneChips](http://eisental.github.com/RedstoneChips).
+The basic circuit library for [RedstoneChips](http://eisental.github.com/RedstoneChips).
 
 __For much more information, visit the [circuitdocs](http://eisental.github.com/RedstoneChips/circuitdocs).__
 
@@ -12,6 +12,20 @@ Installation
 
 Changelog
 ---------
+#### BasicCircuits 0.94 (Jan 9th, 2012)
+- Updated for RC0.94.
+- __comparator__: New option for adding a clock input pin. 
+- __shiftregister__: Added right shift. 
+- __terminal__: Added wireless. 
+- __display__: supports 1 line screens.
+- __display__: The chip will work even when not all screen wool blocks are placed. 
+- __display__: fixed screen not being cleared on activation.
+- __display__: shows debug message also when setting a pixel to the same color. 
+- __print__: when clock input is on any data change will cause signs to update.
+- __print__: Removed spaces between words in binary mode.
+- Doesn't print "Created new sram folder" message on every server startup. 
+- Fixed sram /rctype dump crashing the server (http://github.com/eisental/BasicCircuits/issues/9).
+
 #### BasicCircuits 0.93 (19/12/11)
 - Updated to work with RC0.93.
 - __display__: size argument is now optional. 
