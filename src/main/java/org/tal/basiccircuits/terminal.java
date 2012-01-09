@@ -118,8 +118,7 @@ public class terminal extends Circuit implements RCTypeReceiver {
 
         String typeString = "";
 
-        for (String a : words)
-            typeString += a + " ";
+        for (String a : words) typeString += a + " ";
         
         if (type==DataType.ascii) {
             int datapin = (outputs.length==9?1:2);
@@ -128,31 +127,29 @@ public class terminal extends Circuit implements RCTypeReceiver {
                 buf[0] = typeString.charAt(i);
                 outBuf = BitSet7.valueOf(buf);
                 if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, 8) + "(" + (char)buf[0] + ")");
-                this.sendBitSet(datapin, 8, outBuf);
-                this.sendOutput(0, true);
-                this.sendOutput(0, false);
                 
-                if (transmitter!=null) transmitter.send(outBuf, datapin-1, 8);
+                if (transmitter!=null) transmitter.send(outBuf, 0, 8);
+                else {
+                    this.sendBitSet(datapin, 8, outBuf);
+                    this.sendOutput(0, true);
+                    this.sendOutput(0, false);                    
+                }
             }
            
             if (eot) {
-                // send an EOT (end of text character - 0x3)
-                this.sendInt(datapin, 8, 0x3);
-                this.sendOutput(0, true);
-                this.sendOutput(0, false);
-                
-                if (transmitter!=null) transmitter.send(0x3, datapin-1, 8);                
+                // send an EOT (end of text character - 0x3)                
+                if (transmitter!=null) transmitter.send(0x3, 0, 8);
+                else {
+                    this.sendInt(datapin, 8, 0x3);
+                    this.sendOutput(0, true);
+                    this.sendOutput(0, false);                    
+                }
             }
 
-            if (datapin==2) {
-                // pulse the EOT output pin if exists.
+            if (datapin==2 && transmitter==null) {
+                // pulse the EOT output pin if exists.                
                 this.sendOutput(1, true);
                 this.sendOutput(1, false);
-                
-                if (transmitter!=null) {
-                    transmitter.send(true, 0);
-                    transmitter.send(false, 0);
-                }
             }
         } else if (type==DataType.num) {
             try {
@@ -161,14 +158,16 @@ public class terminal extends Circuit implements RCTypeReceiver {
                 outBuf = BitSet7.valueOf(buf);
                 if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, outputs.length-1));
                 this.sendBitSet(1, outputs.length-1, outBuf);
-                this.sendOutput(0, true);
-                this.sendOutput(0, false);
                 
                 if (transmitter!=null) 
                     transmitter.send(outBuf, 0, transmitter.getChannelLength());
+                else {
+                    this.sendOutput(0, true);
+                    this.sendOutput(0, false);                    
+                }
                 
             } catch (NumberFormatException ne) {
-                error(player, "Not a number: " + typeString.trim() + ". use ascii data type (1st sign arg), for sending ascii symbols.");
+                error(player, "Not a number: " + typeString.trim() + ". Use a 'ascii' sign argument to sending ascii characters.");
             }
         }
 

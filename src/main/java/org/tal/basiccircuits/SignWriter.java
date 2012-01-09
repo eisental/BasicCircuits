@@ -177,7 +177,7 @@ public class SignWriter {
         } else if (type==Type.oct) {
             text = Integer.toOctalString(BitSetUtils.bitSetToUnsignedInt(bits, start, length));
         } else if (type==Type.bin) {
-            text = BitSetUtils.bitSetToBinaryString(bits, start, length, -1);
+            text = BitSetUtils.bitSetToBinaryString(bits, start, (bits.length()==0?1:bits.length()), -1);
         } else if (type==Type.ascii) {
             char c = (char)BitSetUtils.bitSetToUnsignedInt(bits, start, length);
             if (!Character.isISOControl(c)) text = Character.toString(c);

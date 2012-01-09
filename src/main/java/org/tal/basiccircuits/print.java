@@ -32,7 +32,6 @@ public class print extends Circuit implements RCTypeReceiver {
 
     private int dataPin = 1;
     private SignWriter writer;
-    private Receiver receiver;
     
     @Override
     public void inputChange(int inIdx, boolean state) {
@@ -51,16 +50,28 @@ public class print extends Circuit implements RCTypeReceiver {
         
     }
     
-    class PrintReceiver extends Receiver {
+    class WriteReceiver extends Receiver {
+        
         @Override
         public void receive(BitSet7 bits) {
-            if ((writer.getDisplayMode()==DisplayMode.scroll || writer.getDisplayMode()==DisplayMode.add) && bits.get(clearPin-1))
-                clear();
-            if (writer.getDisplayMode()==DisplayMode.scroll && bits.get(scrollPin-1))
-                writer.scroll(1);
-
-            write(bits, dataPin-1, getChannelLength()-(dataPin-1));
+            write(bits, 0, getChannelLength());
         }
+    }
+    
+    class ClearReceiver extends Receiver {
+
+        @Override
+        public void receive(BitSet7 bits) {
+            if (bits.get(0)) writer.clear();
+        }        
+    }
+    
+    class ScrollReceiver extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {
+            if (bits.get(0)) writer.scroll(1);
+        }
+        
     }
     
     private void clear() {
@@ -72,7 +83,7 @@ public class print extends Circuit implements RCTypeReceiver {
         writer.write(bits, start, length);
         if (hasDebuggers()) {
             String[] lines = writer.getLines();
-            debug("printed:");
+            debug("text:");
             debug(lines[0]);
             debug(lines[1]);
             debug(lines[2]);
@@ -130,9 +141,7 @@ public class print extends Circuit implements RCTypeReceiver {
         if (display==DisplayMode.replace) dataPin = 1;
         else if (display==DisplayMode.add) dataPin = 2;
         else if (display==DisplayMode.scroll) dataPin = 3;
-        
-        if (channel!=null && !initReceiver(sender, channel, type)) return false;
-        
+                
         List<Location> signList = findSigns();
         if (signList.isEmpty()) {
             error(sender, "Couldn't find any signs attached to the chip interface blocks.");
@@ -147,6 +156,8 @@ public class print extends Circuit implements RCTypeReceiver {
         
         writer = new SignWriter(display, type, signList);
         redstoneChips.addRCTypeReceiver(activationBlock, this);
+        
+        if (channel!=null && !initReceiver(sender, channel, type)) return false;
         
         return true;
     }
@@ -166,9 +177,26 @@ public class print extends Circuit implements RCTypeReceiver {
     
     private boolean initReceiver(CommandSender sender, String channel, Type type) {
         try {
-            receiver = new PrintReceiver();
-            int len = dataPin-1 + (type==Type.ascii?8:32);
-            receiver.init(sender, channel, len, this);
+            Receiver writeReceiver = new WriteReceiver();
+            writeReceiver.init(sender, channel, type==Type.ascii?8:32, this);
+            
+            if (writer.getDisplayMode()==DisplayMode.add) {
+                Receiver clearReceiver = new ClearReceiver();
+                clearReceiver.init(sender, channel, 1, this);
+                
+                writeReceiver.setStartBit(writeReceiver.getStartBit()+1);
+            } else if (writer.getDisplayMode()==DisplayMode.scroll) {
+                Receiver clearReceiver = new ClearReceiver();
+                clearReceiver.init(sender, channel, 1, this);
+                
+                Receiver scrollReceiver = new ScrollReceiver();
+                scrollReceiver.init(sender, channel, 1, this);
+                scrollReceiver.setStartBit(scrollReceiver.getStartBit()+1);
+
+                writeReceiver.setStartBit(writeReceiver.getStartBit()+2);                
+                        
+            }
+                
             return true;
         } catch (IllegalArgumentException e) {
             error(sender, e.getMessage());

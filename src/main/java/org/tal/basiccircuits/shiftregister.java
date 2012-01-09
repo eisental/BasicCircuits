@@ -13,14 +13,26 @@ import org.tal.redstonechips.util.BitSetUtils;
  * @author Tal Eisenberg
  */
 public class shiftregister extends Circuit {
-    private BitSet7 register = new BitSet7();
+    final static int ClockPin = 0;
+    final static int ResetPin = 2;
+    final static int DataPin = 1;
+    
+    private boolean shiftRight = false;
+    
+    private BitSet7 register;
 
     @Override
     public void inputChange(int inIdx, boolean high) {
         if (inIdx==0 && high) { // clock
-            BitSetUtils.shiftLeft(register, outputs.length);
-            register.set(0, inputBits.get(1));
+            if (shiftRight) {
+                BitSetUtils.shiftRight(register, outputs.length, false);
+                register.set(outputs.length-1, inputBits.get(DataPin));
+            } else {
+                BitSetUtils.shiftLeft(register, outputs.length);
+                register.set(0, inputBits.get(DataPin));
+            }
             sendBitSet(register);
+            
         } else if (inIdx==2 && high) { // reset
             register.clear();
             sendBitSet(register);
@@ -34,7 +46,18 @@ public class shiftregister extends Circuit {
             return false;
         }
 
+        if (args.length>0) {
+            if (args[0].equalsIgnoreCase("right")) {
+                shiftRight = true;
+            } else if (args[0].equalsIgnoreCase("left")) {
+                shiftRight = false;
+            } else {
+                error(sender, "Invalid argument: " + args[0] + " expecting right|aright|left.");
+                return false;
+            }
+        }
         if (sender!=null) resetOutputs();
+        register = new BitSet7(outputs.length);
         return true;
 
     }

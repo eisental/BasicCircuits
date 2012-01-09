@@ -119,6 +119,9 @@ public class sram extends Circuit implements RCTypeReceiver {
         } catch (IOException ex) {
             error(sender, "While creating new memory file: " + ex);
             return false;
+        } catch (IllegalArgumentException e) {
+            error(sender, e.getMessage());
+            return false;
         }
 
         
