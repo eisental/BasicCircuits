@@ -148,11 +148,27 @@ public class clock extends Circuit {
     }
 
     @Override
+    public void disable() {
+        super.disable();
+        stopClock();
+    }   
+
+    @Override
+    public void enable() {
+        super.enable();
+        if (masterToggle) {
+            if (inputBits.get(0)) startClock();
+        } else if (!onBits.isEmpty())
+            startClock();
+    }
+    
+    @Override
     public void circuitShutdown() {
         stopClock();
     }
 
     boolean currentState = true;
+    
     private class TickTask implements Runnable {
         
 
@@ -160,20 +176,6 @@ public class clock extends Circuit {
         public void run() {
             if (!ticking) return;
 
-            /*
-            if (redstoneChips.getPrefs().getFreezeOnChunkUnload()) {
-                boolean allChunksLoaded = true;
-            for (ChunkLocation l : circuitChunks) {
-                System.out.println(l + ": " + l.isChunkLoaded());
-            }
-
-                for (ChunkLocation l : circuitChunks)
-                    if (!l.isChunkLoaded()) { allChunksLoaded = false; break; }
-
-                if (allChunksLoaded) tick();
-                
-            } else tick();*/
-            
             tick();
 
             long delay;

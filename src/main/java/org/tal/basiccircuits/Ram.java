@@ -47,6 +47,12 @@ public class Ram extends Memory {
         return data;
     }
 
+    public BitSet7 read(int address) {
+        BitSet7 data = words.get(BitSetUtils.intToBitSet(address, 32));
+        if (data==null) data = new BitSet7();
+        return data;
+    }
+    
     @Override
     public void write(BitSet7 address, BitSet7 data) {
         words.put(address, data);
