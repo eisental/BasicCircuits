@@ -8,8 +8,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.RCTypeReceiver;
-import org.tal.redstonechips.command.CommandUtils;
-import org.tal.redstonechips.command.LineSource;
+import org.tal.redstonechips.page.LineSource;
+import org.tal.redstonechips.page.Pager;
 import org.tal.redstonechips.util.BitSet7;
 import org.tal.redstonechips.util.BitSetUtils;
 import org.tal.redstonechips.util.Range;
@@ -257,9 +257,8 @@ public class sram extends Circuit implements RCTypeReceiver {
             
             MemoryLineSource l = new MemoryLineSource(firstAddress, lastAddress-firstAddress+1);
             
-            CommandUtils.pageMaker(player, "sram " + memory.getId() + " memory (" + titleRange + ")", "rctype dump", 
-                    l, redstoneChips.getPrefs().getInfoColor(), redstoneChips.getPrefs().getErrorColor(), 
-                    CommandUtils.MaxLines);
+            Pager.beginPaging(player, "sram " + memory.getId() + " memory (" + titleRange + ")", 
+                    l, redstoneChips.getPrefs().getInfoColor(), redstoneChips.getPrefs().getErrorColor());
         } else {
             player.sendMessage(redstoneChips.getPrefs().getErrorColor() + "Invalid address range: " + firstAddress + ".." + lastAddress);
         }
@@ -290,7 +289,7 @@ public class sram extends Circuit implements RCTypeReceiver {
         }
 
         @Override
-        public float getLineCount() {
+        public int getLineCount() {
             return length;
         }
         
