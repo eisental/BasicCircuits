@@ -1,6 +1,7 @@
 
 package org.tal.basiccircuits;
 
+import org.tal.redstonechips.memory.Ram;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.bukkit.ChatColor;
@@ -8,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.RCTypeReceiver;
+import org.tal.redstonechips.memory.Memory;
 import org.tal.redstonechips.page.LineSource;
 import org.tal.redstonechips.page.Pager;
 import org.tal.redstonechips.util.BitSet7;
@@ -43,14 +45,14 @@ public class sram extends Circuit implements RCTypeReceiver {
 
             if (readWrite && !sramDisable) { // store current data inputs when readWrite goes high.
                 BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
-                if (hasDebuggers()) debug("Writing " + BitSetUtils.bitSetToBinaryString(data, 0, wordLength) + " to address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
+                if (hasListeners()) debug("Writing " + BitSetUtils.bitSetToBinaryString(data, 0, wordLength) + " to address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
                 memory.write(address, data);
             } else {
                 this.sendBitSet(data);
             }
         } else if (inIdx==disablePin) {
             sramDisable = state;
-            if (hasDebuggers()) debug("Chip " + (sramDisable?"disabled.":"enabled"));
+            if (hasListeners()) debug("Chip " + (sramDisable?"disabled.":"enabled"));
             if (sramDisable) {
                 outputBits.clear();
             } else {
@@ -104,17 +106,15 @@ public class sram extends Circuit implements RCTypeReceiver {
 
             return false;
         }
-
-        if (Ram.dataFolder==null || !Ram.dataFolder.exists())
-            Ram.setupDataFolder(redstoneChips.getDataFolder());
         
         try {
             if (args.length>0) {
                 anonymous = false;
-                memory = Ram.getRam(args[0]);
+                // if new memory subclasses are added there should be a check here for memory class.
+                memory = (Ram)Memory.getMemory(args[0], Ram.class);
             } else {
                 anonymous = true;
-                memory = Ram.getRam();
+                memory = (Ram)Memory.getMemory(args[0], Ram.class);
             }
         } catch (IOException ex) {
             error(sender, "While creating new memory file: " + ex);
@@ -153,9 +153,6 @@ public class sram extends Circuit implements RCTypeReceiver {
 
     @Override
     public void save() {
-        if (Ram.dataFolder==null || !Ram.dataFolder.exists()) 
-            Ram.setupDataFolder(redstoneChips.getDataFolder());
-        
         try {
             memory.save();
         } catch (IOException ex) {
@@ -166,7 +163,7 @@ public class sram extends Circuit implements RCTypeReceiver {
     private void readMemory() {
         BitSet7 address = inputBits.get(addressPin, addressPin+addressLength);
         BitSet7 data = memory.read(address);
-        if (hasDebuggers()) debug("Reading " + BitSetUtils.bitSetToBinaryString(data, 0, wordLength) + " from address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
+        if (hasListeners()) debug("Reading " + BitSetUtils.bitSetToBinaryString(data, 0, wordLength) + " from address " + BitSetUtils.bitSetToUnsignedInt(address, 0, addressLength));
         sendBitSet(0, wordLength, data);
     }
     

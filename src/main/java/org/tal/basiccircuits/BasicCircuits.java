@@ -1,7 +1,5 @@
 package org.tal.basiccircuits;
 
-import java.io.File;
-import java.util.logging.Level;
 import org.tal.redstonechips.RedstoneChips;
 import org.tal.redstonechips.circuit.CircuitLibrary;
 
@@ -24,25 +22,5 @@ public class BasicCircuits extends CircuitLibrary {
     public void onRedstoneChipsEnable(RedstoneChips rc) {
         // add new pref keys.
         rc.getPrefs().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
-
-        if (rc.getDataFolder()==null || !rc.getDataFolder().exists()) return;
-        
-        // set sram data folder.
-        try {
-            boolean s = Ram.setupDataFolder(rc.getDataFolder());
-            if (s) logger.log(Level.INFO, "[BasicCircuits] Created new sram folder: " + Ram.dataFolder.getAbsolutePath());
-        } catch (Exception e) {
-            logger.log(Level.INFO, "[BasicCircuits] " + e.getMessage());
-        }
-
-        // move any sram files in rc data folder.
-        if (rc.getDataFolder().listFiles()!=null) {
-            for (File f : rc.getDataFolder().listFiles()) {
-                if (f.isFile() && f.getName().startsWith("sram-") &&
-                        f.getName().endsWith(".data")) {
-                    f.renameTo(new File(Ram.dataFolder, f.getName()));
-                }
-            }
-        }
     }
 }
