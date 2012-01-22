@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.RCTypeReceiver;
 import org.tal.redstonechips.memory.Memory;
+import org.tal.redstonechips.memory.RamListener;
 import org.tal.redstonechips.page.LineSource;
 import org.tal.redstonechips.page.Pager;
 import org.tal.redstonechips.util.BitSet7;
@@ -20,7 +21,7 @@ import org.tal.redstonechips.util.Range;
  *
  * @author Tal Eisenberg
  */
-public class sram extends Circuit implements RCTypeReceiver {
+public class sram extends Circuit implements RCTypeReceiver, RamListener {
 
     Ram memory;
     int addressLength;
@@ -137,6 +138,7 @@ public class sram extends Circuit implements RCTypeReceiver {
             readMemory();
         }
         
+        memory.addListener(this);
         info(sender, "This sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + memory.getFile().getPath());
         
         return true;
@@ -264,6 +266,12 @@ public class sram extends Circuit implements RCTypeReceiver {
     @Override
     protected boolean isStateless() {
         return false;
+    }
+
+    @Override
+    public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
+        BitSet7 curaddr = inputBits.get(addressPin, addressPin+addressLength);
+        if (readWrite && curaddr.equals(address)) readMemory();
     }
     
     class MemoryLineSource implements LineSource {
