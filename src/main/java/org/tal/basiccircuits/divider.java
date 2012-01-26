@@ -5,8 +5,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.tal.redstonechips.circuit.BitSetCircuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
 
 /**
  *

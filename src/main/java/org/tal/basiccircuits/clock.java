@@ -3,8 +3,8 @@ package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.UnitParser;
+import org.tal.redstonechips.bitset.BitSet7;
+import net.eisental.common.parsing.UnitParser;
 import org.tal.redstonechips.wireless.Transmitter;
 
 /**

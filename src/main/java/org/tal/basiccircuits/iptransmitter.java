@@ -10,9 +10,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
-import org.tal.redstonechips.util.Range;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
+import net.eisental.common.parsing.Range;
 
 /**
  *

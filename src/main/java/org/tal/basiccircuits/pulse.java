@@ -2,7 +2,7 @@ package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.UnitParser;
+import net.eisental.common.parsing.UnitParser;
 
 /**
  *

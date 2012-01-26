@@ -8,8 +8,8 @@ import org.bukkit.block.NoteBlock;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.io.InterfaceBlock;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
 import org.tal.redstonechips.wireless.Receiver;
 
 /**

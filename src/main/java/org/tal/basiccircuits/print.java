@@ -1,23 +1,15 @@
 package org.tal.basiccircuits;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.material.MaterialData;
 import org.tal.basiccircuits.SignWriter.DisplayMode;
 import org.tal.basiccircuits.SignWriter.Type;
+import org.tal.redstonechips.bitset.BitSet7;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.circuit.io.InterfaceBlock;
 import org.tal.redstonechips.circuit.RCTypeReceiver;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.Locations;
+import org.tal.redstonechips.circuit.io.IOBlock;
 import org.tal.redstonechips.wireless.Receiver;
 
 
@@ -75,13 +67,13 @@ public class print extends Circuit implements RCTypeReceiver {
     }
     
     private void clear() {
-        if (hasDebuggers()) debug("Clearing signs.");
+        if (hasListeners()) debug("Clearing signs.");
         writer.clear();
     }
     
     private void write(BitSet7 bits, int start, int length) {
         writer.write(bits, start, length);
-        if (hasDebuggers()) {
+        if (hasListeners()) {
             String[] lines = writer.getLines();
             debug("text:");
             debug(lines[0]);
@@ -142,19 +134,19 @@ public class print extends Circuit implements RCTypeReceiver {
         else if (display==DisplayMode.add) dataPin = 2;
         else if (display==DisplayMode.scroll) dataPin = 3;
                 
-        List<Location> signList = findSigns();
-        if (signList.isEmpty()) {
+        writer = SignWriter.getSignWriter(display, type, IOBlock.locationsOf(interfaceBlocks));        
+        if (writer.getSigns().isEmpty()) {
             error(sender, "Couldn't find any signs attached to the chip interface blocks.");
             return false;
         } else {
             List<Location> str = new ArrayList<Location>();
             str.addAll(Arrays.asList(structure));
-            str.addAll(signList);
+            str.addAll(writer.getSigns());
             this.structure = str.toArray(new Location[str.size()]);
-            info(sender, "Found " + signList.size() + " sign(s) to print on.");
+            info(sender, "Found " + writer.getSigns().size() + " sign(s) to print on.");
         }
         
-        writer = new SignWriter(display, type, signList);
+
         redstoneChips.addRCTypeReceiver(activationBlock, this);
         
         if (channel!=null && !initReceiver(sender, channel, type)) return false;
@@ -204,41 +196,6 @@ public class print extends Circuit implements RCTypeReceiver {
         }        
     }
     
-    private List<Location> findSigns() {
-        List<Location> signs = new ArrayList<Location>();
-
-        for (InterfaceBlock ib : interfaceBlocks) {
-            Location loc = ib.getLocation();
-            Location north = Locations.getFace(loc, BlockFace.NORTH);
-            Location south = Locations.getFace(loc, BlockFace.SOUTH);
-            Location west = Locations.getFace(loc, BlockFace.WEST);
-            Location east = Locations.getFace(loc, BlockFace.EAST);
-            Location up = Locations.getFace(loc, BlockFace.UP);
-
-            Block i = loc.getBlock();
-            if (checkBlock(i, north)) { signs.add(north); }
-            if (checkBlock(i, south)) { signs.add(south); }
-            if (checkBlock(i, west)) { signs.add(west); }
-            if (checkBlock(i, east)) { signs.add(east); }
-            if (checkBlock(i, up)) { signs.add(up); }
-        }
-        
-        return signs;
-    }
-    
-    private boolean checkBlock(Block i, Location s) {
-        // TODO: Check whether this method loads the chunk or not.
-        Block sign = s.getBlock();
-        MaterialData data = sign.getState().getData();
-        if (data instanceof org.bukkit.material.Sign) {
-            org.bukkit.material.Sign signData = (org.bukkit.material.Sign)data;
-            if (sign.getRelative(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
-                return true;
-            else return false;
-
-        } else return false;
-    }
-
     @Override
     public void setInternalState(Map<String, String> state) {
         Object text = state.get("text");

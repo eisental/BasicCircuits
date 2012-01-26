@@ -2,16 +2,16 @@ package org.tal.basiccircuits;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.eisental.common.parsing.ParsingUtils;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
-import org.tal.redstonechips.util.ParsingUtils;
 import org.tal.redstonechips.wireless.Receiver;
 
 /**
@@ -316,7 +316,7 @@ public class display extends Circuit {
         byte color;
         if (indexedColor) {
             if (data>=colorIndex.length) {
-                if (hasDebuggers()) debug("Color index " + data + " is out of bounds.");
+                if (hasListeners()) debug("Color index " + data + " is out of bounds.");
                 return;
             } else
                 color = colorIndex[data];
@@ -324,13 +324,13 @@ public class display extends Circuit {
         } else color = (byte)data;
 
         if (x>=width || y>=height) {
-            if (hasDebuggers()) debug("Pixel (" + x + ", " + y + ") is out of bounds.");
+            if (hasListeners()) debug("Pixel (" + x + ", " + y + ") is out of bounds.");
             return;
         }
         
         Location[] pixel = pixels[x][y];
 
-        if (hasDebuggers()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));        
+        if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));        
         if (memory[x][y]!=color || !checkMemory) {
             for (Location l : pixel) {
                 Block b = l.getBlock();

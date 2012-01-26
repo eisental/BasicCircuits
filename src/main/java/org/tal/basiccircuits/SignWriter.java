@@ -1,17 +1,21 @@
 package org.tal.basiccircuits;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.bukkit.material.MaterialData;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
+import org.tal.redstonechips.util.Locations;
 
 /**
  *
  * @author Tal Eisenberg
  */
 public class SignWriter {
-
     public enum Type {
         num, signed, unsigned, ascii, hex, oct, bin;
     }
@@ -60,6 +64,8 @@ public class SignWriter {
         else prepWrapLines();
         updateSigns();
     }
+    
+    List<Location> getSigns() { return signList; }
     
     public void write(String text) {
         if (display==DisplayMode.add) {
@@ -185,5 +191,40 @@ public class SignWriter {
         }
 
         return text;
-    }        
+    }
+    
+    public static SignWriter getSignWriter(DisplayMode mode, Type type, Location... aroundBlocks) {
+        List<Location> signs = new ArrayList<Location>();
+
+        for (Location loc : aroundBlocks) {
+            Location north = Locations.getFace(loc, BlockFace.NORTH);
+            Location south = Locations.getFace(loc, BlockFace.SOUTH);
+            Location west = Locations.getFace(loc, BlockFace.WEST);
+            Location east = Locations.getFace(loc, BlockFace.EAST);
+            Location up = Locations.getFace(loc, BlockFace.UP);
+
+            Block i = loc.getBlock();
+            if (checkBlock(i, north)) { signs.add(north); }
+            if (checkBlock(i, south)) { signs.add(south); }
+            if (checkBlock(i, west)) { signs.add(west); }
+            if (checkBlock(i, east)) { signs.add(east); }
+            if (checkBlock(i, up)) { signs.add(up); }
+        }
+        
+        return new SignWriter(mode, type, signs);        
+    }
+    
+    private static boolean checkBlock(Block i, Location s) {
+        // TODO: Check whether this method loads the chunk or not.
+        Block sign = s.getBlock();
+        MaterialData data = sign.getState().getData();
+        if (data instanceof org.bukkit.material.Sign) {
+            org.bukkit.material.Sign signData = (org.bukkit.material.Sign)data;
+            if (sign.getRelative(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
+                return true;
+            else return false;
+
+        } else return false;
+    }
+    
 }

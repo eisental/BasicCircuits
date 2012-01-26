@@ -11,11 +11,11 @@ import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.RCTypeReceiver;
 import org.tal.redstonechips.memory.Memory;
 import org.tal.redstonechips.memory.RamListener;
-import org.tal.redstonechips.page.LineSource;
-import org.tal.redstonechips.page.Pager;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
-import org.tal.redstonechips.util.Range;
+import net.eisental.common.page.LineSource;
+import net.eisental.common.page.Pager;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
+import net.eisental.common.parsing.Range;
 
 /**
  *

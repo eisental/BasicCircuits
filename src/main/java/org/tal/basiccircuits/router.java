@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.bitset.BitSet7;
 
 /**
  *
