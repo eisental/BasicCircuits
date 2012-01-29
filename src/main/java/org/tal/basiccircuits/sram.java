@@ -273,6 +273,11 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         BitSet7 curaddr = inputBits.get(addressPin, addressPin+addressLength);
         if (readWrite && curaddr.equals(address)) readMemory();
     }
+
+    @Override
+    public void circuitShutdown() {
+        memory.release();
+    }
     
     class MemoryLineSource implements LineSource {
         int offset;
@@ -305,8 +310,6 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
             for (int i=0; i<charCount-address.length(); i++) pad += "0";
             return pad + address;
         }
-        
-        
     }
     
     
