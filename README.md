@@ -1,20 +1,63 @@
 BasicCircuits
 =============
 
-The basic circuit package for [RedstoneChips](http://eisental.github.com/RedstoneChips).
+The basic circuit library for [RedstoneChips](http://eisental.github.com/RedstoneChips).
 
 __For much more information, visit the [circuitdocs](http://eisental.github.com/RedstoneChips/circuitdocs).__
 
 Installation
 -------------
-* Make sure you have the core [RedstoneChips](http://eisental.github.com/RedstoneChips) plugin installed in your craftbukkit plugins folder.
-* Download the latest [BasicCircuits jar file](https://github.com/downloads/eisental/BasicCircuits/BasicCircuits-beta.jar).
-* Copy jar file to the plugins folder of your craftbukkit installation.
-
-
+* [Download](http://eisental.github.com/RedstoneChips) the latest RedstoneChips version bundle.
+* Copy all jar file to the plugins folder of your craftbukkit installation.
 
 Changelog
 ---------
+#### BasicCircuits 0.94 (Jan 9th, 2012)
+- Updated for RC0.94.
+- __comparator__: New option for adding a clock input pin. 
+- __shiftregister__: Added right shift. 
+- __terminal__: Added wireless. 
+- __display__: supports 1 line screens.
+- __display__: The chip will work even when not all screen wool blocks are placed. 
+- __display__: fixed screen not being cleared on activation.
+- __display__: shows debug message also when setting a pixel to the same color. 
+- __print__: when clock input is on any data change will cause signs to update.
+- __print__: Removed spaces between words in binary mode.
+- Doesn't print "Created new sram folder" message on every server startup. 
+- Fixed sram /rctype dump crashing the server (http://github.com/eisental/BasicCircuits/issues/9).
+
+#### BasicCircuits 0.93 (19/12/11)
+- Updated to work with RC0.93.
+- __display__: size argument is now optional. 
+- __synth__: Added wireless support.
+- __print__: Added wireless support.
+- __print__: Removed scheduling of sign update. Seems to work. If your server freezes let me know…
+- __print__: Fixed a bug that caused print to malfunction after a chunk reload.
+- __sram__: Some bug fixes and added zero padding to `/rctype dump` address numbers.
+- __sram__: Moved sram data files into their own folder. Should automatically move data files to the right place.
+- __receiver__: Fixed channel length calculation (it was off by 1 before). 
+
+#### BasicCircuits 0.92 (4/12/11)
+- Updated to work with RedstoneChips 0.92.
+- Fixed an NPE bug in wireless chips.
+- __print__: Fixed some bugs. 
+- __pulse__: A pulse with multiple outputs can be triggered by 1 input. The chip will wait until a pulse is over before moving to the next output in this mode.
+- __display__: Creates a wool display with individually addressable pixels.
+- __sram__: Changed file format slightly. Old format should still work.
+- __sram__: 2 sram chips with the same id can share data in memory and on file.
+- __sram__: should support any address size or word lengths. Previously it was limited to 32-bit integers.
+- __sram__: memory ids must start with a letter and may contain letters digits or underscores (_).
+- __sram__: Using `/rctype dump` on the chip sign will print its memory contents.
+- __transmitter__: transmits on every input change when it's clock input is on.
+- __transmitter__: new select mode for dynamically changing the broadcast start bit.
+- __bust__: new chip that makes it possible to send any number of pulses per clock tick (based on pulsar by @needspeed10 ). 
+- __clock__: doesn't clear it's outputs on circuit shutdown to prevent LWC from printing an error.
+- counter, dregister, flipflop, pisoregister, shiftregister, sram, srnor resets its outputs on init.
+- __ipreceiver__: Added option to use 'any' as a sign argument to receive data from any address.
+- __transmitter__: fixed a small print bug.
+- __nand__: fixed the chip.
+- __clock__: Can transmit on a wireless channel by specifying one as a last argument, using the format: #<channel name>[:<start bit>].
+
 #### BasicCircuits 0.9 (23/04/11)
 - Updated to work with RedstoneChips 0.9.
 - New bintobcd circuit for converting binary to bcd for numbers of any size.

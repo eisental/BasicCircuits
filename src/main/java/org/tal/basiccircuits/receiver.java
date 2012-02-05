@@ -2,17 +2,19 @@ package org.tal.basiccircuits;
 
 
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.channel.ReceivingCircuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
+import org.tal.redstonechips.wireless.Receiver;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class receiver extends ReceivingCircuit {
+public class receiver extends Circuit {
     private int dataPin;
-
+    private Receiver rec;
+    
     @Override
     public void inputChange(int inIdx, boolean newLevel) {}
 
@@ -25,8 +27,10 @@ public class receiver extends ReceivingCircuit {
         
         if (args.length>0) {
             try {
-                this.initWireless(sender, args[0]);
                 dataPin = (outputs.length==1?0:1);
+                rec = new ReceiverImpl();
+                int len = outputs.length-dataPin;
+                rec.init(sender, args[0], len, this);
                 return true;
             } catch (IllegalArgumentException ie) {
                 error(sender, ie.getMessage());
@@ -38,24 +42,21 @@ public class receiver extends ReceivingCircuit {
         }
     }
 
-    @Override
-    public void receive(BitSet7 bits) {        
-        if (hasDebuggers()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, outputs.length));
-        this.sendBitSet(dataPin, outputs.length-dataPin, bits);
-        if (outputs.length>1) {
-            this.sendOutput(0, true);
-            this.sendOutput(0, false);
-        }
+    class ReceiverImpl extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {        
+            if (hasDebuggers()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, getChannelLength()));
+            sendBitSet(dataPin, outputs.length-dataPin, bits);
+            if (outputs.length>1) {
+                sendOutput(0, true);
+                sendOutput(0, false);
+            }
+        }        
     }
 
     @Override
-    public void circuitShutdown() {
-        if (getChannel()!=null) redstoneChips.removeReceiver(this);
-    }
-
-    @Override
-    public int getChannelLength() {
-        return outputs.length-dataPin;
+    protected boolean isStateless() {
+        return false;
     }
 
 }

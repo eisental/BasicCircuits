@@ -10,9 +10,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
-import org.tal.redstonechips.util.Range;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
+import net.eisental.common.parsing.Range;
 
 /**
  *
@@ -44,8 +44,13 @@ public class iptransmitter extends Circuit {
         try {
             address = InetAddress.getByName(args[0]);
             port = Integer.decode(args[1]);
+            Object oRange = redstoneChips.getPrefs().getPrefs().get("iptransmitter.ports");
+            if (oRange==null) {
+                error(sender, "No ports are allowed. Please set a port range by changing the iptransmitter.ports preferences key.");
+                return false;
+            }
 
-            String sRange = (String)redstoneChips.getPrefs().getPrefs().get("iptransmitter.ports");
+            String sRange = oRange.toString();
             Range portRange = new Range(sRange, Range.Type.OPEN_ALLOWED);
             if (!portRange.isInRange(port)) {
                 error(sender, "Port " + port + " is not allowed. Use ports in the range of " + portRange.toString());

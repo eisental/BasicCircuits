@@ -1,14 +1,16 @@
 package org.tal.basiccircuits;
 
 import java.util.regex.Pattern;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.circuit.io.InterfaceBlock;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
+import org.tal.redstonechips.wireless.Receiver;
 
 /**
  *
@@ -17,49 +19,80 @@ import org.tal.redstonechips.util.BitSetUtils;
 public class synth extends Circuit {
     private boolean indexedPitch = false;
     private byte[] pitchIndex;
-
+    
+    private Receiver receiver;
+    
     public static final Pattern MIDINOTE_PATTERN = Pattern.compile("[a-gA-G][#b]?\\-?[0-8]+");
 
     @Override
     public void inputChange(int inIdx, boolean on) {
         if (inputs.length==1) {
-            playNote();
+            playNote(inputBits, 0, 1);
         } else if (inIdx==0 && on) { // clock pin
-            playNote();
+            playNote(inputBits, 1, inputs.length-1);
+        }
+    }
+
+    class SynthReceiver extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {
+            playNote(bits, 0, receiver.getChannelLength());
         }
     }
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
         // needs to have 5 inputs 1 clock 4 data
-
-        if (args.length>0) {
-            indexedPitch = true;
-            pitchIndex = new byte[args.length];
-            for (int i=0; i<pitchIndex.length; i++) {
-                try {
-                    pitchIndex[i] = (byte)noteStringToData(args[i]);
-                } catch (IllegalArgumentException ie) {
-                    error(sender, ie.getMessage());
-                    return false;
-                }
-
+        String channel = null;
+        
+        if (args.length>0) {            
+            if (args[args.length-1].startsWith("#")) { // channel arg
+                channel = args[args.length-1].substring(1);
             }
-        }
+            
+            if (args.length>=(channel!=null?2:1)) {
+                indexedPitch = true;
+                pitchIndex = new byte[(channel==null?args.length:args.length-1)];
+                for (int i=0; i<pitchIndex.length; i++) {
+                    try {
+                        pitchIndex[i] = (byte)noteStringToData(args[i]);
+                    } catch (IllegalArgumentException ie) {
+                        error(sender, ie.getMessage());
+                        return false;
+                    }
 
+                }
+                
+            } 
+        }
+                
         if (inputs.length>6 && !indexedPitch) {
             error(sender, "Too many inputs. Direct mode requires 1 clock pin and no more than 5 data pins.");
             return false;
+        } else if (channel==null && inputs.length==0) {
+            error(sender, "Expecting at least 1 input pin.");
+            return false;
         }
 
+        if (channel!=null) {
+            int len;
+            if (indexedPitch) len = (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2));
+            else len = 5;
+            
+            try {
+                receiver = new SynthReceiver();
+                receiver.init(sender, channel, len, this);
+            } catch (IllegalArgumentException e) {
+                error(sender, e.getMessage());
+                return false;
+            }            
+        }
+        
         return true;
     }
 
-    private void playNote() {
-        int val;
-        if (inputs.length==1) val = BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputs.length);
-        else val = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
-
+    private void playNote(BitSet7 bits, int start, int length) {
+        int val = BitSetUtils.bitSetToUnsignedInt(bits, start, length);
         byte pitch;
 
         if (indexedPitch) {
@@ -80,14 +113,14 @@ public class synth extends Circuit {
             if (hasDebuggers()) debug("Setting note blocks to rest");
         } else {
             if (hasDebuggers()) debug("Setting note blocks pitch to " + dataToNoteString(pitch) + " (" + pitch + ")");
-            for (Location l : interfaceBlocks) {
-                Block block = world.getBlockAt(l);
-                tryToPlay(block.getFace(BlockFace.NORTH), pitch);
-                tryToPlay(block.getFace(BlockFace.SOUTH), pitch);
-                tryToPlay(block.getFace(BlockFace.WEST), pitch);
-                tryToPlay(block.getFace(BlockFace.EAST), pitch);
-                tryToPlay(block.getFace(BlockFace.UP), pitch);
-                tryToPlay(block.getFace(BlockFace.DOWN), pitch);
+            for (InterfaceBlock i : interfaceBlocks) {
+                Block block = i.getLocation().getBlock();
+                tryToPlay(block.getRelative(BlockFace.NORTH), pitch);
+                tryToPlay(block.getRelative(BlockFace.SOUTH), pitch);
+                tryToPlay(block.getRelative(BlockFace.WEST), pitch);
+                tryToPlay(block.getRelative(BlockFace.EAST), pitch);
+                tryToPlay(block.getRelative(BlockFace.UP), pitch);
+                tryToPlay(block.getRelative(BlockFace.DOWN), pitch);
             }
         }
 
@@ -96,7 +129,7 @@ public class synth extends Circuit {
     private void tryToPlay(Block block, byte pitch) {
         if (block.getType()==Material.NOTE_BLOCK) {
             NoteBlock n = (NoteBlock)block.getState();
-            n.setNote(pitch);
+            n.setRawNote(pitch);
             n.play();
         }
     }
@@ -154,5 +187,5 @@ public class synth extends Circuit {
         else if (keynum==11) return "b" + octave;
         else throw new IllegalArgumentException();
     }
-
+    
 }

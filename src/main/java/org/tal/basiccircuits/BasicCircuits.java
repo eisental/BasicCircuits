@@ -15,13 +15,12 @@ public class BasicCircuits extends CircuitLibrary {
                 shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class,
                 synth.class, srnor.class, terminal.class, router.class, ringcounter.class, iptransmitter.class, ipreceiver.class,
                 comparator.class, delay.class, repeater.class, nand.class, nor.class, xnor.class, segdriver.class, dregister.class, 
-                sram.class, bintobcd.class, display.class, burst.class, shifter.class, barrelshifter.class };
+                sram.class, bintobcd.class, display.class, burst.class };
     }
 
     @Override
-    public void onRedstoneChipsEnable(RedstoneChips instance) {
-        
-        // add a new pref key for iptransmitter.
-        instance.getPrefs().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
+    public void onRedstoneChipsEnable(RedstoneChips rc) {
+        // add new pref keys.
+        rc.getPrefs().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
     }
 }

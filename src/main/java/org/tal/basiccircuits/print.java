@@ -1,331 +1,88 @@
 package org.tal.basiccircuits;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.material.MaterialData;
+import org.tal.basiccircuits.SignWriter.DisplayMode;
+import org.tal.basiccircuits.SignWriter.Type;
+import org.tal.redstonechips.bitset.BitSet7;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.circuit.rcTypeReceiver;
-import org.tal.redstonechips.util.BitSetUtils;
-import org.tal.redstonechips.util.Locations;
+import org.tal.redstonechips.circuit.RCTypeReceiver;
+import org.tal.redstonechips.circuit.io.IOBlock;
+import org.tal.redstonechips.wireless.Receiver;
 
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class print extends Circuit implements rcTypeReceiver {
+public class print extends Circuit implements RCTypeReceiver {
     private final static int clockPin = 0;
     private final static int scrollPin = 2;
     private final static int clearPin = 1;
 
-    enum Type {
-        num, signed, unsigned, ascii, hex, oct, bin;
-    }
-
-    enum Display {
-        replace, add, scroll
-    }
-
-    private Type type = Type.num;
-    private Display display = Display.replace;
-
     private int dataPin = 1;
-    private String[] lines = new String[4];
-    private StringBuffer textBuffer = new StringBuffer();
-    private SignUpdateTask signUpdateTask;
-
-    private static final int LineSize = 15;
-
-    int scrollPos = 0;
-
+    private SignWriter writer;
+    
     @Override
     public void inputChange(int inIdx, boolean state) {
-        if (inIdx==clockPin && state) {
-            String s = convertInputs();
-            if (s!=null) {
-                updateText(s);
-                updateSigns();
-            }
-        } else if (inIdx==clearPin && state && (display==Display.scroll || display==Display.add)) {
-            clearSign();
-        } else if (inIdx==scrollPin && state && display==Display.scroll) {
-            if (scrollPos>=textBuffer.length()-1)
-                scrollPos = 0;
-            else
-                scrollPos++;
+        if (inIdx==clockPin) {
+            if (state) write(inputBits, dataPin, inputs.length-dataPin);
             
-            prepScrollLines();
-
-            updateSigns();
+        } else if (inIdx==clearPin && (writer.getDisplayMode()==DisplayMode.scroll || 
+                writer.getDisplayMode()==DisplayMode.add)) {
+            if (state) clear();
+            
+        } else if (inIdx==scrollPin && writer.getDisplayMode()==DisplayMode.scroll) {
+            if (state) writer.scroll(1);
+            
+        } else if (inputBits.get(clockPin))
+            write(inputBits, dataPin, inputs.length-dataPin);
+        
+    }
+    
+    class WriteReceiver extends Receiver {
+        
+        @Override
+        public void receive(BitSet7 bits) {
+            write(bits, 0, getChannelLength());
         }
     }
+    
+    class ClearReceiver extends Receiver {
 
-    private void updateText(String text) {
-        if (display==Display.add) {
-            add(text);
-            prepWrapLines();
-            if (textBuffer.length()>LineSize*4) textBuffer.setLength(0);
-        } else if (display==Display.replace) {
-            textBuffer.setLength(0);
-            textBuffer.append(text);
-            prepWrapLines();
-        } else if (display==Display.scroll) {
-            add(text);
-            prepScrollLines();
+        @Override
+        public void receive(BitSet7 bits) {
+            if (bits.get(0)) writer.clear();
+        }        
+    }
+    
+    class ScrollReceiver extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {
+            if (bits.get(0)) writer.scroll(1);
         }
+        
     }
-
-    private String convertInputs() {
-        String text = null;
-
-        if (type==Type.num || type==Type.unsigned) {
-            text = Integer.toString(BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin));
-        } else if (type==Type.signed) {
-            text = Integer.toString(BitSetUtils.bitSetToSignedInt(inputBits, dataPin, inputs.length-dataPin));
-        } else if (type==Type.hex) {
-            text = Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin));
-        } else if (type==Type.oct) {
-            text = Integer.toOctalString(BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin));
-        } else if (type==Type.bin) {
-            text = BitSetUtils.bitSetToBinaryString(inputBits, dataPin, inputs.length-dataPin);
-        } else if (type==Type.ascii) {
-            char c = (char)BitSetUtils.bitSetToUnsignedInt(inputBits, dataPin, inputs.length-dataPin);
-            if (!Character.isISOControl(c)) text = Character.toString(c);
-            else if (hasDebuggers()) debug("Ignoring control character 0x" + Integer.toHexString(c));
-        }
-
-        return text;
+    
+    private void clear() {
+        if (hasListeners()) debug("Clearing signs.");
+        writer.clear();
     }
-
-    private void add(String text) {
-        if (type==Type.ascii || textBuffer.length()==0) {
-            textBuffer.append(text);
-        } else
-            textBuffer.append(" ").append(text);
-    }
-
-    private void updateSigns() {
-        if (hasDebuggers()) {
-            debug("printing:");
+    
+    private void write(BitSet7 bits, int start, int length) {
+        writer.write(bits, start, length);
+        if (hasListeners()) {
+            String[] lines = writer.getLines();
+            debug("text:");
             debug(lines[0]);
             debug(lines[1]);
             debug(lines[2]);
             debug(lines[3]);
         }
-
-        redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, signUpdateTask);
     }
-
-    private void prepWrapLines() {
-        if (textBuffer.length()>LineSize*3) {
-            String line4 = textBuffer.substring(LineSize*3);
-            if (line4.length()>LineSize) line4 = line4.substring(0, LineSize);
-
-            lines[0] = textBuffer.substring(0, LineSize);
-            lines[1] = textBuffer.substring(LineSize, LineSize*2);
-            lines[2] = textBuffer.substring(LineSize*2, LineSize*3);
-            lines[3] = line4;
-        } else if (textBuffer.length()>LineSize*2) {
-            lines[0] = "";
-            lines[1] = textBuffer.substring(0, LineSize);
-            lines[2] = textBuffer.substring(LineSize, LineSize*2);
-            lines[3] = textBuffer.substring(LineSize*2);
-        } else if (textBuffer.length()>LineSize) {
-            lines[0] = "";
-            lines[1] = textBuffer.substring(0,LineSize);
-            lines[2] = textBuffer.substring(LineSize);
-            lines[3] = "";
-        } else {
-            lines[0] = "";
-            lines[1] = textBuffer.toString();
-            lines[2] = "";
-            lines[3] = "";
-        }
-    }
-
-    private void prepScrollLines() {
-        String window;
-
-        if (textBuffer.length()>LineSize) { // turn scrolling on
-            int end = Math.min(scrollPos+LineSize, textBuffer.length());
-            window = textBuffer.substring(scrollPos, end);
-            if (window.length()<LineSize) {
-                window += " " + textBuffer.substring(0, LineSize-window.length());
-            }
-        } else window = textBuffer.toString();
-
-        lines[0] = "";
-        lines[1] = window;
-        lines[2] = "";
-        lines[3] = "";
-    }
-
-    private void clearSign() {
-        if (hasDebuggers()) debug("Clearing sign.");
-        textBuffer.setLength(0);
-        scrollPos = 0;
-        lines[0] = "";
-        lines[1] = "";
-        lines[2] = "";
-        lines[3] = "";
-        updateSigns();
-    }
-
-    @Override
-    public boolean init(CommandSender sender, String[] args) {
-        if (args.length>0) {
-            try {
-                type = Type.valueOf(args[0]);
-            } catch (IllegalArgumentException ie) {
-                error(sender, "Unknown type: " + args[0]);
-                return false;
-            }
-
-            if (args.length>1) {
-                try {
-                    display = Display.valueOf(args[1]);
-                } catch (IllegalArgumentException ie) {
-                    error(sender, "Unknown display arg: " + args[1]);
-                    return false;
-                }
-            }
-
-        }
-
-        if (display==Display.add && inputs.length<2) {
-            error(sender, "Expecting at least 2 inputs. 1 clock pin and 1 data pin.");
-            return false;
-        } else if (display==Display.replace && inputs.length<3) {
-            error(sender, "Expecting at least 3 inputs. 1 clock pin, 1 clear pin and 1 data pin.");
-            return false;
-        } else if (display==Display.scroll && inputs.length<4) {
-            error(sender, "Expecting at least 4 inputs. 1 clock pin, 1 clear pin, 1 scroll pin and 1 data pin.");
-            return false;
-        }
-
-        if (interfaceBlocks.length==0) {
-            error(sender, "Expecting at least 1 interface block.");
-            return false;
-        }
-
-        List<Sign> signs = new ArrayList<Sign>();
-        List<Location> locs = new ArrayList<Location>();
-        locs.addAll(Arrays.asList(structure));
-
-        for (Location loc : interfaceBlocks) {
-            Location north = Locations.getFace(loc, BlockFace.NORTH);
-            Location south = Locations.getFace(loc, BlockFace.SOUTH);
-            Location west = Locations.getFace(loc, BlockFace.WEST);
-            Location east = Locations.getFace(loc, BlockFace.EAST);
-            Location up = Locations.getFace(loc, BlockFace.UP);
-
-            Block i = loc.getBlock();
-            Sign nsign = checkBlock(i, north);
-            if (nsign!=null) { locs.add(north); signs.add(nsign); }
-
-            Sign ssign = checkBlock(i, south);
-            if (ssign!=null) { locs.add(south); signs.add(ssign); }
-
-            Sign wsign = checkBlock(i, west);
-            if (wsign!=null) { locs.add(west); signs.add(wsign); }
-
-            Sign esign = checkBlock(i, east);
-            if (esign!=null) { locs.add(east); signs.add(esign); }
-
-            Sign usign = checkBlock(i, up);
-            if (usign!=null) { locs.add(up); signs.add(usign); }
-        }
-
-        if (signs.isEmpty()) {
-            error(sender, "Couldn't find any signs attached to the chip's interface blocks.");
-            return false;
-        } else {
-            structure = locs.toArray(new Location[locs.size()]);
-            info(sender, "Found " + signs.size() + " sign(s) to print on.");
-        }
-
-        signUpdateTask = new SignUpdateTask(signs.toArray(new Sign[signs.size()]));
-
-        if (display==Display.replace) dataPin = 1;
-        else if (display==Display.add) dataPin = 2;
-        else if (display==Display.scroll) dataPin = 3;
-
-        redstoneChips.registerRcTypeReceiver(activationBlock, this);
-
-        return true;
-    }
-
-    private Sign checkBlock(Block i, Location s) {
-        // TODO: Check whether this method loads the chunk or not.
-        Block sign = s.getBlock();
-        MaterialData data = sign.getState().getData();
-        if (data instanceof org.bukkit.material.Sign) {
-            org.bukkit.material.Sign signData = (org.bukkit.material.Sign)data;
-            if (sign.getFace(signData.getAttachedFace()).equals(i)) // make sure the sign is actually attached to the interface block.
-                return (Sign)sign.getState();
-            else return null;
-
-        } else return null;
-    }
-
-    @Override
-    public void setInternalState(Map<String, String> state) {
-        Object text = state.get("text");
-
-        if (text!=null) {
-            String t = text.toString();
-            textBuffer.setLength(0);
-            textBuffer.append(t);
-        }
-    }
-
-    @Override
-    public Map<String, String> getInternalState() {
-        Map<String,String> state = new HashMap<String,String>();
-        state.put("text", textBuffer.toString());
-        return state;
-    }
-
-
-    class SignUpdateTask implements Runnable {
-        Sign[] signList;
-        int curSign = 0;
-        long lastRunTime = -1;
-
-        @Override
-        public void run() {
-            //if (world.getTime()==lastRunTime) return;
-            Sign s = signList[curSign];
-            s.setLine(0, lines[0]);
-            s.setLine(1, lines[1]);
-            s.setLine(2, lines[2]);
-            s.setLine(3, lines[3]);
-            s.update();
-            
-
-            lastRunTime = world.getTime();
-            if (curSign<signList.length-1) {
-                curSign++;
-
-                redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, signUpdateTask, 1);
-            } else curSign=0;
-
-        }
-
-        public SignUpdateTask(Sign[] signList) throws IllegalArgumentException {
-            this.signList = signList;
-        }
-    }
-
+    
     @Override
     public void type(String[] words, Player player) {
         if (words.length==0) return;
@@ -333,9 +90,129 @@ public class print extends Circuit implements rcTypeReceiver {
         String text = "";
         for (String word : words)
             text += word + " ";
-        updateText(text.substring(0, text.length()-1));
-        updateSigns();
+        writer.write(text.substring(0, text.length()-1));
+    }
+    
+    @Override
+    public boolean init(CommandSender sender, String[] args) {        
+        String channel = null;
+        Type type = Type.num;
+        DisplayMode display = DisplayMode.replace;
+        
+        if (args.length>0) {            
+            if (args[args.length-1].startsWith("#")) { // channel arg
+                channel = args[args.length-1].substring(1);
+            }
+            
+            if (args.length>=(channel!=null?2:1)) {
+                try {
+                    type = Type.valueOf(args[0]);
+                } catch (IllegalArgumentException ie) {
+                    error(sender, "Unknown type: " + args[0]);
+                    return false;
+                }
+            }
+
+            if (args.length>=(channel!=null?3:2)) {
+                try {
+                    display = DisplayMode.valueOf(args[1]);
+                } catch (IllegalArgumentException ie) {
+                    error(sender, "Unknown display arg: " + args[1]);
+                    return false;
+                }
+            }
+        }
+
+        if (channel==null && !checkInputs(sender, display)) return false;
+
+        if (interfaceBlocks.length==0) {
+            error(sender, "Expecting at least 1 interface block.");
+            return false;
+        }
+
+        if (display==DisplayMode.replace) dataPin = 1;
+        else if (display==DisplayMode.add) dataPin = 2;
+        else if (display==DisplayMode.scroll) dataPin = 3;
+                
+        writer = SignWriter.getSignWriter(display, type, IOBlock.locationsOf(interfaceBlocks));        
+        if (writer.getSigns().isEmpty()) {
+            error(sender, "Couldn't find any signs attached to the chip interface blocks.");
+            return false;
+        } else {
+            List<Location> str = new ArrayList<Location>();
+            str.addAll(Arrays.asList(structure));
+            str.addAll(writer.getSigns());
+            this.structure = str.toArray(new Location[str.size()]);
+            info(sender, "Found " + writer.getSigns().size() + " sign(s) to print on.");
+        }
+        
+
+        redstoneChips.addRCTypeReceiver(activationBlock, this);
+        
+        if (channel!=null && !initReceiver(sender, channel, type)) return false;
+        
+        return true;
     }
 
+    private boolean checkInputs(CommandSender sender, DisplayMode display) {
+        if (display==DisplayMode.replace && inputs.length<2) {
+            error(sender, "Expecting at least 2 inputs. 1 clock pin and 1 data pin.");
+            return false;
+        } else if (display==DisplayMode.add && inputs.length<3) {
+            error(sender, "Expecting at least 3 inputs. 1 clock pin, 1 clear pin and 1 data pin.");
+            return false;
+        } else if (display==DisplayMode.scroll && inputs.length<4) {
+            error(sender, "Expecting at least 4 inputs. 1 clock pin, 1 clear pin, 1 scroll pin and 1 data pin.");
+            return false;
+        } else return true;
+    }
+    
+    private boolean initReceiver(CommandSender sender, String channel, Type type) {
+        try {
+            Receiver writeReceiver = new WriteReceiver();
+            writeReceiver.init(sender, channel, type==Type.ascii?8:32, this);
+            
+            if (writer.getDisplayMode()==DisplayMode.add) {
+                Receiver clearReceiver = new ClearReceiver();
+                clearReceiver.init(sender, channel, 1, this);
+                
+                writeReceiver.setStartBit(writeReceiver.getStartBit()+1);
+            } else if (writer.getDisplayMode()==DisplayMode.scroll) {
+                Receiver clearReceiver = new ClearReceiver();
+                clearReceiver.init(sender, channel, 1, this);
+                
+                Receiver scrollReceiver = new ScrollReceiver();
+                scrollReceiver.init(sender, channel, 1, this);
+                scrollReceiver.setStartBit(scrollReceiver.getStartBit()+1);
 
+                writeReceiver.setStartBit(writeReceiver.getStartBit()+2);                
+                        
+            }
+                
+            return true;
+        } catch (IllegalArgumentException e) {
+            error(sender, e.getMessage());
+            return false;
+        }        
+    }
+    
+    @Override
+    public void setInternalState(Map<String, String> state) {
+        Object text = state.get("text");
+
+        if (text!=null) 
+            writer.setText(text.toString());
+    }
+
+    @Override
+    public Map<String, String> getInternalState() {
+        Map<String,String> state = new HashMap<String,String>();
+        state.put("text", writer.getText());
+        return state;
+    }
+
+    @Override
+    protected boolean isStateless() {
+        return false;
+    }    
 }

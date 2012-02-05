@@ -1,10 +1,8 @@
 package org.tal.basiccircuits;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.bitset.BitSetUtils;
 
 /**
  *
@@ -43,20 +41,5 @@ public class flipflop extends Circuit {
     @Override
     protected boolean isStateless() {
         return false;
-    }
-
-    @Override
-    public Map<String, String> getInternalState() {
-        Map<String,String> state = new HashMap<String,String>();
-
-        BitSetUtils.bitSetToMap(state, "outputBits", outputBits, outputs.length);
-
-        return state;
-    }
-
-    @Override
-    public void setInternalState(Map<String, String> state) {
-        if (state.containsKey("outputBits"))
-            outputBits = BitSetUtils.mapToBitSet(state, "outputBits");
     }
 }

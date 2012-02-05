@@ -7,21 +7,25 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.channel.ReceivingCircuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.circuit.io.InterfaceBlock;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
 import org.tal.redstonechips.util.Locations;
+import org.tal.redstonechips.wireless.Receiver;
 
 /**
  * // dyes wool if present on output block
  * @author Tal Eisenberg
  */
-public class pixel extends ReceivingCircuit {
+public class pixel extends Circuit {
     private boolean indexedColor = false;
     private byte[] colorIndex;
     private int distance = 3;
     private static BlockFace[] faces = new BlockFace[] { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     
+    private Receiver receiver;
+            
     @Override
     public void inputChange(int inIdx, boolean on) {
         if (inputs.length==1) {
@@ -75,7 +79,20 @@ public class pixel extends ReceivingCircuit {
             }
 
             if (channelString!=null) {
-                initWireless(sender, channelString);
+                try {
+                    receiver = new PixelReceiver();
+                    int len;
+                    if (!indexedColor)
+                        len = 4;
+                    else {
+                        len = (int)Math.ceil(Math.log(colorIndex.length)/Math.log(2));
+                    }
+                    
+                    receiver.init(sender, channelString, len, this);
+                } catch (IllegalArgumentException ie) {
+                    error(sender, ie.getMessage());
+                    return false;
+                }
             }
         }
 
@@ -92,7 +109,8 @@ public class pixel extends ReceivingCircuit {
     }
 
     private void updatePixel() {
-        if (!isCircuitChunkLoaded()) return;
+        for (InterfaceBlock i : interfaceBlocks)
+            if (!i.getLocation().getChunk().isLoaded()) return;
 
         int val;
         if (inputs.length<=1) val = BitSetUtils.bitSetToUnsignedInt(inputBits, 0, inputBits.length());
@@ -112,8 +130,8 @@ public class pixel extends ReceivingCircuit {
 
         if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
-        for (Location l : interfaceBlocks)
-            colorBlocks(l, color);
+        for (InterfaceBlock i : interfaceBlocks)
+            colorBlocks(i.getLocation(), color);
 
     }
 
@@ -125,17 +143,19 @@ public class pixel extends ReceivingCircuit {
         }
 }
 
-    @Override
-    public void receive(BitSet7 bits) {
-        // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
-        if (inputs.length<=1) {
-            inputBits = bits.get(0, (inputs.length==0?5:inputs.length));
-        }  else {
-            for (int i=0; i<bits.length(); i++)
-                inputBits.set(i+1, bits.get(i));
-            inputBits.clear(0);
-        }
-        updatePixel();
+    class PixelReceiver extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {
+            // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
+            if (inputs.length<=1) {
+                inputBits = bits.get(0, (inputs.length==0?5:inputs.length));
+            }  else {
+                for (int i=0; i<bits.length(); i++)
+                    inputBits.set(i+1, bits.get(i));
+                inputBits.clear(0);
+            }
+            updatePixel();
+        }        
     }
 
     private void findWoolAround(Location origin, Location curLocation, List<Location> wool, int range, int curDist) {
@@ -152,20 +172,6 @@ public class pixel extends ReceivingCircuit {
         }
     }
 
-    @Override
-    public void circuitShutdown() {
-        if (getChannel() != null) redstoneChips.removeReceiver(this);
-    }
-
-    @Override
-    public int getChannelLength() {
-        if (!indexedColor)
-            return 4;
-        else {
-            return (int)Math.ceil(Math.log(colorIndex.length)/Math.log(2));
-        }
-    }
-
     private boolean inCube(Location origin, Location f, int rad) {
         int dx = (int)Math.abs(origin.getX()-f.getX());
         int dy = (int)Math.abs(origin.getY()-f.getY());
@@ -176,4 +182,5 @@ public class pixel extends ReceivingCircuit {
 
         return (dx<rad && dy<rad && dz<rad);
     }
+    
 }

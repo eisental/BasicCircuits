@@ -2,7 +2,7 @@ package org.tal.basiccircuits;
 
 
 import org.tal.redstonechips.circuit.BitSetCircuit;
-import org.tal.redstonechips.util.BitSet7;
+import org.tal.redstonechips.bitset.BitSet7;
 
 /**
  *
@@ -17,6 +17,7 @@ public class and extends BitSetCircuit {
         for (int i=1; i<this.inputBitSets.length; i++) {
             out.and(inputBitSets[i]);
         }
+        
         this.sendBitSet(out);
     }
 

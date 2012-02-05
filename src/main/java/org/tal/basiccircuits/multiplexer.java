@@ -3,8 +3,8 @@ package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.BitSetUtils;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
 
 /**
  *
@@ -29,7 +29,7 @@ public class multiplexer extends Circuit {
             int expectedInputs = incount*outputs.length + selectSize;
 
             if (inputs.length!=expectedInputs) {
-                error(sender, "Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
+                error(sender, "Wrong number of inputs (" + inputs.length + "). expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
                 return false;
             }
 

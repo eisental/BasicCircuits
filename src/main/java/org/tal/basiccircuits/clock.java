@@ -2,16 +2,16 @@
 package org.tal.basiccircuits;
 
 import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.channel.TransmittingCircuit;
-import org.tal.redstonechips.util.BitSet7;
-import org.tal.redstonechips.util.ParsingUtils;
-import org.tal.redstonechips.util.UnitParser;
+import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.bitset.BitSet7;
+import net.eisental.common.parsing.UnitParser;
+import org.tal.redstonechips.wireless.Transmitter;
 
 /**
  *
  * @author Tal Eisenberg
  */
-public class clock extends TransmittingCircuit {
+public class clock extends Circuit {
     private long onDuration, offDuration;
     private boolean masterToggle;
     private BitSet7 onBits, offBits;
@@ -20,6 +20,8 @@ public class clock extends TransmittingCircuit {
     private long expectedNextTick;
     private int taskId = -1;
 
+    private Transmitter transmitter;
+    
     @Override
     public void inputChange(int inIdx, boolean state) {
         if (masterToggle) {
@@ -28,7 +30,7 @@ public class clock extends TransmittingCircuit {
                 else {
                     stopClock();
                     sendBitSet(offBits);
-                    if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                    if (transmitter!=null) transmitter.transmit(false);
                 }
             }
         } else {
@@ -37,7 +39,7 @@ public class clock extends TransmittingCircuit {
             if (onBits.isEmpty()) {
                 stopClock();
                 sendBitSet(offBits);
-                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                if (transmitter!=null) transmitter.transmit(false);
             }
             else startClock();
         }
@@ -46,9 +48,9 @@ public class clock extends TransmittingCircuit {
     @Override
     protected boolean init(CommandSender sender, String[] args) {
         String channelArg = null;
-        if (args.length>0 && !ParsingUtils.isNumber(args[args.length-1])) {
+        if (args.length>0 && args[args.length-1].startsWith("#")) {
             // last argument is a channel name
-            channelArg = args[args.length-1];
+            channelArg = args[args.length-1].substring(1);
             String[] newArgs = new String[args.length-1];
             if (newArgs.length>0)
                 System.arraycopy(args, 0, newArgs, 0, newArgs.length);
@@ -93,12 +95,19 @@ public class clock extends TransmittingCircuit {
         }
 
         if ((onDuration<50 && onDuration>0) || (offDuration<50 && offDuration>0)) {
-            error(sender, "Clock is set to tick too fast or it's using too narrow pulse width. Speed is currently limited to 50ms per state.");
+            error(sender, "Clock frequency is currently limited to 50ms per state. Use a lower freq argument or try setting pulse-width to 0.");
             return false;
         }
 
-        if (channelArg!=null)
-            initWireless(sender, channelArg);
+        if (channelArg!=null) {
+            try {
+                transmitter = new Transmitter();
+                transmitter.init(sender, channelArg, 1, this);
+            } catch (IllegalArgumentException ie) {
+                error(sender, ie.getMessage());
+                return false;
+            }
+        }
         info(sender, "The clock will tick every " + (onDuration+offDuration) + " milliseconds for " + onDuration + " milliseconds.");
 
         tickTask = new TickTask();
@@ -139,16 +148,27 @@ public class clock extends TransmittingCircuit {
     }
 
     @Override
+    public void disable() {
+        super.disable();
+        stopClock();
+    }   
+
+    @Override
+    public void enable() {
+        super.enable();
+        if (masterToggle) {
+            if (inputBits.get(0)) startClock();
+        } else if (!onBits.isEmpty())
+            startClock();
+    }
+    
+    @Override
     public void circuitShutdown() {
         stopClock();
     }
 
-    @Override
-    public int getChannelLength() {
-        return 1;
-    }
-    
     boolean currentState = true;
+    
     private class TickTask implements Runnable {
         
 
@@ -156,20 +176,6 @@ public class clock extends TransmittingCircuit {
         public void run() {
             if (!ticking) return;
 
-            /*
-            if (redstoneChips.getPrefs().getFreezeOnChunkUnload()) {
-                boolean allChunksLoaded = true;
-            for (ChunkLocation l : circuitChunks) {
-                System.out.println(l + ": " + l.isChunkLoaded());
-            }
-
-                for (ChunkLocation l : circuitChunks)
-                    if (!l.isChunkLoaded()) { allChunksLoaded = false; break; }
-
-                if (allChunksLoaded) tick();
-                
-            } else tick();*/
-            
             tick();
 
             long delay;
@@ -207,18 +213,19 @@ public class clock extends TransmittingCircuit {
         private void tick() {
             if (onDuration>0 && offDuration>0) {
                 sendBitSet(currentState?onBits:offBits);
-                if (getChannel()!=null) getChannel().transmit(currentState, getStartBit());
+                if (transmitter!=null) transmitter.transmit(currentState);
             } else if (onDuration > 0) {
                 sendBitSet(offBits);
-                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                if (transmitter!=null) transmitter.transmit(false);
                 sendBitSet(onBits);
-                if (getChannel()!=null) getChannel().transmit(true, getStartBit());
+                if (transmitter!=null) transmitter.transmit(true);
             } else if (offDuration>0) {
                 sendBitSet(onBits);
-                if (getChannel()!=null) getChannel().transmit(true, getStartBit());
+                if (transmitter!=null) transmitter.transmit(true);
                 sendBitSet(offBits);
-                if (getChannel()!=null) getChannel().transmit(false, getStartBit());
+                if (transmitter!=null) transmitter.transmit(false);
             }
         }
     }
+        
 }
