@@ -97,20 +97,4 @@ public class transmitter extends Circuit {
             return false;
         }
     }
-<<<<<<< HEAD
-
-    @Override
-    public void circuitShutdown() {
-        redstoneChips.removeTransmitter(this);
-    }
-
-    @Override
-    public int getChannelLength() {
-        if (inputs.length==1) return 1;
-        else {
-            return inputs.length-1-selectLength;
-        }
-    }
-=======
->>>>>>> remotes/mainline/master
 }
