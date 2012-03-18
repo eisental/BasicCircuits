@@ -1,17 +1,19 @@
 package org.tal.basiccircuits;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import net.eisental.common.parsing.ParsingUtils;
 import org.bukkit.DyeColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.tal.basiccircuits.screen.Screen;
 import org.tal.redstonechips.bitset.BitSet7;
 import org.tal.redstonechips.bitset.BitSetUtils;
 import org.tal.redstonechips.circuit.Circuit;
+import org.tal.redstonechips.memory.Memory;
+import org.tal.redstonechips.memory.Ram;
+import org.tal.redstonechips.memory.RamListener;
 import org.tal.redstonechips.wireless.Receiver;
 
 /**
@@ -19,17 +21,14 @@ import org.tal.redstonechips.wireless.Receiver;
  * @author Tal Eisenberg
  */
 public class display extends Circuit {
-
-    private enum Axis {X,Y,Z};
-
-    private byte[] colorIndex;
-    private boolean indexedColor = false;
-    private int width, height;
-    private int pixelWidth, pixelHeight;
-    private Location[][][] pixels;
+    private Screen screen;
     private int xWordlength, yWordlength, colorWordlength;
-    private byte[][] memory;
+    
     private Receiver receiver;
+    
+    private Ram ram;
+    
+    private int ramPage = 0, ramPageLength;
     
     @Override
     public void inputChange(int inIdx, boolean state) {
@@ -38,84 +37,86 @@ public class display extends Circuit {
             int y = BitSetUtils.bitSetToUnsignedInt(inputBits, 1+xWordlength, yWordlength);
             int data = BitSetUtils.bitSetToUnsignedInt(inputBits, 1+xWordlength+yWordlength, colorWordlength);
 
-            setPixel(x,y,data, true);
+            try {
+                screen.setPixel(x,y,data, true);
+            } catch (IllegalArgumentException ie) {
+                if (hasListeners()) debug(ie.getMessage());
+            }
+            
+            if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + data);
         }
     }
 
+    class DisplayReceiver extends Receiver {
+
+        @Override
+        public void receive(BitSet7 bits) {
+            int x = BitSetUtils.bitSetToUnsignedInt(bits, 0, xWordlength);
+            int y = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength, yWordlength);
+            int data = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength+yWordlength, colorWordlength);
+
+            try {
+                screen.setPixel(x, y, data, true);
+            } catch (IllegalArgumentException ie) {
+                if (hasListeners()) debug(ie.getMessage());
+            }
+
+            if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + data);
+        }        
+    }
+
+    class DisplayRamListener implements RamListener {
+        @Override
+        public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
+            int color = BitSetUtils.bitSetToUnsignedInt(data, 0, screen.getColorLength());
+            int intaddr = BitSetUtils.bitSetToUnsignedInt(address, 0, 32);
+            int offset = ramPage * ramPageLength;
+            
+            if (intaddr >= offset && intaddr < offset + ramPageLength) {
+                int idx = intaddr - offset;
+                int x = idx % screen.getDescription().addrWidth;
+                int y = idx / screen.getDescription().addrWidth;
+
+                try {
+                    screen.setPixel(x, y, color, true);
+                } catch (IllegalArgumentException ie) {
+                    if (hasListeners()) debug(ie.getMessage());
+                }
+
+                if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + data);
+            }
+        }
+    }
+    
+    private void refreshDisplayFromRam() {
+        int offset = ramPage * ramPageLength;
+        for (int i=offset; i<offset+ramPageLength; i++) {
+            int color = BitSetUtils.bitSetToUnsignedInt(ram.read(i), 0, screen.getColorLength());
+            int x = i % screen.getDescription().addrWidth;
+            int y = i / screen.getDescription().addrWidth;
+            
+            try {
+                screen.setPixel(x, y, color, true);
+            } catch (IllegalArgumentException ie) {
+                if (hasListeners()) debug(ie.getMessage());
+            }
+
+            if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + color);
+        }
+    }
+    
     @Override
     protected boolean init(CommandSender sender, String[] args) {
         String channel = null;
-        boolean hasSize = false;
+        int[] size = null;
+        byte[] colorIndex = null;
         
-        if (args.length>0) {
-            try {
-                hasSize = parseSizeArg(args[0]);
-                channel = parseColorAndChannel(hasSize, args);
-            } catch (IllegalArgumentException e) {
-                error(sender, e.getMessage());
-                return false;
-            }
-        }
-
-        if (interfaceBlocks.length!=2) {
-            error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
-            return false;
-        }
-        
-        try {
-            detectDisplay(sender, hasSize);
-        } catch (IllegalArgumentException ie) {
-            error(sender, ie.getMessage());
-            return false;
-        }
-        
-        // expecting 1 clock, enough pins for address width, enough pins for address height, enough pins for color data.
-        xWordlength = calculateRequiredBits(width);
-        yWordlength = calculateRequiredBits(height);
-        colorWordlength = calculateBpp();
-
-        int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
-        if (inputs.length!=expectedInputs && (inputs.length!=0 || channel==null)) {
-            error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s)" + (yWordlength!=0?", " + yWordlength + "y address input(s)":"") + 
-                    ", and " + colorWordlength + " color data inputs.");
-            return false;
-        } 
-        
-        if (sender instanceof Player) {
-            info(sender, "inputs: clock - 0, x: 1-" + xWordlength + (yWordlength!=0?", y: " + (xWordlength+1) + "-" + 
-                    (xWordlength+yWordlength):"") + ", color: " + (xWordlength+yWordlength+1) + "-" + 
-                    (xWordlength+yWordlength+colorWordlength) + ".");
-        }
-        
-        if (channel!=null) {
-            try {
-                receiver = new DisplayReceiver();
-                int len = xWordlength+yWordlength+colorWordlength;
-                receiver.init(sender, channel, len, this);
-            } catch (IllegalArgumentException ie) {
-                error(sender, ie.getMessage());
-                return false;
-            }
-        }
-
-        if (sender instanceof Player) clearDisplay();
-        return true;
-    }
-
-    private boolean parseSizeArg(String arg) {
-        String[] split = arg.split("x");
+        String[] split = args[0].split("x");
         if (split.length==2 && ParsingUtils.isInt((split[0])) && ParsingUtils.isInt((split[1]))) {
-            width = Integer.decode(split[0]);
-            height = Integer.decode(split[1]);
-            return true;
-        } else {
-            return false;
+            size = new int[] { Integer.parseInt(split[0]), Integer.parseInt(split[1]) };
         }        
-    }
-    
-    private String parseColorAndChannel(boolean hasSize, String[] args) {
-        String channelString = null;
-        int start = hasSize?1:0;
+        
+        int start = (size==null?0:1);
         if (args.length>start) { // color index
             
             List<Byte> colorList = new ArrayList<Byte>();
@@ -129,12 +130,19 @@ public class display extends Circuit {
                         int val = Integer.decode(args[i]);
                         colorList.add((byte)val);
                     } catch (NumberFormatException ne) {
-                        // not dye number also, treat as broadcast channel if last.
-                        if (i==args.length-1) {
-                            channelString = args[i];
-                        } else 
-                            throw new IllegalArgumentException ("Unknown color name: " + args[i]);
-                        
+                        if (args[i].startsWith("$")) {
+                            try {
+                                ram = (Ram)Memory.getMemory(args[i].substring(1), Ram.class);
+                            } catch (IllegalArgumentException e) {
+                                error(sender, e.getMessage());
+                            } catch (IOException e) {
+                                error(sender, e.getMessage());
+                            }
+                        } else if (channel==null) {
+                            if (args[i].startsWith("#"))
+                                channel = args[i].substring(1);
+                            else channel = args[i];
+                        } else error(sender, "Invalid argument: " + args[i]);
                     }
                 }
             }
@@ -143,280 +151,69 @@ public class display extends Circuit {
                 colorIndex = new byte[colorList.size()];
                 for (int i=0; i<colorList.size(); i++)
                     colorIndex[i] = colorList.get(i);
-                indexedColor = true;
             }
         }
         
-        return channelString;
+        if (interfaceBlocks.length!=2) {
+            error(sender, "Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
+            return false;
+        }
         
-    }
-    
-    private void detectDisplay(CommandSender sender, boolean hasSize) throws IllegalArgumentException {
-        int x1 = interfaceBlocks[0].getLocation().getBlockX();
-        int x2 = interfaceBlocks[1].getLocation().getBlockX();
-        int y1 = interfaceBlocks[0].getLocation().getBlockY();
-        int y2 = interfaceBlocks[1].getLocation().getBlockY();
-        int z1 = interfaceBlocks[0].getLocation().getBlockZ();
-        int z2 = interfaceBlocks[1].getLocation().getBlockZ();
+        try {
+            if (size!=null)
+                screen = Screen.generateScreen(interfaceBlocks[0].getLocation(), interfaceBlocks[1].getLocation(),
+                        size[0], size[1]);
+            else 
+                screen = Screen.generateScreen(interfaceBlocks[0].getLocation(), interfaceBlocks[1].getLocation());
 
-        int dx = Math.abs(x2-x1);
-        int dy = Math.abs(y2-y1);
-        int dz = Math.abs(z2-z1);
-        int xsign = (x2-x1>0?1:-1);
-        int ysign = (y2-y1>0?1:-1);
-        int zsign = (z2-z1>0?1:-1);
-
-        int phyWidth, phyHeight;
-
-        Axis widthAxis, heightAxis;
-        Location origin;
-
-        if (dx==0 && dy!=0 && dz!=0) { // zy plane
-            phyWidth = (dz+1)*zsign;
-            phyHeight = (dy+1)*ysign;
-            widthAxis = Axis.Z;
-            heightAxis = Axis.Y;
-
-            if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1+1, y1, z1);
-            else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1-1, y1, z1);
-            else throw new IllegalArgumentException("Can't find origin wool block.");
-
-        } else if (dx!=0 && dy==0 && dz!=0) { // xz plane
-            if (dx>=dz) {
-                phyWidth = (dx+1)*xsign;
-                phyHeight = (dz+1)*zsign;
-                widthAxis = Axis.X;
-                heightAxis = Axis.Z;
-            } else {
-                phyWidth = (dz+1)*zsign;
-                phyHeight = (dx+1)*xsign;
-                widthAxis = Axis.Z;
-                heightAxis = Axis.X;
-            }
-
-            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1+1, z1);
-            else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1-1, z1);
-            else throw new IllegalArgumentException("Can't find origin wool block.");
-        } else if (dx!=0 && dy!=0 && dz==0) { // xy plane
-            phyWidth = (dx+1)*xsign;
-            phyHeight = (dy+1)*ysign;
-            widthAxis = Axis.X;
-            heightAxis = Axis.Y;
-
-            if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1, z1+1);
-            else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1, z1-1);
-            else throw new IllegalArgumentException("Can't find origin wool block.");
-        } else if (dx==0 && dy!=0 && dz==0) { // y line
-            phyWidth = (dy+1)*ysign;
-            phyHeight = 1;
-            widthAxis = Axis.Y;
+            screen.setColorIndex(colorIndex);
             
-            if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1+1, y1, z1);
-            } else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1-1, y1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1, z1+1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1, z1-1);
-            } else throw new IllegalArgumentException("Can't find origin wool block.");
-        } else if (dx!=0 && dy==0 && dz==0) { // x line
-            phyWidth = (dx+1)*xsign;
-            phyHeight = 1;
-            widthAxis = Axis.X;
+            if (ram!=null) ramPageLength = screen.getDescription().addrWidth * screen.getDescription().addrHeight;
             
-            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1, y1+1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1, y1-1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1, y1, z1+1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1, y1, z1-1);
-            } else throw new IllegalArgumentException("Can't find origin wool block.");
-        } else if (dx==0 && dy==0 && dz!=0) { // z line
-            phyWidth = (dz+1)*zsign;
-            phyHeight = 1;
-            widthAxis = Axis.Z;
-            
-            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1+1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1-1, z1);
-            } else if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1+1, y1, z1);
-            } else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1-1, y1, z1-1);
-            } else throw new IllegalArgumentException("Can't find origin wool block.");            
-        } else throw new IllegalArgumentException("Both interface blocks must be on the same plane.");
-
-        if (!hasSize) {
-            width = Math.abs(phyWidth);
-            height = Math.abs(phyHeight);
+            info(sender, "Successfully scanned display. ");
+            info(sender, "The screen is " + 
+                    Math.abs(screen.getDescription().physicalWidth) + "m wide, " + 
+                    Math.abs(screen.getDescription().physicalHeight) + "m high. Each pixel is " + 
+                    Math.abs(screen.getDescription().pixelWidth) + "m on " + 
+                    Math.abs(screen.getDescription().pixelHeight) + "m.");            
+        } catch (IllegalArgumentException ie) {
+            error(sender, ie.getMessage());
+            return false;
         }
         
-        pixelWidth = (int)Math.ceil(phyWidth/width);
-        pixelHeight = (int)Math.ceil(phyHeight/height);
-        pixels = new Location[width][height][Math.abs(pixelWidth*pixelHeight)];
+        // expecting 1 clock, enough pins for address width, enough pins for address height, enough pins for color data.
+        xWordlength = screen.getXLength(); 
+        yWordlength = screen.getYLength(); 
+        colorWordlength = screen.getColorLength();
 
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
-                pixels[x][y] = findPixelBlocks(origin, x, y, widthAxis, heightAxis, pixelWidth, pixelHeight);
+        if (channel==null && ram==null) {
+            int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
+            if (inputs.length!=expectedInputs && (inputs.length!=0 || channel==null)) {
+                error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s)" + (yWordlength!=0?", " + yWordlength + "y address input(s)":"") + 
+                        ", and " + colorWordlength + " color data inputs.");
+                return false;
+            } 
+
+            if (sender instanceof Player) {
+                info(sender, "inputs: clock - 0, x: 1-" + xWordlength + (yWordlength!=0?", y: " + (xWordlength+1) + "-" + 
+                        (xWordlength+yWordlength):"") + ", color: " + (xWordlength+yWordlength+1) + "-" + 
+                        (xWordlength+yWordlength+colorWordlength) + ".");
             }
-        }
-
-        memory = new byte[width][height];
-
-        info(sender, "Successfully scanned display. ");
-        info(sender, "The screen is " + Math.abs(phyWidth) + "m wide, " + Math.abs(phyHeight) + "m high. Each pixel is " + Math.abs(pixelWidth) + "m on " + Math.abs(pixelHeight) + "m.");
-    }
-
-    class DisplayReceiver extends Receiver {
-
-        @Override
-        public void receive(BitSet7 bits) {
-            int x = BitSetUtils.bitSetToUnsignedInt(bits, 0, xWordlength);
-            int y = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength, yWordlength);
-            int data = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength+yWordlength, colorWordlength);
-
-            setPixel(x, y, data, true);
-        }
-        
-    }
-
-    private int calculateBpp() {
-        if (indexedColor) {
-            return calculateRequiredBits(colorIndex.length);
-        } else return 4;
-    }
-
-    private int calculateRequiredBits(int numOfValues) {
-        return (int)Math.ceil(Math.log(numOfValues)/Math.log(2));
-    }
-
-    private void setPixel(int x, int y, int data, boolean checkMemory) {
-        byte color;
-        if (indexedColor) {
-            if (data>=colorIndex.length) {
-                if (hasListeners()) debug("Color index " + data + " is out of bounds.");
-                return;
-            } else
-                color = colorIndex[data];
-
-        } else color = (byte)data;
-
-        if (x>=width || y>=height) {
-            if (hasListeners()) debug("Pixel (" + x + ", " + y + ") is out of bounds.");
-            return;
-        }
-        
-        Location[] pixel = pixels[x][y];
-
-        if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + DyeColor.getByData((byte)color));        
-        if (memory[x][y]!=color || !checkMemory) {
-            for (Location l : pixel) {
-                Block b = l.getBlock();
-                if (b.getType()==Material.WOOL)
-                    b.setData(color);
+        } else if (channel!=null) {
+            try {
+                int len = xWordlength+yWordlength+colorWordlength;
+                receiver = new DisplayReceiver();
+                receiver.init(sender, channel, len, this);
+            } catch (IllegalArgumentException ie) {
+                error(sender, ie.getMessage());
+                return false;
             }
-            memory[x][y] = color;
         } 
+
+        if (sender instanceof Player) screen.clear();
+        
+        if (ram!=null) refreshDisplayFromRam();
+        
+        return true;
     }
-
-    private Location[] findPixelBlocks(Location origin, int x, int y, Axis widthAxis, Axis heightAxis, int pixelWidth, int pixelHeight) {
-        int x1 = origin.getBlockX();
-        int y1 = origin.getBlockY();
-        int z1 = origin.getBlockZ();
-
-        int dx = x*pixelWidth;
-        int dy = y*pixelHeight;
-
-        int xsign = pixelWidth>0?1:-1;
-        int ysign = (pixelHeight>0?1:-1);
-
-        pixelWidth = Math.abs(pixelWidth);
-        pixelHeight = Math.abs(pixelHeight);
-
-        Location[] ret = new Location[pixelWidth*pixelHeight];
-
-        int i = 0;
-        if (widthAxis==Axis.X) {
-            if (heightAxis==Axis.Y) {
-                for (int ix=0; ix<pixelWidth; ix++) {
-                    for (int iy=0; iy<pixelHeight; iy++) {
-                        ret[i] = new Location(world, x1+dx+(xsign>0?ix:ix*-1), y1+dy+(ysign>0?iy:iy*-1), z1);
-                        i++;
-                    }
-                }
-            } else { // Axis.Z
-                for (int ix=0; ix<pixelWidth; ix++) {
-                    for (int iy=0; iy<pixelHeight; iy++) {
-                        ret[i] = new Location(world, x1+dx+(xsign>0?ix:ix*-1), y1, z1+dy+(ysign>0?iy:iy*-1));
-                        i++;
-                    }
-                }
-            }
-        } else if (widthAxis==Axis.Y) {
-            if (heightAxis==Axis.X) {
-                for (int ix=0; ix<pixelWidth; ix++) {
-                    for (int iy=0; iy<pixelHeight; iy++) {
-                        ret[i] = new Location(world, x1+dy+(ysign>0?iy:iy*-1), y1+dx+(xsign>0?ix:ix*-1), z1);
-                        i++;
-                    }
-                }
-            } else {// Axis.Z
-                for (int ix=0; ix<pixelWidth; ix++) {
-                    for (int iy=0; iy<pixelHeight; iy++) {
-                        ret[i] = new Location(world, x1, y1+dx+(xsign>0?ix:ix*-1), z1+dy+(ysign>0?iy:iy*-1));
-                        i++;
-                    }
-                }
-            }
-        } else { // Axis.Z
-            if (heightAxis==Axis.Y) {
-                for (int ix=0; ix<pixelWidth; ix++) {
-                    for (int iy=0; iy<pixelHeight; iy++) {
-                        ret[i] = new Location(world, x1, y1+dy+(ysign>0?iy:iy*-1), z1+dx+(xsign>0?ix:ix*-1));
-                        i++;
-                    }
-                }
-            } else { // Axis.X
-                for (int ix=0; ix<pixelWidth; ix++) {
-                    for (int iy=0; iy<pixelHeight; iy++) {
-                        ret[i] = new Location(world, x1+dy+(ysign>0?iy:iy*-1), y1, z1+dx+(xsign>0?ix:ix*-1));
-                        i++;
-                    }
-                }
-            }
-        }
-
-        return ret;
-    }
-
-    public void clearDisplay() {
-        for (int y=0; y<height; y++) {
-            for (int x=0; x<width; x++) {
-                this.setPixel(x, y, 0, false);
-            }
-        }
-    }
-    
 }
