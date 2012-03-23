@@ -53,8 +53,9 @@ public class transmitter extends Circuit {
                     if (!(args[1].toLowerCase().startsWith("select(") && args[1].toLowerCase().endsWith(")"))) {
                         error(sender, "Bad select length argument: " + args[1]);
                         return false;
-                    } else sselect = args[1].substring(7, args[1].length()-1);
-
+                    } else {
+                        sselect = args[1].substring(7, args[1].length()-1);
+                    }
                     selectMode = true;
                     try {
                         selectLength = Integer.decode(sselect);
