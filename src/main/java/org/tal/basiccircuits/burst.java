@@ -1,10 +1,10 @@
 
 package org.tal.basiccircuits;
 
-import org.bukkit.command.CommandSender;
-import org.tal.redstonechips.circuit.Circuit;
-import org.tal.redstonechips.bitset.BitSetUtils;
 import net.eisental.common.parsing.UnitParser;
+import org.bukkit.command.CommandSender;
+import org.tal.redstonechips.bitset.BitSetUtils;
+import org.tal.redstonechips.circuit.Circuit;
 
 /**
  *
