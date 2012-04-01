@@ -1,21 +1,21 @@
 
 package org.tal.basiccircuits;
 
-import org.tal.redstonechips.memory.Ram;
 import java.io.IOException;
 import java.util.logging.Level;
+import net.eisental.common.page.LineSource;
+import net.eisental.common.page.Pager;
+import net.eisental.common.parsing.Range;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.tal.redstonechips.bitset.BitSet7;
+import org.tal.redstonechips.bitset.BitSetUtils;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.circuit.RCTypeReceiver;
 import org.tal.redstonechips.memory.Memory;
+import org.tal.redstonechips.memory.Ram;
 import org.tal.redstonechips.memory.RamListener;
-import net.eisental.common.page.LineSource;
-import net.eisental.common.page.Pager;
-import org.tal.redstonechips.bitset.BitSet7;
-import org.tal.redstonechips.bitset.BitSetUtils;
-import net.eisental.common.parsing.Range;
 
 /**
  *
@@ -97,6 +97,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
 
         if (outputs.length==0) {
             error(sender, "Expecting at least 1 output pin.");
+            return false;
         }
 
         if (addressLength<1) {

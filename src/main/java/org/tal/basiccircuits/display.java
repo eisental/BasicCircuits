@@ -27,6 +27,7 @@ public class display extends Circuit {
     private Receiver receiver;
     
     private Ram ram;
+    private RamListener ramListener;
     
     private int ramPage = 0, ramPageLength;
     
@@ -176,6 +177,7 @@ public class display extends Circuit {
                     Math.abs(screen.getDescription().physicalHeight) + "m high. Each pixel is " + 
                     Math.abs(screen.getDescription().pixelWidth) + "m on " + 
                     Math.abs(screen.getDescription().pixelHeight) + "m.");            
+            if (ram!=null) info(sender, "Reading pixel data from memory: " + ram.getId());
         } catch (IllegalArgumentException ie) {
             error(sender, ie.getMessage());
             return false;
@@ -208,7 +210,10 @@ public class display extends Circuit {
                 error(sender, ie.getMessage());
                 return false;
             }
-        } 
+        } else if (ram!=null) {
+            ramListener = new DisplayRamListener();
+            ram.addListener(ramListener);
+        }
 
         if (sender instanceof Player) screen.clear();
         
