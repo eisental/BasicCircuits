@@ -33,18 +33,16 @@ public class display extends Circuit {
     
     @Override
     public void inputChange(int inIdx, boolean state) {
-        if (inputBits.get(0)) {
-            int x = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, xWordlength);
-            int y = BitSetUtils.bitSetToUnsignedInt(inputBits, 1+xWordlength, yWordlength);
-            int data = BitSetUtils.bitSetToUnsignedInt(inputBits, 1+xWordlength+yWordlength, colorWordlength);
-
-            try {
-                screen.setPixel(x,y,data, true);
-            } catch (IllegalArgumentException ie) {
-                if (hasListeners()) debug(ie.getMessage());
-            }
-            
-            if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + data);
+        if (!inputBits.get(0)) return;
+        
+        if (ram==null) {
+            // set pixel
+            processPixelInput(inputBits, 1);
+        } else {
+            // update ram page
+            ramPage = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, inputs.length-1);
+            if (hasListeners()) debug("Moving to ram page " + ramPage);
+            refreshDisplayFromRam();
         }
     }
 
@@ -52,20 +50,24 @@ public class display extends Circuit {
 
         @Override
         public void receive(BitSet7 bits) {
-            int x = BitSetUtils.bitSetToUnsignedInt(bits, 0, xWordlength);
-            int y = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength, yWordlength);
-            int data = BitSetUtils.bitSetToUnsignedInt(bits, xWordlength+yWordlength, colorWordlength);
-
-            try {
-                screen.setPixel(x, y, data, true);
-            } catch (IllegalArgumentException ie) {
-                if (hasListeners()) debug(ie.getMessage());
-            }
-
-            if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + data);
+            processPixelInput(bits, 0); // set pixel
         }        
     }
 
+    private void processPixelInput(BitSet7 bits, int startIdx) {
+        int x = BitSetUtils.bitSetToUnsignedInt(bits, startIdx, xWordlength);
+        int y = BitSetUtils.bitSetToUnsignedInt(bits, startIdx+xWordlength, yWordlength);
+        int data = BitSetUtils.bitSetToUnsignedInt(bits, startIdx+xWordlength+yWordlength, colorWordlength);
+
+        try {
+            screen.setPixel(x,y,data, true);
+        } catch (IllegalArgumentException ie) {
+            if (hasListeners()) debug(ie.getMessage());
+        }
+
+        if (hasListeners()) debug("Setting (" + x + ", " + y + ") to " + data);        
+    }
+    
     class DisplayRamListener implements RamListener {
         @Override
         public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
@@ -93,8 +95,8 @@ public class display extends Circuit {
         int offset = ramPage * ramPageLength;
         for (int i=offset; i<offset+ramPageLength; i++) {
             int color = BitSetUtils.bitSetToUnsignedInt(ram.read(i), 0, screen.getColorLength());
-            int x = i % screen.getDescription().addrWidth;
-            int y = i / screen.getDescription().addrWidth;
+            int x = (i-offset) % screen.getDescription().addrWidth;
+            int y = (i-offset) / screen.getDescription().addrWidth;
             
             try {
                 screen.setPixel(x, y, color, true);
