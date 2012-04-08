@@ -12,6 +12,13 @@ Installation
 
 Changelog
 ---------
+#### BasicCircuits 0.95 (Apr 8th, 2012)
+- Updated for RC0.95
+- __display__: Rewrote the chip and added support for directly displaying ram memory contents.
+- __burst__: Added pulse rate. Now can pulse at slower rates. It takes an additional sign argument in the same format as the frequency used for the clock chip.
+- __sram__: outputs are immediately updated if another sram on the same memory writes on the same address.
+- __clock__: Clock stops when chip is disabled.
+
 #### BasicCircuits 0.94 (Jan 9th, 2012)
 - Updated for RC0.94.
 - __comparator__: New option for adding a clock input pin. 
