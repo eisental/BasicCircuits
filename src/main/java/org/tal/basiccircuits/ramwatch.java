@@ -13,7 +13,7 @@ import org.tal.redstonechips.memory.RamListener;
 /**
  *
  */
-public class watcher extends Circuit {
+public class ramwatch extends Circuit {
     private Ram ram;
     private RamListener ramListener;
     private BitSet7 ramaddr;
@@ -24,7 +24,7 @@ public class watcher extends Circuit {
     public void inputChange(int inIdx, boolean state) {
     }
     
-    class WatcherRamListener implements RamListener {
+    class RamWatchListener implements RamListener {
         @Override
         public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
             if (inputBits.get(0) & (ramaddr == null || ramaddr.equals(address))) {
@@ -64,7 +64,7 @@ public class watcher extends Circuit {
         if (sender!=null) resetOutputs();
         
         if (ram != null) {
-            ramListener = new WatcherRamListener();
+            ramListener = new RamWatchListener();
             ram.addListener(ramListener);
             
             if (ramaddr==null)
