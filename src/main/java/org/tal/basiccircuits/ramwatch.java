@@ -18,8 +18,6 @@ public class ramwatch extends Circuit {
     private RamListener ramListener;
     private BitSet7 ramaddr;
     
-    private PulseOff pulseOff = new PulseOff();
-    
     @Override
     public void inputChange(int inIdx, boolean state) {
     }
@@ -29,7 +27,7 @@ public class ramwatch extends Circuit {
         public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
             if (inputBits.get(0) & (ramaddr == null || ramaddr.equals(address))) {
                 sendOutput(0, true);
-                redstoneChips.getServer().getScheduler().scheduleSyncDelayedTask(redstoneChips, pulseOff, 1);
+		sendOutput(0, false);
             }
         }
     }
@@ -81,13 +79,6 @@ public class ramwatch extends Circuit {
     protected void circuitShutdown() {
         if (ram != null)
            ram.getListeners().remove(ramListener);
-    }
-    
-    class PulseOff implements Runnable {
-        @Override
-        public void run() {
-            sendOutput(0, false);
-        }
     }
     
     @Override
