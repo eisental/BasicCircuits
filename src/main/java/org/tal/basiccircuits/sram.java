@@ -1,4 +1,3 @@
-
 package org.tal.basiccircuits;
 
 import java.io.IOException;
@@ -272,7 +271,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
     @Override
     public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
         BitSet7 curaddr = inputBits.get(addressPin, addressPin+addressLength);
-        if (readWrite && curaddr.equals(address)) readMemory();
+        if (readWrite && curaddr.equals(address) && !sramDisable) readMemory();
     }
 
     @Override
