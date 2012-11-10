@@ -271,6 +271,8 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
 
     @Override
     public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
+        if (sramDisable) return;
+                
         BitSet7 curaddr = inputBits.get(addressPin, addressPin+addressLength);
         if (readWrite && curaddr.equals(address)) readMemory();
     }
