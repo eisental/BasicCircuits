@@ -223,4 +223,11 @@ public class display extends Circuit {
         
         return true;
     }
+    @Override
+    protected void circuitShutdown() {
+        if (ram != null)
+           ram.getListeners().remove(ramListener);
+        if (receiver != null)
+           receiver.shutdown();
+    }
 }

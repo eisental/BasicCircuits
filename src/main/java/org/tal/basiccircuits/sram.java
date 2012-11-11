@@ -279,7 +279,8 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
 
     @Override
     public void circuitShutdown() {
-        memory.release();
+        memory.getListeners().remove(this);
+	memory.release();
     }
     
     class MemoryLineSource implements LineSource {

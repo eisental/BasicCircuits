@@ -12,46 +12,35 @@ import org.tal.redstonechips.memory.RamListener;
 
 /**
  *
- * @author Tal Eisenberg
  */
-public class dregister extends Circuit {
-    private static final int clockIdx = 0;
-    private static final int resetIdx = 1;
-    
+public class ramwatch extends Circuit {
     private Ram ram;
     private RamListener ramListener;
     private BitSet7 ramaddr;
     
     @Override
     public void inputChange(int inIdx, boolean state) {
-        if (inIdx==resetIdx && state) {
-            if (ram != null)
-                ram.write(ramaddr, BitSetUtils.clearBitSet); //this will update the output
-            else this.sendBitSet(BitSetUtils.clearBitSet);
-        } else if (inputBits.get(clockIdx)) {
-            if (ram != null)
-                ram.write(ramaddr, inputBits.get(2, outputs.length+2)); //this will update the output
-            else this.sendBitSet(inputBits.get(2, outputs.length+2));
-        }
     }
     
-    class DRegisterRamListener implements RamListener {
+    class RamWatchListener implements RamListener {
         @Override
         public void dataChanged(Ram ram, BitSet7 address, BitSet7 data) {
-            if (ramaddr.equals(address))
-                sendBitSet(data);
+            if (inputBits.get(0) & (ramaddr == null || ramaddr.equals(address))) {
+                sendOutput(0, true);
+		sendOutput(0, false);
+            }
         }
     }
     
     @Override
     protected boolean init(CommandSender sender, String[] args) {
-        if (args.length >= 1)
+        if (args.length >= 1) {
             if (args[0].startsWith("$")) {
                 try {
                     if (args.length >= 2)
                         ramaddr = BitSetUtils.intToBitSet(Integer.decode(args[1]));
                     else
-                        ramaddr = BitSetUtils.clearBitSet;
+                        ramaddr = null;
                     
                     ram = (Ram)Memory.getMemory(args[0].substring(1), Ram.class);
                 } catch (IllegalArgumentException e) {
@@ -59,25 +48,31 @@ public class dregister extends Circuit {
                 } catch (IOException e) {
                     error(sender, e.getMessage());
                 }
-            } /*else if (channel==null) {
-                if (args[0].startsWith("#"))
-                    channel = args[0].substring(1);
-                else channel = args[0];
-            } */ else error(sender, "Invalid argument: " + args[0]);
-        
-        if (inputs.length!=outputs.length+2) {
-            sender.sendMessage("Expecting 2 more inputs than outputs. Found " + inputs.length + " input(s) and " + outputs.length + " output(s).");
+            } else error(sender, "Invalid argument: " + args[0]);
+        } else {
+            error(sender, "Expected at least one argument, the ram to watch.");
             return false;
         }
+        
+        if (inputs.length < 1 || outputs.length < 1) {
+            error(sender, "Expected at least one input and output. Found " + inputs.length + " input(s) and " + outputs.length + " output(s).");
+            return false;
+        }
+        
         if (sender!=null) resetOutputs();
         
         if (ram != null) {
-            ramListener = new DRegisterRamListener();
+            ramListener = new RamWatchListener();
             ram.addListener(ramListener);
-            this.sendBitSet(ram.read(ramaddr));
-            info(sender, "Created "+outputs.length+"-bit register backed by memory: "+ram.getId()+"@"+Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(ramaddr, 0, ramaddr.length())));
-        } else
-            info(sender, "Created "+outputs.length+"-bit register.");
+            
+            if (ramaddr==null)
+                info(sender, "Created ram watcher targeting entirety of $"+ram.getId());
+            else
+                info(sender, "Created ram watcher targeting $"+ram.getId()+"@"+Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(ramaddr, 0, ramaddr.length())));
+        } else {
+            error(sender, "Couldn't find ram to watch.");
+            return false;
+        }
         return true;
     }
     @Override
@@ -85,6 +80,7 @@ public class dregister extends Circuit {
         if (ram != null)
            ram.getListeners().remove(ramListener);
     }
+    
     @Override
     protected boolean isStateless() {
         return false;
