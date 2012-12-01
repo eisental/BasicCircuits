@@ -12,6 +12,14 @@ Installation
 
 Changelog
 ---------
+#### BasicCircuits 0.96 (Dec 1st, 2012)
+- New ramwatch chip for notifying memory data changes (@jpfx1342).
+- dregister: Chip can now be backed by ram (@jpfx1342).
+- repeater: Chip can now repeat sets of bits (@jpfx1342).
+- sram-fix: now properly releases memory objects when destroyed (@jpfx1342).
+- sram-fix: dataChanged() called readMemory() even when chip is disabled.
+- display-fix: ram-backed display now stops updating after destruction (@jpfx1342).
+
 #### BasicCircuits 0.95 (Apr 8th, 2012)
 - Updated for RC0.95
 - __display__: Rewrote the chip and added support for directly displaying ram memory contents.
