@@ -20,6 +20,9 @@ public class ramwatch extends Circuit {
     
     @Override
     public void inputChange(int inIdx, boolean state) {
+        if (inIdx==0) {
+            debug("Chip " + (state?"enabled":"disabled") + ".");
+        }
     }
     
     class RamWatchListener implements RamListener {
@@ -50,7 +53,7 @@ public class ramwatch extends Circuit {
                 }
             } else error(sender, "Invalid argument: " + args[0]);
         } else {
-            error(sender, "Expected at least one argument, the ram to watch.");
+            error(sender, "Expected at least one argument, the memory id to watch.");
             return false;
         }
         
@@ -66,9 +69,9 @@ public class ramwatch extends Circuit {
             ram.addListener(ramListener);
             
             if (ramaddr==null)
-                info(sender, "Created ram watcher targeting entirety of $"+ram.getId());
+                info(sender, "Created ram watcher targeting any address of memory $"+ram.getId() + ".");
             else
-                info(sender, "Created ram watcher targeting $"+ram.getId()+"@"+Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(ramaddr, 0, ramaddr.length())));
+                info(sender, "Created ram watcher targeting $"+ram.getId()+"@"+Integer.toHexString(BitSetUtils.bitSetToUnsignedInt(ramaddr, 0, ramaddr.length())) + ".");
         } else {
             error(sender, "Couldn't find ram to watch.");
             return false;
