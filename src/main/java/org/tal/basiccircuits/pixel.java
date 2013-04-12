@@ -14,10 +14,6 @@ import org.tal.redstonechips.circuit.io.InterfaceBlock;
 import org.tal.redstonechips.util.Locations;
 import org.tal.redstonechips.wireless.Receiver;
 
-/**
- * // dyes wool if present on output block
- * @author Tal Eisenberg
- */
 public class pixel extends Circuit {
     private boolean indexedColor = false;
     private byte[] colorIndex;
@@ -37,8 +33,6 @@ public class pixel extends Circuit {
 
     @Override
     protected boolean init(CommandSender sender, String[] args) {
-        // needs to have 5 inputs 1 clock 4 data
-
         if (args.length>0) {
             String channelString = null;
 
@@ -71,6 +65,7 @@ public class pixel extends Circuit {
 
             }
 
+            // color index
             if (!colorList.isEmpty()) {
                 colorIndex = new byte[colorList.size()];
                 for (int i=0; i<colorList.size(); i++)
@@ -78,6 +73,7 @@ public class pixel extends Circuit {
                 indexedColor = true;
             }
 
+            // wireless broadcast channel
             if (channelString!=null) {
                 try {
                     receiver = new PixelReceiver();
@@ -121,14 +117,14 @@ public class pixel extends Circuit {
         if (indexedColor) {
             int index = val;
             if (index>=colorIndex.length) {
-                if (hasDebuggers()) debug("Color index out of bounds: " + index);
+                if (hasListeners()) debug("Color index out of bounds: " + index);
                 return;
             }
             color = colorIndex[index];
         } else 
             color = (byte)val;
 
-        if (hasDebuggers()) debug("Setting pixel color to " + DyeColor.getByData(color));
+        if (hasListeners()) debug("Setting pixel color to " + DyeColor.getByData(color));
 
         for (InterfaceBlock i : interfaceBlocks)
             colorBlocks(i.getLocation(), color);
@@ -141,21 +137,6 @@ public class pixel extends Circuit {
         for (Location l : wool) {
             l.getBlock().setData(color);
         }
-}
-
-    class PixelReceiver extends Receiver {
-        @Override
-        public void receive(BitSet7 bits) {
-            // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
-            if (inputs.length<=1) {
-                inputBits = bits.get(0, (inputs.length==0?5:inputs.length));
-            }  else {
-                for (int i=0; i<bits.length(); i++)
-                    inputBits.set(i+1, bits.get(i));
-                inputBits.clear(0);
-            }
-            updatePixel();
-        }        
     }
 
     private void findWoolAround(Location origin, Location curLocation, List<Location> wool, int range, int curDist) {
@@ -182,5 +163,19 @@ public class pixel extends Circuit {
 
         return (dx<rad && dy<rad && dz<rad);
     }
-    
+
+    class PixelReceiver extends Receiver {
+        @Override
+        public void receive(BitSet7 bits) {
+            // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
+            if (inputs.length<=1) {
+                inputBits = bits.get(0, (inputs.length==0?5:inputs.length));
+            }  else {
+                for (int i=0; i<bits.length(); i++)
+                    inputBits.set(i+1, bits.get(i));
+                inputBits.clear(0);
+            }
+            updatePixel();
+        }        
+    }    
 }

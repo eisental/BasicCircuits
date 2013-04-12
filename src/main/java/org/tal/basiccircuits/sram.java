@@ -116,7 +116,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
                 memory = (Ram)Memory.getMemory(args[0], Ram.class);
             } else {
                 anonymous = true;
-                memory = (Ram)Memory.getMemory(args[0], Ram.class);
+                memory = (Ram)Memory.getMemory(Ram.class);
             }
         } catch (IOException ex) {
             error(sender, "While creating new memory file: " + ex);
