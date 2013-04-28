@@ -12,6 +12,11 @@ Installation
 
 Changelog
 ---------
+
+#### BasicCircuits 0.97 (28th April, 2013)
+- __pixel__: Added a maximum distance value preference to prevent lags and server crashes. The max can be changed using `/rcprefs pixel.maxDistance x` and defaults to 7.
+- __sram__: Fixed a problem with anonymous memory.
+
 #### BasicCircuits 0.96 (Dec 1st, 2012)
 - New ramwatch chip for notifying memory data changes (@jpfx1342).
 - dregister: Chip can now be backed by ram (@jpfx1342).
