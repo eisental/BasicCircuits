@@ -22,5 +22,6 @@ public class BasicCircuits extends CircuitLibrary {
     public void onRedstoneChipsEnable(RedstoneChips rc) {
         // add new pref keys.
         rc.getPrefs().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
+        rc.getPrefs().registerCircuitPreference(pixel.class, "maxDistance", 7);
     }
 }

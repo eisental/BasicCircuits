@@ -50,6 +50,11 @@ public class pixel extends Circuit {
                         if ((args[i].startsWith("d{") || args[i].startsWith("dist{")) && args[i].endsWith("}")) {
                             try {
                                 distance = Integer.decode(args[i].substring(args[i].indexOf("{")+1, args[i].length()-1));
+                                int maxDistance = getMaxDistance();
+                                if (maxDistance>=0 && distance>maxDistance) {
+                                    error(sender, "A distance value of " + distance + " is not allowed. The maximum value is " + maxDistance + ".");
+                                    return false;
+                                }
                             } catch (NumberFormatException ne2) {
                                 error(sender, "Bad distance argument: " + args[i] + ". Expecting d{<distance>} or dist{<distance>}.");
                                 return false;
@@ -164,6 +169,12 @@ public class pixel extends Circuit {
         return (dx<rad && dy<rad && dz<rad);
     }
 
+    private int getMaxDistance() {
+        Object oMaxDist = redstoneChips.getPrefs().getPrefs().get("pixel.maxDistance");
+        if (oMaxDist != null && oMaxDist instanceof Integer) return (Integer)oMaxDist;
+        else return -1;
+    }
+    
     class PixelReceiver extends Receiver {
         @Override
         public void receive(BitSet7 bits) {
