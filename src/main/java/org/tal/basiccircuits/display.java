@@ -114,10 +114,13 @@ public class display extends Circuit {
         int[] size = null;
         byte[] colorIndex = null;
         
-        String[] split = args[0].split("x");
-        if (split.length==2 && ParsingUtils.isInt((split[0])) && ParsingUtils.isInt((split[1]))) {
-            size = new int[] { Integer.parseInt(split[0]), Integer.parseInt(split[1]) };
-        }        
+        if (args.length>0) {
+            String[] split = args[0].split("x");
+            if (split.length==2 && ParsingUtils.isInt((split[0])) && ParsingUtils.isInt((split[1]))) {
+                size = new int[] { Integer.parseInt(split[0]), Integer.parseInt(split[1]) };
+            }                    
+        }
+        
         
         int start = (size==null?0:1);
         if (args.length>start) { // color index
@@ -193,7 +196,7 @@ public class display extends Circuit {
         if (channel==null && ram==null) {
             int expectedInputs = 1 + xWordlength + yWordlength + colorWordlength;
             if (inputs.length!=expectedInputs && (inputs.length!=0 || channel==null)) {
-                error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s)" + (yWordlength!=0?", " + yWordlength + "y address input(s)":"") + 
+                error(sender, "Expecting " + expectedInputs + " inputs. 1 clock input, " + xWordlength + " x address input(s)" + (yWordlength!=0?", " + yWordlength + " y address input(s)":"") + 
                         ", and " + colorWordlength + " color data inputs.");
                 return false;
             } 

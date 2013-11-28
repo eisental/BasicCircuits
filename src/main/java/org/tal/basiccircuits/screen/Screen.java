@@ -10,7 +10,15 @@ import org.bukkit.block.Block;
  * @author Tal Eisenberg
  */
 public class Screen {
-
+    
+    public static final Material[] materials = new Material[] {
+        Material.WOOL,
+        Material.CARPET,
+        Material.STAINED_CLAY,
+        //Material.THIN_GLASS,
+        //Material.GLASS
+    };
+    
     public int getXLength() {
         return calculateBitLength(ds.addrWidth);
     }
@@ -27,8 +35,8 @@ public class Screen {
     
     private int colorLength = 4;
     
-    private Location[][][] pixels;
-    private byte[][] memory;
+    private final Location[][][] pixels;
+    private final byte[][] memory;
 
     private Screen(ScreenDescription ds) {
         this.ds = ds;
@@ -81,8 +89,10 @@ public class Screen {
         if (!checkMemory || memory[x][y]!=color) {
             for (Location l : pixel) {
                 Block b = l.getBlock();
-                if (b.getType()==Material.WOOL)
-                    b.setData(color);
+                for (Material m : Screen.materials)
+                    if (b.getType()==m)
+                        b.setData(color);
+                        break;
             }
             memory[x][y] = color;
         } 
@@ -133,20 +143,26 @@ public class Screen {
 
         int phyWidth, phyHeight;
 
-        Axis widthAxis, heightAxis;
-        Location origin;
+        Axis widthAxis, heightAxis = null;
+        Location origin = null;
 
         if (dx==0 && dy!=0 && dz!=0) { // zy plane
             phyWidth = (dz+1)*zsign;
             phyHeight = (dy+1)*ysign;
             widthAxis = Axis.Z;
             heightAxis = Axis.Y;
-
-            if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1+1, y1, z1);
-            else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1-1, y1, z1);
-            else throw new IllegalArgumentException("Can't find origin wool block.");
+            
+            for (Material m : Screen.materials) {
+                if (world.getBlockAt(x1+1,y1,z1).getType()==m) {
+                    origin = new Location(world, x1+1, y1, z1);
+                    break;
+                } else if (world.getBlockAt(x1-1,y1,z1).getType()==m) {
+                    origin = new Location(world, x1-1, y1, z1);
+                    break;
+                } 
+            }            
+            if (origin == null)
+                throw new IllegalArgumentException("Can't find origin screen block.");
 
         } else if (dx!=0 && dy==0 && dz!=0) { // xz plane
             if (dx>=dz) {
@@ -161,76 +177,116 @@ public class Screen {
                 heightAxis = Axis.X;
             }
 
-            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1+1, z1);
-            else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1-1, z1);
-            else throw new IllegalArgumentException("Can't find origin wool block.");
+            for (Material m : Screen.materials) {
+                if (world.getBlockAt(x1,y1+1,z1).getType()==m) {
+                    origin = new Location(world, x1, y1+1, z1);
+                    break;
+                } else if (world.getBlockAt(x1,y1-1,z1).getType()==m) {
+                    origin = new Location(world, x1, y1-1, z1);
+                    break;
+                } 
+            }            
+            if (origin == null)
+                throw new IllegalArgumentException("Can't find origin screen block.");
+            
         } else if (dx!=0 && dy!=0 && dz==0) { // xy plane
             phyWidth = (dx+1)*xsign;
             phyHeight = (dy+1)*ysign;
             widthAxis = Axis.X;
             heightAxis = Axis.Y;
 
-            if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1, z1+1);
-            else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId())
-                origin = new Location(world, x1, y1, z1-1);
-            else throw new IllegalArgumentException("Can't find origin wool block.");
+            for (Material m : Screen.materials) {
+                if (world.getBlockAt(x1,y1,z1+1).getType()==m) {
+                    origin = new Location(world, x1, y1, z1+1);
+                    break;
+                } else if (world.getBlockAt(x1,y1,z1-1).getType()==m) {
+                    origin = new Location(world, x1, y1, z1-1);
+                    break;
+                } 
+            }            
+            if (origin == null)
+                throw new IllegalArgumentException("Can't find origin screen block.");
+            
         } else if (dx==0 && dy!=0 && dz==0) { // y line
             phyWidth = (dy+1)*ysign;
             phyHeight = 1;
             widthAxis = Axis.Y;
             
-            if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1+1, y1, z1);
-            } else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1-1, y1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1, z1+1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1, z1-1);
-            } else throw new IllegalArgumentException("Can't find origin wool block.");
+            for (Material m : Screen.materials) {
+                if (world.getBlockAt(x1+1,y1,z1).getType()==m) {
+                    heightAxis = Axis.Z;
+                    origin = new Location(world, x1+1, y1, z1);
+                    break;
+                } else if (world.getBlockAt(x1-1,y1,z1).getType()==m) {
+                    heightAxis = Axis.Z;
+                    origin = new Location(world, x1-1, y1, z1);
+                    break;
+                } else if (world.getBlockAt(x1,y1,z1+1).getType()==m) {
+                    heightAxis = Axis.X;
+                    origin = new Location(world, x1, y1, z1+1);
+                    break;
+                } else if (world.getBlockAt(x1,y1,z1-1).getType()==m) {
+                    heightAxis = Axis.X;
+                    origin = new Location(world, x1, y1, z1-1);
+                    break;
+                }
+            }            
+            if (origin == null)
+                throw new IllegalArgumentException("Can't find origin screen block.");
+            
         } else if (dx!=0 && dy==0 && dz==0) { // x line
             phyWidth = (dx+1)*xsign;
             phyHeight = 1;
             widthAxis = Axis.X;
-            
-            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1, y1+1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Z;
-                origin = new Location(world, x1, y1-1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1+1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1, y1, z1+1);
-            } else if (world.getBlockTypeIdAt(x1, y1, z1-1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1, y1, z1-1);
-            } else throw new IllegalArgumentException("Can't find origin wool block.");
+
+            for (Material m : Screen.materials) {
+                if (world.getBlockAt(x1,y1+1,z1).getType()==m) {
+                    heightAxis = Axis.Z;
+                    origin = new Location(world, x1, y1+1, z1);
+                    break;
+                } else if (world.getBlockAt(x1,y1-1,z1).getType()==m) {
+                    heightAxis = Axis.Z;
+                    origin = new Location(world, x1, y1-1, z1);
+                    break;
+                } else if (world.getBlockAt(x1,y1,z1+1).getType()==m) {
+                    heightAxis = Axis.Y;
+                    origin = new Location(world, x1, y1, z1+1);
+                    break;
+                } else if (world.getBlockAt(x1,y1,z1-1).getType()==m) {
+                    heightAxis = Axis.Y;
+                    origin = new Location(world, x1, y1, z1-1);
+                    break;
+                }
+            }            
+            if (origin == null)
+                throw new IllegalArgumentException("Can't find origin screen block.");
+
         } else if (dx==0 && dy==0 && dz!=0) { // z line
             phyWidth = (dz+1)*zsign;
             phyHeight = 1;
             widthAxis = Axis.Z;
             
-            if (world.getBlockTypeIdAt(x1, y1+1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1+1, z1);
-            } else if (world.getBlockTypeIdAt(x1, y1-1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.X;
-                origin = new Location(world, x1, y1-1, z1);
-            } else if (world.getBlockTypeIdAt(x1+1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1+1, y1, z1);
-            } else if (world.getBlockTypeIdAt(x1-1, y1, z1)==Material.WOOL.getId()) {
-                heightAxis = Axis.Y;
-                origin = new Location(world, x1-1, y1, z1-1);
-            } else throw new IllegalArgumentException("Can't find origin wool block.");            
+         for (Material m : Screen.materials) {
+                if (world.getBlockAt(x1,y1+1,z1).getType()==m) {
+                    heightAxis = Axis.X;
+                    origin = new Location(world, x1, y1+1, z1);
+                    break;
+                } else if (world.getBlockAt(x1,y1-1,z1).getType()==m) {
+                    heightAxis = Axis.X;
+                    origin = new Location(world, x1, y1-1, z1);
+                    break;
+                } else if (world.getBlockAt(x1+1,y1,z1).getType()==m) {
+                    heightAxis = Axis.Y;
+                    origin = new Location(world, x1+1, y1, z1);
+                    break;
+                } else if (world.getBlockAt(x1-1,y1,z1).getType()==m) {
+                    heightAxis = Axis.Y;
+                    origin = new Location(world, x1-1, y1, z1);
+                    break;
+                }
+            }            
+            if (origin == null)
+                throw new IllegalArgumentException("Can't find origin screen block.");            
         } else throw new IllegalArgumentException("Both interface blocks must be on the same plane.");        
         
         ScreenDescription ds = new ScreenDescription();
