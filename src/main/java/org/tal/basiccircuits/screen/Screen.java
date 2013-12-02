@@ -15,8 +15,8 @@ public class Screen {
         Material.WOOL,
         Material.CARPET,
         Material.STAINED_CLAY,
-        //Material.THIN_GLASS,
-        //Material.GLASS
+        Material.STAINED_GLASS_PANE,
+        Material.STAINED_GLASS
     };
     
     public int getXLength() {
