@@ -1,6 +1,8 @@
 package org.tal.basiccircuits;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.tal.redstonechips.circuit.Circuit;
 import org.tal.redstonechips.bitset.BitSet7;
@@ -12,11 +14,11 @@ import org.tal.redstonechips.wireless.Transmitter;
  * @author Tal Eisenberg
  */
 public class transmitter extends Circuit {
-    boolean selectMode = false;
-    int selectLength = 0;
-    int baseStartBit;
+    private boolean selectMode = false;
+    private int selectLength = 0;
+    private int[] baseStartBit;
 
-    Transmitter trans;
+    private Transmitter[] modules;
     
     @Override
     public void inputChange(int inIdx, boolean high) {
@@ -25,7 +27,10 @@ public class transmitter extends Circuit {
         } else { // has a clock pin
             if (selectMode) {
                 int select = BitSetUtils.bitSetToUnsignedInt(inputBits, 1, selectLength);
-                trans.setStartBit(baseStartBit + select*trans.getChannelLength());
+                for (int i=0; i<modules.length; i++) {
+                    modules[i].setStartBit(baseStartBit[i] + select*modules[i].getChannelLength());
+                }
+                
             }
             
             if (inputBits.get(0)) {
@@ -35,8 +40,9 @@ public class transmitter extends Circuit {
     }
 
     private void transmit(BitSet7 bits, int length) {
-        if (hasDebuggers()) debug("Transmitting " + BitSetUtils.bitSetToBinaryString(bits, 0, length) + " on " + trans.getChannel().name + ":" + trans.getStartBit());
-        trans.transmit(bits, length);
+        if (hasListeners()) debug("Transmitting " + BitSetUtils.bitSetToBinaryString(bits, 0, length) + " on " + getChannelString());
+        for (Transmitter t : modules)
+            t.transmit(bits, length);
     }
 
     @Override
@@ -46,43 +52,54 @@ public class transmitter extends Circuit {
             return false;
         }
         if (args.length>0) {
-            try {
-                if (args.length>1) {
-                    String sselect;
-
-                    if (!(args[1].toLowerCase().startsWith("select(") && args[1].toLowerCase().endsWith(")"))) {
-                        error(sender, "Bad select length argument: " + args[1]);
-                        return false;
-                    } else {
-                        sselect = args[1].substring(7, args[1].length()-1);
-                    }
-                    selectMode = true;
-                    try {
-                        selectLength = Integer.decode(sselect);
-                        if (inputs.length<1+selectLength+1) {
-                            error(sender, "Expecting at least " + (2+selectLength) + " inputs for select mode.");
-                            return false;
-                        }
-                    } catch (NumberFormatException ne) {
-                        error(sender, "Bad select length argument: " + args[1]);
-                        return false;
-                    }
-                }
-
-                try {
-                    trans = new Transmitter();
-                    int len;
-                    if (inputs.length==1) len = 1;
-                    else len = inputs.length-1-selectLength;
+            List<String> smodules = new ArrayList<String>();
                     
-
-                    trans.init(sender, args[0], len, this);
-                } catch (IllegalArgumentException ie) {
-                    error(sender, ie.getMessage());
-                    return false;
+            try {
+                for (String arg : args) {
+                    if (arg.toLowerCase().startsWith("select(") && arg.toLowerCase().endsWith(")")) {
+                        String sselect = arg.substring(7, arg.length()-1);
+                        try {
+                            selectLength = Integer.decode(sselect);
+                            if (inputs.length<1+selectLength+1) {
+                                error(sender, "Expecting at least " + (2+selectLength) + " inputs for select mode.");
+                                return false;
+                            }
+                        } catch (NumberFormatException ne) {
+                            error(sender, "Bad select length argument: " + args[1]);
+                            return false;
+                        }                        
+                        selectMode = true;
+                    } else {                        
+                        smodules.add(arg);
+                    }                    
                 }
                 
-                baseStartBit = trans.getStartBit();
+                if (smodules.isEmpty()) {
+                    error(sender, "Can't find any channel names.");
+                    return false;
+                }
+                modules = new Transmitter[smodules.size()];
+                baseStartBit = new int[modules.length];
+                
+                for (int i=0; i<modules.length; i++) {
+                    try {
+                        Transmitter t = new Transmitter();
+                        int len;
+                        if (inputs.length == 1)len = 1;
+                        else len = inputs.length - 1 - selectLength;
+                        t.init(sender, smodules.get(i), len, this);
+                        modules[i]=t;
+                        baseStartBit[i] = t.getStartBit();
+                    } catch (IllegalArgumentException ie) {
+                        error(sender, ie.getMessage());
+                        return false;
+                    }
+                }
+                
+                
+                debug("baseStartBit: " + baseStartBit);
+                debug("modules: " + modules);
+                
                 if (selectMode) {
                     info(sender, "Inputs 1-" + (selectLength) + " are channel bit select pins.");
                 }
@@ -96,5 +113,16 @@ public class transmitter extends Circuit {
             error(sender, "Channel sign argument is missing.");
             return false;
         }
+    }
+    
+    private String getChannelString() {
+        StringBuilder b = new StringBuilder();
+        
+        for (Transmitter t : modules) {
+            b.append(t.getChannel().name).append(":").append(t.getStartBit()).append(", ");
+        }
+        b.delete(b.length()-2, b.length()-1);
+        
+        return b.toString();
     }
 }
