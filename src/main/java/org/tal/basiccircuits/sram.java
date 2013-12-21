@@ -140,7 +140,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         }
         
         memory.addListener(this);
-        info(sender, "This sram chip can hold up to " + (int)Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + memory.getFile().getPath());
+        info(sender, "This sram chip can hold up to " + Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + memory.getFile().getPath());
         
         return true;
     }
@@ -182,7 +182,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
 
             String ascii = b.toString();
             for (int i=0; i<ascii.length(); i++)
-                memory.write(BitSetUtils.intToBitSet(i, addressLength), BitSetUtils.intToBitSet((int)ascii.charAt(i), wordLength));
+                memory.write(BitSetUtils.intToBitSet(i, addressLength), BitSetUtils.intToBitSet(ascii.charAt(i), wordLength));
         } else if (words[0].equalsIgnoreCase("notes")) {
         } else if (words[0].equalsIgnoreCase("dump")) {
             if (words.length==1) {
@@ -226,7 +226,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
             int ret = Integer.decode(data);
             return BitSetUtils.intToBitSet(ret, wordLength);
         } catch (NumberFormatException ne) {
-            if (data.length()==1) return BitSetUtils.intToBitSet((int)data.charAt(0), wordLength);
+            if (data.length()==1) return BitSetUtils.intToBitSet(data.charAt(0), wordLength);
             else if (data.startsWith("b")) {
                 String bits = data.substring(1);
                 return BitSetUtils.stringToBitSet(bits);

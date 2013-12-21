@@ -141,14 +141,19 @@ public class display extends Circuit {
                                 ram = (Ram)Memory.getMemory(args[i].substring(1), Ram.class);
                             } catch (IllegalArgumentException e) {
                                 error(sender, e.getMessage());
+                                return false;
                             } catch (IOException e) {
                                 error(sender, e.getMessage());
+                                return false;
                             }
                         } else if (channel==null) {
                             if (args[i].startsWith("#"))
                                 channel = args[i].substring(1);
                             else channel = args[i];
-                        } else error(sender, "Invalid argument: " + args[i]);
+                        } else {
+                            error(sender, "Invalid argument: " + args[i]);
+                            return false;
+                        }
                     }
                 }
             }

@@ -20,7 +20,7 @@ public class terminal extends Circuit implements RCTypeReceiver {
     private enum DataType { ascii, num }
 
     private BitSet7 outBuf;
-    private long[] buf = new long[1];
+    private final long[] buf = new long[1];
     private DataType type = DataType.ascii;
     private boolean eot;
     
@@ -126,7 +126,7 @@ public class terminal extends Circuit implements RCTypeReceiver {
             for (int i=0; i<typeString.length()-1; i++) {
                 buf[0] = typeString.charAt(i);
                 outBuf = BitSet7.valueOf(buf);
-                if (hasDebuggers()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, 8) + "(" + (char)buf[0] + ")");
+                if (hasListeners()) debug("Sending " + BitSetUtils.bitSetToBinaryString(outBuf, 0, 8) + "(" + (char)buf[0] + ")");
                 
                 if (transmitter!=null) transmitter.send(outBuf, 0, 8);
                 else {

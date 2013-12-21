@@ -45,7 +45,7 @@ public class receiver extends Circuit {
     class ReceiverImpl extends Receiver {
         @Override
         public void receive(BitSet7 bits) {        
-            if (hasDebuggers()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, getChannelLength()));
+            if (hasListeners()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, getChannelLength()));
             sendBitSet(dataPin, outputs.length-dataPin, bits);
             if (outputs.length>1) {
                 sendOutput(0, true);

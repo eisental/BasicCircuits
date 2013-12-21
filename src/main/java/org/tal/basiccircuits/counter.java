@@ -148,7 +148,7 @@ public class counter extends Circuit {
 
         String loadedDirection = state.get("direction");
         if (loadedDirection!=null) {
-            direction = Integer.decode((String)loadedDirection);
+            direction = Integer.decode(loadedDirection);
         }
     }
 
