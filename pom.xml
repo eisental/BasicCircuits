@@ -2,10 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.tal</groupId>
+    <groupId>org.redstonechips</groupId>
     <artifactId>BasicCircuits</artifactId>
     <packaging>jar</packaging>
     <name>BasicCircuits</name>
+    <version>1.0-SNAPSHOT</version>    
     <url>http://maven.apache.org</url>
     <build>
         <plugins>
@@ -13,8 +14,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
                 <version>2.3.2</version>
             </plugin>
@@ -30,12 +31,11 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.tal</groupId>
+            <groupId>org.redstonechips</groupId>
             <artifactId>RedstoneChips</artifactId>
-            <version>beta</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
-    <version>beta</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>    
