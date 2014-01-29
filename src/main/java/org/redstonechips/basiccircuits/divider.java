@@ -17,18 +17,18 @@ public class divider extends BitSetCircuit {
 
     @Override
     protected void bitSetChanged(int bitSetIdx, boolean[] set) {
-        int firstOperand = BooleanArrays.toUnsignedInt(inputBitSets[0], 0, wordlength);
-        int secondOperand = 1;
+        long firstOperand = BooleanArrays.toUnsignedInt(inputBitSets[0], 0, wordlength);
+        long secondOperand = 1;
         if (inputBitSets.length>1) {
             for (int i=1; i<inputBitSets.length; i++) {
-                int num = BooleanArrays.toUnsignedInt(inputBitSets[i], 0, wordlength);
+                long num = BooleanArrays.toUnsignedInt(inputBitSets[i], 0, wordlength);
                 secondOperand = secondOperand * num;
             }
         }
 
         secondOperand = secondOperand * constant;
 
-        int result;
+        long result;
         if (round) {
             if (checkForDivByZero(secondOperand))
                 result = (int)Math.round((double)firstOperand / (double)secondOperand);
@@ -41,7 +41,7 @@ public class divider extends BitSetCircuit {
         }
         this.writeInt(result, 0, wordlength);
         if (mod) {
-            int modulus = firstOperand % secondOperand;
+            long modulus = firstOperand % secondOperand;
             this.writeInt(modulus, wordlength, outputlen-wordlength);
         }
     }
@@ -96,7 +96,7 @@ public class divider extends BitSetCircuit {
         return this;    
     }
 
-    private boolean checkForDivByZero(int secondOperand) {
+    private boolean checkForDivByZero(long secondOperand) {
         if (secondOperand==0) {
             if (chip.hasListeners()) debug("Error: trying to divide by zero. ");
             return false;

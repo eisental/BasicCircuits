@@ -301,7 +301,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
             String value;
             String address = zeroPad(idx+offset, (int)Math.pow(2, addressLength)-1);
             boolean[] data = memory.read(idx+offset);
-            if (wordLength>32) value = Integer.toHexString(BooleanArrays.toSignedInt(data, 0, wordLength));
+            if (wordLength>32) value = Long.toHexString(BooleanArrays.toSignedInt(data, 0, wordLength));
             else value = BooleanArrays.toPrettyString(data, wordLength);
             return ChatColor.YELLOW.toString() + address + ": " + ChatColor.WHITE + value + "\n";
         }

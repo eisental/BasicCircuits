@@ -28,9 +28,9 @@ public class synth extends Circuit {
         int val;
         
         if (inputlen==1) {
-            val = BooleanArrays.toUnsignedInt(inputs, 0, 1);
+            val = (int)BooleanArrays.toUnsignedInt(inputs, 0, 1);
         } else if (inIdx==0 && state) { // clock pin
-            val = BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
+            val = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
         } else return;
         
         playNote(val);
@@ -39,7 +39,7 @@ public class synth extends Circuit {
     class SynthReceiver extends Receiver {
         @Override
         public void receive(BooleanSubset bits) {
-            playNote(bits.toUnsignedInt());
+            playNote((int)bits.toUnsignedInt());
         }
     }
 

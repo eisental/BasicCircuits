@@ -40,7 +40,7 @@ public class multiplexer extends Circuit {
     public void input(boolean state, int inIdx) {
         if (inIdx<selectSize) { // need to send a new input
             select[inIdx] = state;
-            int i = BooleanArrays.toUnsignedInt(select, 0, selectSize);
+            int i = (int)BooleanArrays.toUnsignedInt(select, 0, selectSize);
             if (i<inputBitSets.length) {
                 selection = i;
                 if (chip.hasListeners()) debug("Selecting input " + i);

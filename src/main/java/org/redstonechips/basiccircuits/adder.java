@@ -45,7 +45,7 @@ public class adder extends BitSetCircuit {
         BooleanArrays.and(c, a, b);
 
         while (!BooleanArrays.isZero(c)) {
-            BooleanArrays.shiftLeft(c, length);
+            BooleanArrays.shiftLeft(c, c);
             boolean[] oldS = s.clone();
             BooleanArrays.xor(s, s, c);
             BooleanArrays.and(c, c, oldS);
@@ -100,7 +100,7 @@ public class adder extends BitSetCircuit {
     }
 
     public static boolean[] negate(boolean[] set, int length) {
-        int n = BooleanArrays.toSignedInt(set, 0, length);
+        long n = BooleanArrays.toSignedInt(set, 0, length);
         return BooleanArrays.fromInt(-n, length);
     }
 }

@@ -14,7 +14,7 @@ public class decoder extends Circuit {
     @Override
     public void input(boolean state, int inIdx) {
         if (inIdx==0 && state) {
-            int i = BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
+            int i = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
             Arrays.fill(inputs, false);
             register[i] = true;
             this.writeBits(register);

@@ -118,8 +118,8 @@ public class pixel extends Circuit {
             if (!i.getLocation().getChunk().isLoaded()) return;
 
         int val;
-        if (inputlen<=1) val = BooleanArrays.toUnsignedInt(bits);
-        else val = BooleanArrays.toUnsignedInt(bits, 1, bits.length-1);
+        if (inputlen<=1) val = (int)BooleanArrays.toUnsignedInt(bits);
+        else val = (int)BooleanArrays.toUnsignedInt(bits, 1, bits.length-1);
 
         byte color;
 

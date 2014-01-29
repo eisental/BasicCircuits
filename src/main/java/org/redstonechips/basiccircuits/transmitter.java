@@ -24,7 +24,7 @@ public class transmitter extends Circuit {
             transmit(inputs, 0, 1);
         } else { // has a clock pin
             if (selectMode) {
-                int select = BooleanArrays.toUnsignedInt(inputs, 1, selectLength);
+                int select = (int)BooleanArrays.toUnsignedInt(inputs, 1, selectLength);
                 for (int i=0; i<modules.length; i++) {
                     modules[i].setStartBit(baseStartBit[i] + select*modules[i].getChannelLength());
                 }

@@ -13,11 +13,11 @@ import org.redstonechips.util.BooleanArrays;
  * @author Tal Eisenberg
  */
 public class multiplier extends BitSetCircuit {
-    int constant = 1;
+    long constant = 1;
 
     @Override
     protected void bitSetChanged(int bitSetIdx, boolean[] set) {
-        int mul = constant;
+        long mul = constant;
         for (boolean[] s : this.inputBitSets) {
             mul = mul * BooleanArrays.toUnsignedInt(s);
         }
@@ -55,7 +55,7 @@ public class multiplier extends BitSetCircuit {
             }
         }
 
-        int maxResult = (int)Math.pow(Math.pow(2, wordlength)-1, inputBitSets.length) * constant;
+        long maxResult = (long)Math.pow(Math.pow(2, wordlength)-1, inputBitSets.length) * constant;
 
         int expectedOutputs = (int)Math.ceil(Math.log(maxResult)/Math.log(2));
         if (outputlen<expectedOutputs)

@@ -27,7 +27,8 @@ public class display extends Circuit {
     private Ram ram;
     private RamListener ramListener;
     
-    private int ramPage = 0, ramPageLength;
+    private long ramPage = 0;
+    private int ramPageLength;
     
     @Override
     public void input(boolean state, int inIdx) {
@@ -48,9 +49,9 @@ public class display extends Circuit {
 
         @Override
         public void receive(BooleanSubset bits) {
-            int x = bits.toUnsignedInt(0, xWordlength);
-            int y = bits.toUnsignedInt(xWordlength, yWordlength);
-            int color = bits.toUnsignedInt(xWordlength+yWordlength, colorWordlength);
+            int x = (int)bits.toUnsignedInt(0, xWordlength);
+            int y = (int)bits.toUnsignedInt(xWordlength, yWordlength);
+            int color = (int)bits.toUnsignedInt(xWordlength+yWordlength, colorWordlength);
             processPixelInput(x, y, color); // set pixel
         }        
     }
@@ -66,9 +67,9 @@ public class display extends Circuit {
     }
     
     private void processPixelInput(boolean[] bits, int startIdx) {
-        int x = BooleanArrays.toUnsignedInt(bits, startIdx, xWordlength);
-        int y = BooleanArrays.toUnsignedInt(bits, startIdx+xWordlength, yWordlength);
-        int color = BooleanArrays.toUnsignedInt(bits, startIdx+xWordlength+yWordlength, colorWordlength);
+        int x = (int)BooleanArrays.toUnsignedInt(bits, startIdx, xWordlength);
+        int y = (int)BooleanArrays.toUnsignedInt(bits, startIdx+xWordlength, yWordlength);
+        int color = (int)BooleanArrays.toUnsignedInt(bits, startIdx+xWordlength+yWordlength, colorWordlength);
 
         processPixelInput(x, y, color);
     }
@@ -76,13 +77,13 @@ public class display extends Circuit {
     class DisplayRamListener implements RamListener {
         @Override
         public void dataChanged(Ram ram, long address, boolean[] data) {
-            int color = BooleanArrays.toUnsignedInt(data);
-            int offset = ramPage * ramPageLength;
+            int color = (int)BooleanArrays.toUnsignedInt(data);
+            long offset = ramPage * ramPageLength;
             
             if (address >= offset && address < offset + ramPageLength) {
-                int idx = (int)address - offset;
-                int x = idx % screen.getDescription().addrWidth;
-                int y = idx / screen.getDescription().addrWidth;
+                long idx = address - offset;
+                int x = (int)(idx % screen.getDescription().addrWidth);
+                int y = (int)(idx / screen.getDescription().addrWidth);
 
                 try {
                     screen.setPixel(x, y, color, true);
@@ -96,11 +97,11 @@ public class display extends Circuit {
     }
     
     private void refreshDisplayFromRam() {
-        int offset = ramPage * ramPageLength;
-        for (int i=offset; i<offset+ramPageLength; i++) {
-            int color = BooleanArrays.toUnsignedInt(ram.read(i));
-            int x = (i-offset) % screen.getDescription().addrWidth;
-            int y = (i-offset) / screen.getDescription().addrWidth;
+        long offset = ramPage * ramPageLength;
+        for (long i=offset; i<offset+ramPageLength; i++) {
+            int color = (int)BooleanArrays.toUnsignedInt(ram.read(i));
+            int x = (int)((i-offset) % screen.getDescription().addrWidth);
+            int y = (int)((i-offset) / screen.getDescription().addrWidth);
             
             try {
                 screen.setPixel(x, y, color, true);

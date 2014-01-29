@@ -14,7 +14,7 @@ public class bintobcd extends Circuit {
     public void input(boolean state, int inIdx) {
         String value;
         
-        value = Integer.toString(BooleanArrays.toUnsignedInt(inputs, 0, inputlen));
+        value = Long.toString(BooleanArrays.toUnsignedInt(inputs, 0, inputlen));
 
         for (int i=0; i<digits; i++) {
             String d;

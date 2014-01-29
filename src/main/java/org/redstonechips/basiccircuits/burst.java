@@ -10,7 +10,7 @@ import org.redstonechips.util.BooleanArrays;
  * @author Tal Eisenberg
  */
 public class burst extends Circuit {
-    int pulseCount;
+    long pulseCount;
     long frequency = 0;
     boolean bursting;
     int taskId = -1;
@@ -34,7 +34,7 @@ public class burst extends Circuit {
         }
     }
 
-    private void pulse(int count) {
+    private void pulse(long count) {
         if (chip.hasListeners()) debug("Pulsing " + count + " time(s).");
         for (int i=0; i<count; i++) {
             for (int m=0; m<outputlen; m++) {

@@ -39,7 +39,7 @@ public class comparator extends Circuit {
         }        
     }
     
-    private void compare(int a, int b) {
+    private void compare(long a, long b) {
         if (identityMode) {
             if (chip.hasListeners()) debug(a + " is " + (a==b?"":"not ") + "equal to " + b);
             write(a==b, 0);

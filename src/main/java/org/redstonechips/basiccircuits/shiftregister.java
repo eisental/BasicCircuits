@@ -25,10 +25,10 @@ public class shiftregister extends Circuit {
     public void input(boolean state, int inIdx) {
         if (inIdx==0 && state) { // clock
             if (shiftRight) {
-                BooleanArrays.shiftRight(register, outputlen, false);
+                BooleanArrays.shiftRight(register, register, false);
                 register[outputlen-1] = inputs[DataPin];
             } else {
-                BooleanArrays.shiftLeft(register, outputlen);
+                BooleanArrays.shiftLeft(register, register);
                 register[0] = inputs[DataPin];
             }
             writeBits(register);

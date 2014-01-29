@@ -43,7 +43,7 @@ public class demultiplexer extends Circuit {
     public void input(boolean state, int inIdx) {
         if (inIdx<selectSize) { // selection change
             select[inIdx] = state;
-            selection = BooleanArrays.toUnsignedInt(select);
+            selection = (int)BooleanArrays.toUnsignedInt(select);
 
             // clear the outputs
             Arrays.fill(output, false);

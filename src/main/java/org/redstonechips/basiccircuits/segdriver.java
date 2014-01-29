@@ -91,7 +91,7 @@ public class segdriver extends Circuit {
     }
 
     private void printInput() {
-        int input = BooleanArrays.toUnsignedInt(inputs, dataPin, inputlen-dataPin);
+        int input = (int)BooleanArrays.toUnsignedInt(inputs, dataPin, inputlen-dataPin);
         boolean[] segments = map[input];
         if (chip.hasListeners()) {
             debug("Printing " + Integer.toHexString(input) + ": " + toSegmentLetters(segments));

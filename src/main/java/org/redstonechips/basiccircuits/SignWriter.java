@@ -174,15 +174,15 @@ public class SignWriter {
         String text = null;
 
         if (type==Type.num || type==Type.unsigned) {
-            text = Integer.toString(BooleanArrays.toUnsignedInt(bits, start, length));
+            text = Long.toString(BooleanArrays.toUnsignedInt(bits, start, length));
         } else if (type==Type.signed) {
-            text = Integer.toString(BooleanArrays.toSignedInt(bits, start, length));
+            text = Long.toString(BooleanArrays.toSignedInt(bits, start, length));
         } else if (type==Type.hex) {
-            text = Integer.toHexString(BooleanArrays.toUnsignedInt(bits, start, length));
+            text = Long.toHexString(BooleanArrays.toUnsignedInt(bits, start, length));
         } else if (type==Type.oct) {
-            text = Integer.toOctalString(BooleanArrays.toUnsignedInt(bits, start, length));
+            text = Long.toOctalString(BooleanArrays.toUnsignedInt(bits, start, length));
         } else if (type==Type.bin) {
-            text = BooleanArrays.asString(bits, start, (bits.length==0?1:bits.length));
+            text = BooleanArrays.toString(bits, start, (bits.length==0?1:bits.length));
         } else if (type==Type.ascii) {
             char c = (char)BooleanArrays.toUnsignedInt(bits, start, length);
             if (!Character.isISOControl(c)) text = Character.toString(c);
@@ -193,7 +193,7 @@ public class SignWriter {
     }
     
     public static SignWriter getSignWriter(DisplayMode mode, Type type, Location... aroundBlocks) {
-        List<Location> signs = new ArrayList<Location>();
+        List<Location> signs = new ArrayList<>();
 
         for (Location loc : aroundBlocks) {
             Location north = Locations.getFace(loc, BlockFace.NORTH);
