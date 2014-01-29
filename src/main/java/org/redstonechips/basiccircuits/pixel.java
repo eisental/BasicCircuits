@@ -6,7 +6,8 @@ import java.util.List;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.RCPrefs;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.chip.io.InterfaceBlock;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.util.BooleanSubset;
@@ -169,7 +170,7 @@ public class pixel extends Circuit {
     }
 
     private int getMaxDistance() {
-        Object oMaxDist = rc.prefs().getPref("pixel.maxDistance");
+        Object oMaxDist = RCPrefs.getPref("pixel.maxDistance");
         if (oMaxDist != null && oMaxDist instanceof Integer) return (Integer)oMaxDist;
         else return -1;
     }

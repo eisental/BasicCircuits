@@ -1,7 +1,7 @@
 package org.redstonechips.basiccircuits;
 
 import java.util.Arrays;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 
 /**
@@ -15,7 +15,7 @@ public class decoder extends Circuit {
     public void input(boolean state, int inIdx) {
         if (inIdx==0 && state) {
             int i = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
-            Arrays.fill(inputs, false);
+            Arrays.fill(inputs, false); //?????
             register[i] = true;
             this.writeBits(register);
         }

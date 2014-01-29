@@ -8,8 +8,9 @@ import org.redstonechips.parsing.Range;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.redstonechips.RCPrefs;
 import org.redstonechips.RCTypeReceiver;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.memory.Memory;
 import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;
@@ -249,7 +250,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
             MemoryLineSource l = new MemoryLineSource(firstAddress, lastAddress-firstAddress+1);
             
             Pager.beginPaging(player, "sram " + memory.getId() + " memory (" + titleRange + ")", 
-                    l, rc.prefs().getInfoColor(), rc.prefs().getErrorColor());
+                    l, RCPrefs.getInfoColor(), RCPrefs.getErrorColor());
         } else 
             errorForSender(player, "Invalid address range: " + firstAddress + ".." + lastAddress);
     }

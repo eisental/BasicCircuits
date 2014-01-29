@@ -1,7 +1,7 @@
 
 package org.redstonechips.basiccircuits;
 
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 
 /**
@@ -70,9 +70,6 @@ public class segdriver extends Circuit {
                 blankPin = 1;
                 dataPin = 2;
             }
-
-            blank = inputs[blankPin];
-
         } else {
             if (inputlen<1 || inputlen>5) return error("Expecting 1-5 inputs.");
             else if (inputlen==1) { // no clock

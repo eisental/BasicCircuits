@@ -1,7 +1,8 @@
 package org.redstonechips.basiccircuits;
 
+import org.redstonechips.RCPrefs;
 import org.redstonechips.RedstoneChips;
-import org.redstonechips.chip.CircuitLibrary;
+import org.redstonechips.circuit.CircuitLibrary;
 
 /**
  *
@@ -21,7 +22,7 @@ public class BasicCircuits extends CircuitLibrary {
     @Override
     public void onRedstoneChipsEnable(RedstoneChips rc) {
         // add new pref keys.
-        rc.prefs().registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
-        rc.prefs().registerCircuitPreference(pixel.class, "maxDistance", 7);
+        RCPrefs.registerCircuitPreference(iptransmitter.class, "ports", "25600..25699");
+        RCPrefs.registerCircuitPreference(pixel.class, "maxDistance", 7);
     }
 }

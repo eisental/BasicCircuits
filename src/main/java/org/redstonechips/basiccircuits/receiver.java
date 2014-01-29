@@ -1,7 +1,7 @@
 package org.redstonechips.basiccircuits;
 
 
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanSubset;
 import org.redstonechips.wireless.Receiver;
 

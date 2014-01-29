@@ -3,7 +3,7 @@ package org.redstonechips.basiccircuits;
 
 import java.io.IOException;
 import java.util.Arrays;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.memory.Memory;
 import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;

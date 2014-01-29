@@ -6,7 +6,7 @@ import java.util.List;
 import org.redstonechips.parsing.Parsing;
 import org.bukkit.DyeColor;
 import org.redstonechips.basiccircuits.screen.Screen;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.memory.Memory;
 import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;

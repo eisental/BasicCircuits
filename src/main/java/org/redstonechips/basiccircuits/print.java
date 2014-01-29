@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.redstonechips.RCTypeReceiver;
 import org.redstonechips.basiccircuits.SignWriter.DisplayMode;
 import org.redstonechips.basiccircuits.SignWriter.Type;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.chip.io.IOBlock;
 import org.redstonechips.util.BooleanSubset;
 import org.redstonechips.wireless.Receiver;

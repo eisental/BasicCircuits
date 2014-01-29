@@ -2,7 +2,7 @@ package org.redstonechips.basiccircuits;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 
 /**
  *
@@ -17,7 +17,7 @@ public class counter extends Circuit {
     int max;
     int direction;
     int count;
-    int reset;
+
     boolean updown = false;
 
     @Override
@@ -38,7 +38,7 @@ public class counter extends Circuit {
             if (chip.hasListeners()) debug("Counting " + count + ".");
             this.writeInt(count, 0, outputlen);
         } else if (inIdx==resetPin && state) {
-            count = reset;
+            count = (direction==1?min:max);
             if (chip.hasListeners()) debug("Resetting counter to " + count + ".");
             this.writeInt(count, 0, outputlen);
         } else if (inIdx==directionPin) {
@@ -111,12 +111,8 @@ public class counter extends Circuit {
             }
         }
 
-        if (inputlen==3) { // has a direction pin.
-            direction = (inputs[2]?1:-1);
-        }
-
-        if (direction == 1) count = reset = min;
-        else count = reset = max;
+        if (direction == 1) count = min;
+        else count = max;
 
         return this;
     }

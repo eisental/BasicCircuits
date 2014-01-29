@@ -1,6 +1,6 @@
 package org.redstonechips.basiccircuits;
 
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 
 /**
@@ -13,7 +13,7 @@ public class encoder extends Circuit {
     public void input(boolean state, int inIdx) {
         if (BooleanArrays.isZero(inputs)) writeBits(inputs);
         else {
-            writeInt(0, outputlen, inputs.length-1);
+            writeInt(0, outputlen, inputlen-1);
         }
     }
 

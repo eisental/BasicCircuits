@@ -3,8 +3,8 @@ package org.redstonechips.basiccircuits;
 
 import java.util.Arrays;
 import org.bukkit.ChatColor;
-import org.redstonechips.chip.BitSetCircuit;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.BitSetCircuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 
 /**

@@ -9,7 +9,8 @@ import java.net.UnknownHostException;
 import java.util.BitSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.RCPrefs;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.parsing.Range;
 import org.redstonechips.util.BooleanArrays;
 
@@ -40,7 +41,7 @@ public class iptransmitter extends Circuit {
         try {
             address = InetAddress.getByName(args[0]);
             port = Integer.decode(args[1]);
-            Object oRange = rc.prefs().getPref("iptransmitter.ports");
+            Object oRange = RCPrefs.getPref("iptransmitter.ports");
             if (oRange==null) 
                 return error("No ports are allowed. Please set a port range by changing the iptransmitter.ports preferences key.");
 

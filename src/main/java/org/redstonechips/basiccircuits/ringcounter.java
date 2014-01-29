@@ -2,7 +2,7 @@
 package org.redstonechips.basiccircuits;
 
 import java.util.BitSet;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 
 /**
  *

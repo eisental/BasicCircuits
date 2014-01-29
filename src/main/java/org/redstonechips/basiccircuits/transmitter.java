@@ -3,7 +3,7 @@ package org.redstonechips.basiccircuits;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.wireless.Transmitter;
 

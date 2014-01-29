@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.chip.io.InterfaceBlock;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.util.BooleanSubset;

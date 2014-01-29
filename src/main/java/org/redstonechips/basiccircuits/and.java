@@ -1,7 +1,7 @@
 package org.redstonechips.basiccircuits;
 
 
-import org.redstonechips.chip.BitSetCircuit;
+import org.redstonechips.circuit.BitSetCircuit;
 import org.redstonechips.util.BooleanArrays;
 
 /**

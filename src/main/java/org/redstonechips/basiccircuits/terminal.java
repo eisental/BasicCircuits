@@ -3,7 +3,7 @@ package org.redstonechips.basiccircuits;
 
 import org.bukkit.entity.Player;
 import org.redstonechips.RCTypeReceiver;
-import org.redstonechips.chip.Circuit;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.chip.io.InterfaceBlock;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.wireless.Transmitter;
