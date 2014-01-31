@@ -2,9 +2,11 @@ package org.redstonechips.basiccircuits;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.redstonechips.parsing.Parsing;
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.redstonechips.basiccircuits.screen.Screen;
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.memory.Memory;
@@ -115,6 +117,9 @@ public class display extends Circuit {
     
     @Override
     public Circuit init(String[] args) {
+        if (chip.interfaceBlocks.length!=2)
+            return error("Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
+        
         String channel = null;
         int[] size = null;
         byte[] colorIndex = null;
@@ -164,10 +169,7 @@ public class display extends Circuit {
                     colorIndex[i] = colorList.get(i);
             }
         }
-        
-        if (chip.interfaceBlocks.length!=2)
-            return error("Expecting 2 interface blocks. One block in each of 2 opposite corners of the display.");
-        
+                
         try {
             if (size!=null)
                 screen = Screen.generateScreen(chip.interfaceBlocks[0].getLocation(), chip.interfaceBlocks[1].getLocation(),
@@ -178,6 +180,9 @@ public class display extends Circuit {
             screen.setColorIndex(colorIndex);
             
             if (ram!=null) ramPageLength = screen.getDescription().addrWidth * screen.getDescription().addrHeight;
+            
+            addScreenBlocksToStructure(screen);
+            
             
             info("Successfully scanned display. ");
             info("The screen is " + 
@@ -227,6 +232,27 @@ public class display extends Circuit {
         
         return this;
     }
+
+    private void addScreenBlocksToStructure(Screen screen) {
+        List<Location> structure = new ArrayList<>(Arrays.asList(chip.structure));
+        
+        Location[][][] pixels = screen.getPixelBlocks();
+        int width = screen.getDescription().addrWidth;
+        int height = screen.getDescription().addrHeight;
+        
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+                Location[] pixel = pixels[x][y];
+                for (Location l : pixel) {
+                    if (!structure.contains(l)) 
+                        structure.add(l);
+                }
+            }
+        }
+                
+        chip.structure = structure.toArray(new Location[0]);        
+    }
+    
     @Override
     public void shutdown() {
         if (ram != null) {

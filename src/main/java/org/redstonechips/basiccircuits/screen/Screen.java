@@ -70,6 +70,10 @@ public class Screen {
         return calculateBitLength(ds.addrHeight);
     }
     
+    public Location[][][] getPixelBlocks() {
+        return pixels;
+    }
+    
     public void setPixel(int x, int y, int data, boolean checkMemory) {
         byte color;
         if (colorIndex!=null) {
