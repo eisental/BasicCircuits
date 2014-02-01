@@ -21,7 +21,7 @@ public class transmitter extends Circuit {
     @Override
     public void input(boolean state, int inIdx) {
         if (inputlen==1) { // no clock pin and no select
-            transmit(inputs, 0, 1);
+            transmitInputs(0, 1);
         } else { // has a clock pin
             if (selectMode) {
                 int select = (int)BooleanArrays.toUnsignedInt(inputs, 1, selectLength);
@@ -32,15 +32,17 @@ public class transmitter extends Circuit {
             }
             
             if (inputs[0]) {
-                transmit(inputs, 1+selectLength, inputlen-1-selectLength);
+                transmitInputs(1+selectLength, inputlen-1-selectLength);
             }
         }
     }
 
-    private void transmit(boolean[] bits, int start, int length) {
-        if (chip.hasListeners()) debug("Transmitting " + BooleanArrays.toPrettyString(bits, length) + " on " + getChannelString());
+    private void transmitInputs(int start, int length) {
+        boolean[] transmission = new boolean[length];
+        System.arraycopy(inputs, start, transmission, 0, length);
+        if (chip.hasListeners()) debug("Transmitting " + length + " bits: " + BooleanArrays.toPrettyString(transmission) + " on " + getChannelString());
         for (Transmitter t : modules)
-            t.transmit(bits, start, length);
+            t.transmit(transmission, 0, length);
     }
 
     @Override
