@@ -46,7 +46,7 @@ public class print extends Circuit implements RCTypeReceiver {
         
         @Override
         public void receive(BooleanSubset bits) {
-            write(bits.copy(), 0, getChannelLength());
+            write(bits.copy(), 0, getLength());
         }
     }
     

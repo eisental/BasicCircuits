@@ -144,7 +144,7 @@ public class terminal extends Circuit implements RCTypeReceiver {
                 this.writeBits(register, 1, outputlen-1);
                 
                 if (transmitter!=null) 
-                    transmitter.transmit(register, transmitter.getChannelLength());
+                    transmitter.transmit(register, transmitter.getLength());
                 else {
                     this.write(true, 0);
                     this.write(false, 0);                    

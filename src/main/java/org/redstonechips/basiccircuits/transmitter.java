@@ -29,7 +29,7 @@ public class transmitter extends Circuit {
             if (selectMode) {
                 int select = (int)BooleanArrays.toUnsignedInt(inputs, 1, selectLength);
                 for (int i=0; i<modules.length; i++) {
-                    modules[i].setStartBit(baseStartBit[i] + select*modules[i].getChannelLength());
+                    modules[i].setStartBit(baseStartBit[i] + select*modules[i].getLength());
                 }
                 
             }
