@@ -113,7 +113,7 @@ public class terminal extends Circuit implements RCTypeReceiver {
                 register = BooleanArrays.fromInt(typeString.charAt(i), 8);
                 if (chip.hasListeners()) debug("Sending " + BooleanArrays.toPrettyString(register, 0, 8) + "(" + (char)typeString.charAt(i) + ")");
                 
-                if (transmitter!=null) transmitter.transmit(register, 0, 8);
+                if (transmitter!=null) transmitter.transmit(register, 8);
                 else {
                     this.writeBits(register, datapin, 8);
                     this.write(true, 0);

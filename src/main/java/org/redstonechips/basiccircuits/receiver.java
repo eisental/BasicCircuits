@@ -36,7 +36,7 @@ public class receiver extends Circuit {
     class ReceiverImpl extends Receiver {
         @Override
         public void receive(BooleanSubset bits) {        
-            if (chip.hasListeners()) debug("Received " + bits.toBinaryString());
+            if (chip.hasListeners()) debug("Received " + bits.toString());
             writeBooleanSubset(bits, dataPin, outputlen-dataPin);
             if (outputlen>1) {
                 write(true, 0);

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
+import org.redstonechips.util.BooleanSubset;
 import org.redstonechips.wireless.Transmitter;
 
 /**
@@ -18,10 +19,12 @@ public class transmitter extends Circuit {
 
     private Transmitter[] modules;
     
+    private BooleanSubset transmission;
+    
     @Override
     public void input(boolean state, int inIdx) {
         if (inputlen==1) { // no clock pin and no select
-            transmitInputs(0, 1);
+            transmitInputs();
         } else { // has a clock pin
             if (selectMode) {
                 int select = (int)BooleanArrays.toUnsignedInt(inputs, 1, selectLength);
@@ -32,17 +35,15 @@ public class transmitter extends Circuit {
             }
             
             if (inputs[0]) {
-                transmitInputs(1+selectLength, inputlen-1-selectLength);
+                transmitInputs();
             }
         }
     }
 
-    private void transmitInputs(int start, int length) {
-        boolean[] transmission = new boolean[length];
-        System.arraycopy(inputs, start, transmission, 0, length);
-        if (chip.hasListeners()) debug("Transmitting " + length + " bits: " + BooleanArrays.toPrettyString(transmission) + " on " + getChannelString());
+    private void transmitInputs() {
+        if (chip.hasListeners()) debug("Transmitting " + transmission.length() + " bits: " + transmission.toPrettyString() + " on " + getChannelString());
         for (Transmitter t : modules)
-            t.transmit(transmission, 0, length);
+            t.transmitSubset(transmission);
     }
 
     @Override
@@ -93,6 +94,10 @@ public class transmitter extends Circuit {
                     info("Inputs 1-" + (selectLength) + " are channel bit select pins.");
                 }
 
+                if (inputlen==1) 
+                    transmission = new BooleanSubset(inputs, 0, 1);
+                else transmission = new BooleanSubset(inputs, 1+selectLength, inputlen-1-selectLength);
+                
                 return this;
             } catch (IllegalArgumentException ie) {
                 return error(ie.getMessage());
