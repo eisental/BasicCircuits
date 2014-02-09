@@ -25,7 +25,7 @@ public class decoder extends Circuit {
     public Circuit init(String[] args) {
         if (inputlen<2) return error("Expecting at least 2 inputs.");
         if (outputlen>Math.pow(2, inputlen-1))
-            return error("Bad number of outputs. Expecting up to " + Math.pow(2, inputlen-1) + " outputs for " + inputlen + " inputs.");
+            return error("Bad number of outputs. Expecting up to " + (int)Math.pow(2, inputlen-1) + " outputs for " + inputlen + " inputs.");
 
         register = new boolean[outputlen];
         
