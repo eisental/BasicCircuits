@@ -28,18 +28,17 @@ public class divider extends BitSetCircuit {
 
         secondOperand = secondOperand * constant;
 
+        if (!checkForDivByZero(secondOperand)) return;
+        
         long result;
         if (round) {
-            if (checkForDivByZero(secondOperand))
-                result = (int)Math.round((double)firstOperand / (double)secondOperand);
-            else return;
+            result = (int)Math.round((double)firstOperand / (double)secondOperand);
         } else {
-            if (checkForDivByZero(secondOperand))
-                result = firstOperand / secondOperand;
-            else return;
-            
+            result = firstOperand / secondOperand;
         }
+        
         this.writeInt(result, 0, wordlength);
+        
         if (mod) {
             long modulus = firstOperand % secondOperand;
             this.writeInt(modulus, wordlength, outputlen-wordlength);
@@ -48,17 +47,13 @@ public class divider extends BitSetCircuit {
 
     @Override
     public Circuit init(String[] args) {
-        if (args.length==0) return error("Wordlength sign argument is missing.");
-
-        if (args.length==3) {
-            if (args[2].equalsIgnoreCase("round"))
-                round = true;
-            else if (args[2].equalsIgnoreCase("mod"))
-                mod = true;
-            else return error("Unknown sign argument: " + args[1]);
-        }
-
+        if (args.length==0) return error("wordlength sign argument is missing.");
         if (outputlen==0) return error("Expecting at least 1 output pin.");
+        
+        if (args[args.length-1].equalsIgnoreCase("round"))
+            round = true;
+        else if (args[args.length-1].equalsIgnoreCase("mod"))
+            mod = true;
 
         try {
             wordlength = Integer.decode(args[0]);
@@ -78,7 +73,7 @@ public class divider extends BitSetCircuit {
             return error("Invalid number of inputs (" + inputlen + "). Number of inputs must be a multiple of the word length.");
         }
 
-        if (args.length>1) {
+        if ((args.length>1 && !(round || mod)) || (args.length>2)) {
             try {
                 constant = Integer.decode(args[1]);
                 if (constant==0) return error("Bad constant argument: " + args[0] + ". Division by zero is not allowed.");

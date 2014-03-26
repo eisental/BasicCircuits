@@ -56,8 +56,8 @@ public class multiplier extends BitSetCircuit {
         }
 
         long maxResult = (long)Math.pow(Math.pow(2, wordlength)-1, inputBitSets.length) * constant;
-
         int expectedOutputs = (int)Math.ceil(Math.log(maxResult)/Math.log(2));
+        
         if (outputlen<expectedOutputs)
             info (ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. To prevent this, the circuit should have " + expectedOutputs + " output bits.");
         

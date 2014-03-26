@@ -60,17 +60,15 @@ public class adder extends BitSetCircuit {
             inputBitSets = new boolean[inBitSetCount][wordlength];            
         } else return error("Invalid number of inputs (" + inputlen + "). Number of inputs must be a multiple of the word length.");
 
-        if (args.length>1) {
+        if (args[args.length-1].equalsIgnoreCase("subtract"))
+            subtract = true;
+        
+        if ((args.length>1 && !subtract) || (args.length>2)) {
             try {
                 constant = Integer.decode(args[1]);
             } catch (NumberFormatException ne) {
                 return error("Bad constant argument: " + args[1] + " expecting a number.");
             }
-        } if (args.length>2) {
-            if (args[2].equalsIgnoreCase("subtract")) {
-                // subtract mode
-                subtract = true;
-            } else return error("Bad argument value: " + args[2]);
         }
         
         int maxResult = ((int)Math.pow(2, wordlength)-1) * inputBitSets.length + constant;
