@@ -93,7 +93,7 @@ public class display extends Circuit {
                     if (chip.hasListeners()) debug(ie.getMessage());
                 }
 
-                if (chip.hasListeners()) debug("Setting (" + x + ", " + y + ") to " + data);
+                if (chip.hasListeners()) debug("Setting (" + x + ", " + y + ") to " + BooleanArrays.toPrettyString(data));
             }
         }
     }

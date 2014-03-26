@@ -93,10 +93,12 @@ public class Screen {
         if (!checkMemory || memory[x][y]!=color) {
             for (Location l : pixel) {
                 Block b = l.getBlock();
-                for (Material m : Screen.materials)
-                    if (b.getType()==m)
+                for (Material m : Screen.materials) {
+                    if (b.getType()==m) {
                         b.setData(color);
-                        break;
+                        break;  
+                    }
+                }
             }
             memory[x][y] = color;
         } 
