@@ -98,8 +98,9 @@ public class synth extends Circuit {
             }
             pitch = pitchIndex[index];
         } else {
-            if (val>=24) {
+            if (val>24) {
                 if (chip.hasListeners()) debug("pitch value is too high: " + val);
+                return;
             }
             pitch = (byte)val;
         }
