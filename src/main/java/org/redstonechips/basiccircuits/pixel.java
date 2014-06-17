@@ -134,7 +134,7 @@ public class pixel extends Circuit {
         } else 
             color = (byte)val;
 
-        if (chip.hasListeners()) debug("Setting pixel color to " + DyeColor.getByData(color));
+        if (chip.hasListeners()) debug("Setting pixel color to " + DyeColor.getByWoolData(color));
 
         for (Location l : colorBlocks) l.getBlock().setData(color);
 
@@ -181,12 +181,10 @@ public class pixel extends Circuit {
             // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
             boolean[] valbits;
             if (inputlen<=1) {
-                valbits = bits.copy(0, (inputlen==0?5:inputlen));
+                valbits = bits.copy(0, Math.min(bits.length(), (inputlen==0?5:inputlen)));
             }  else {
                 valbits = new boolean[bits.length()+1];
-                for (int i=0; i<bits.length(); i++)
-                    valbits[i+1] = bits.get(i);
-                valbits[0] = false;
+                bits.copyInto(valbits, 1);
             }
             updatePixel(valbits);
         }        
