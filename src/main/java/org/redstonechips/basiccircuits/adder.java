@@ -33,9 +33,7 @@ public class adder extends BitSetCircuit {
 
         // add constant
         if (constant != 0) {
-            if (subtract)
-                output = BooleanArrays.add(output, -constant, outputlen);
-            else output = BooleanArrays.add(output, constant, outputlen);
+            output = BooleanArrays.add(output, constant, outputlen);
         }
         
         // write result
@@ -55,8 +53,7 @@ public class adder extends BitSetCircuit {
         }
 
         if ((inputlen % wordlength)==0) {
-            int inBitSetCount = inputlen / wordlength;
-            info("Activating adder with " + inBitSetCount + " input set(s) of " + wordlength + " bits each.");
+            int inBitSetCount = inputlen / wordlength;            
             inputBitSets = new boolean[inBitSetCount][wordlength];            
         } else return error("Invalid number of inputs (" + inputlen + "). Number of inputs must be a multiple of the word length.");
 
@@ -66,6 +63,7 @@ public class adder extends BitSetCircuit {
         if ((args.length>1 && !subtract) || (args.length>2)) {
             try {
                 constant = Integer.decode(args[1]);
+                if (subtract) constant = -constant;
             } catch (NumberFormatException ne) {
                 return error("Bad constant argument: " + args[1] + " expecting a number.");
             }
@@ -77,6 +75,8 @@ public class adder extends BitSetCircuit {
         if (outputlen<expectedOutputs) 
             info(ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. Circuit should have " + expectedOutputs + " output bits.");
         
+        info("Activating adder with " + inputBitSets.length + " input set(s) of " + wordlength + 
+                " bits each. The chip is running in " + (subtract?"subtract":"add") + " mode" + (constant!=0? ", with a constant value of " + constant:"") + ".");
         return this;
     }
 }

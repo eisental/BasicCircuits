@@ -2,6 +2,7 @@ package org.redstonechips.basiccircuits;
 
 import java.util.regex.Pattern;
 import org.bukkit.Material;
+import org.bukkit.Note;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
@@ -125,8 +126,10 @@ public class synth extends Circuit {
     private void tryToPlay(Block block, byte pitch) {
         if (block.getType()==Material.NOTE_BLOCK) {
             NoteBlock n = (NoteBlock)block.getState();
-            n.setRawNote(pitch);
-            n.play();
+            try {
+                n.setNote(new Note(pitch));
+                n.play();
+            } catch (NullPointerException npe) {}
         }
     }
 

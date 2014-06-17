@@ -45,6 +45,9 @@ public class dregister extends Circuit {
     
     @Override
     public Circuit init(String[] args) {
+        if (inputlen!=outputlen+2)
+            return error("Expecting 2 more inputs than outputs. Found " + inputlen + " input(s) and " + outputlen + " output(s).");
+
         if (args.length >= 1) {
             if (args[0].startsWith("$")) {
                 try {
@@ -59,10 +62,7 @@ public class dregister extends Circuit {
                 }
             } else return error("Invalid argument: " + args[0]);
         }
-        
-        if (inputlen!=outputlen+2)
-            return error("Expecting 2 more inputs than outputs. Found " + inputlen + " input(s) and " + outputlen + " output(s).");
-        
+                
         register = new boolean[outputlen];
         clearRegister = new boolean[outputlen];
         
