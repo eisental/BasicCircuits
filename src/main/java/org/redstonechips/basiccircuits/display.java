@@ -14,6 +14,7 @@ import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.util.BooleanSubset;
+import org.redstonechips.util.Optional;
 import org.redstonechips.wireless.Receiver;
 
 /**
@@ -101,7 +102,8 @@ public class display extends Circuit {
     private void refreshDisplayFromRam() {
         long offset = ramPage * ramPageLength;
         for (long i=offset; i<offset+ramPageLength; i++) {
-            int color = (int)BooleanArrays.toUnsignedInt(ram.read(i));
+            boolean[] data = ram.readDefaultZero(i, colorWordlength);
+            int color = (int)BooleanArrays.toUnsignedInt(data);
             int x = (int)((i-offset) % screen.getDescription().addrWidth);
             int y = (int)((i-offset) / screen.getDescription().addrWidth);
             

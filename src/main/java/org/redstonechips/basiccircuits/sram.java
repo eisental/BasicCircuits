@@ -2,6 +2,7 @@
 package org.redstonechips.basiccircuits;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import org.redstonechips.paging.LineSource;
 import org.redstonechips.parsing.Range;
@@ -16,6 +17,7 @@ import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;
 import org.redstonechips.paging.Pager;
 import org.redstonechips.util.BooleanArrays;
+import org.redstonechips.util.Optional;
 
 /**
  *
@@ -155,7 +157,8 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
 
     private void readMemory() {
         long address = getInputAddress();
-        boolean[] data = memory.read(address);
+        boolean[] data = memory.readDefaultZero(address, wordLength);
+
         if (chip.hasListeners()) debug("Reading " + BooleanArrays.toPrettyString(data, wordLength) + " from address " + address);
         writeBits(data, 0, wordLength);
     }
@@ -301,9 +304,16 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         public String getLine(int idx) {
             String value;
             String address = zeroPad(idx+offset, (int)Math.pow(2, addressLength)-1);
-            boolean[] data = memory.read(idx+offset);
-            if (wordLength>32) value = Long.toHexString(BooleanArrays.toSignedInt(data, 0, wordLength));
-            else value = BooleanArrays.toPrettyString(data, wordLength);
+            Optional<boolean[]> dataOpt = memory.read(idx+offset);
+            boolean[] data = memory.readDefaultZero(idx+offset, wordLength);
+            
+            if (wordLength > 32) {
+                value = Long.toHexString(BooleanArrays.toSignedInt(data, 0, wordLength));
+            }
+            else {
+                value = BooleanArrays.toPrettyString(data, wordLength);
+            }
+            
             return ChatColor.YELLOW.toString() + address + ": " + ChatColor.WHITE + value + "\n";
         }
 
