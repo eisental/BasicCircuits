@@ -181,7 +181,11 @@ public class pixel extends Circuit {
             // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
             boolean[] valbits;
             if (inputlen<=1) {
-                valbits = bits.copy(0, (inputlen==0?5:inputlen));
+                int copylen = 5;
+                if (bits.length() < copylen) {
+                    copylen = bits.length();
+                }
+                valbits = bits.copy(0, copylen);
             }  else {
                 valbits = new boolean[bits.length()+1];
                 for (int i=0; i<bits.length(); i++)

@@ -10,9 +10,20 @@ public class encoder extends Circuit {
 
     @Override
     public void input(boolean state, int inIdx) {
-        if (state) {
-            writeInt(inIdx, 0, outputlen);
-        } else {
+        int totalEnabledBits = 0;
+        int mostSignificantBit = -1;
+        
+        for (int i = 0; i < inputs.length; i++) {
+            if (inputs[i]) {
+                totalEnabledBits++;
+                mostSignificantBit = i;
+            }
+        }
+        
+        if (totalEnabledBits == 1) {
+            writeInt(mostSignificantBit, 0, outputlen);
+        }
+        else {
             this.clearOutputs();
         }
     }

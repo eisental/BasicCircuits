@@ -11,8 +11,8 @@ import org.redstonechips.circuit.CircuitLibrary;
 public class BasicCircuits extends CircuitLibrary {
     @Override
     public Class[] getCircuitClasses() {
-        return new Class[] { adder.class, and.class, clock.class, counter.class, demultiplexer.class, divider.class, flipflop.class,
-                multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
+        return new Class[] { adder.class, and.class, clock.class, counter.class, combocounter.class, demultiplexer.class, divider.class,
+                flipflop.class, multiplexer.class, multiplier.class, or.class, pisoregister.class, print.class, random.class, receiver.class,
                 shiftregister.class, transmitter.class, xor.class, decoder.class, encoder.class, pixel.class, pulse.class, not.class,
                 synth.class, srnor.class, terminal.class, router.class, ringcounter.class, iptransmitter.class, ipreceiver.class,
                 comparator.class, delay.class, repeater.class, nand.class, nor.class, xnor.class, segdriver.class, dregister.class, 

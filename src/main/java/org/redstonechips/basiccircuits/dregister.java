@@ -71,7 +71,7 @@ public class dregister extends Circuit {
         if (ram != null) {
             ramListener = new dregisterRamListener();
             ram.addListener(ramListener);
-            this.writeBits(ram.read(ramaddr));
+            this.writeBits(ram.read(ramaddr).get());
             info("Created "+outputlen+"-bit register backed by memory: "+ram.getId()+"@"+Long.toHexString(ramaddr));
         } else
             info("Created "+outputlen+"-bit register.");
