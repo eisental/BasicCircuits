@@ -155,7 +155,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
 
     private void readMemory() {
         long address = getInputAddress();
-        boolean[] data = memory.read(address);
+        boolean[] data = memory.read(address, wordLength);
         if (chip.hasListeners()) debug("Reading " + BooleanArrays.toPrettyString(data, wordLength) + " from address " + address);
         writeBits(data, 0, wordLength);
     }
