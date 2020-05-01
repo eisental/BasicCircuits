@@ -18,6 +18,7 @@ import org.redstonechips.wireless.Receiver;
 
 
 public class pixel extends Circuit {
+	
     	
 	public byte ColorToNum(String colornametext) {
 		switch(colornametext)

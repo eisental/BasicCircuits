@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 
 /**
  *
@@ -12,14 +13,65 @@ import org.bukkit.block.Block;
 public class Screen {
     
     public static final Material[] materials = new Material[] {
-        Material.WOOL,
-        Material.CARPET,
-        Material.STAINED_CLAY,
-        Material.STAINED_GLASS_PANE,
-        Material.STAINED_GLASS,
+        Material.WHITE_WOOL,
+        Material.ORANGE_WOOL,
+        Material.MAGENTA_WOOL,
+        Material.LIGHT_BLUE_WOOL,
+        Material.YELLOW_WOOL,
+        Material.LIME_WOOL,
+        Material.PINK_WOOL,
+        Material.GRAY_WOOL,
+        Material.LIGHT_GRAY_WOOL,
+        Material.CYAN_WOOL,
+        Material.PURPLE_WOOL,
+        Material.BLUE_WOOL,
+        Material.BROWN_WOOL,
+        Material.GREEN_WOOL,
+        Material.RED_WOOL,
+        Material.BLACK_WOOL,
     };
 
     public enum Axis {X,Y,Z};
+    
+    public Material ColorSel(int colornum) {  
+    	switch(colornum)
+    	{
+    	case 0 :
+    		return(Material.WHITE_WOOL);
+    	case 1 :
+    		return(Material.ORANGE_WOOL);
+    	case 2 :
+    		return(Material.MAGENTA_WOOL);
+    	case 3 :
+    		return(Material.LIGHT_BLUE_WOOL);
+    	case 4 :
+    		return(Material.YELLOW_WOOL);
+    	case 5 :
+    		return(Material.LIME_WOOL);
+    	case 6 :
+    		return(Material.PINK_WOOL);
+    	case 7 :
+    		return(Material.GRAY_WOOL);
+    	case 8 :
+    		return(Material.LIGHT_GRAY_WOOL);
+    	case 9 :
+    		return(Material.CYAN_WOOL);
+    	case 10 :
+    		return(Material.PURPLE_WOOL);
+    	case 11 :
+    		return(Material.BLUE_WOOL);
+    	case 12 :
+    		return(Material.BROWN_WOOL);
+    	case 13 :
+    		return(Material.GREEN_WOOL);
+    	case 14 :
+    		return(Material.RED_WOOL);
+    	case 15 :
+    		return(Material.BLACK_WOOL);  	
+    	}	
+    
+    	return(Material.WHITE_WOOL);
+    }
 
     private final ScreenDescription ds;
     
@@ -76,6 +128,7 @@ public class Screen {
     
     public void setPixel(int x, int y, int data, boolean checkMemory) {
         byte color;
+        
         if (colorIndex!=null) {
             if (data>=colorIndex.length) {
                 throw new IllegalArgumentException("Color index " + data + " is out of bounds.");
@@ -93,9 +146,11 @@ public class Screen {
         if (!checkMemory || memory[x][y]!=color) {
             for (Location l : pixel) {
                 Block b = l.getBlock();
+                BlockState bState = b.getState();
                 for (Material m : Screen.materials) {
                     if (b.getType()==m) {
-                        b.setData(color);
+                        bState.setType(ColorSel(color));
+                        bState.update(true, true);
                         break;  
                     }
                 }
