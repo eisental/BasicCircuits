@@ -1,16 +1,26 @@
 package org.redstonechips.basiccircuits;
 
+//import java.lang.instrument.Instrumentation;
+//import java.util.Collection;
 import java.util.regex.Pattern;
 import org.bukkit.Material;
 import org.bukkit.Note;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.NoteBlock;
+//import org.bukkit.block.NoteBlock;
+//import org.bukkit.block.data.type.NoteBlock;
+//import org.bukkit.block.BlockState;
 import org.redstonechips.circuit.Circuit;
+//import org.redstonechips.user.UserSession;
 import org.redstonechips.chip.io.InterfaceBlock;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.util.BooleanSubset;
 import org.redstonechips.wireless.Receiver;
+import org.bukkit.entity.Player;
+//import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.Instrument;
+//import org.bukkit.Server;
 
 /**
  *
@@ -19,28 +29,106 @@ import org.redstonechips.wireless.Receiver;
 public class synth extends Circuit {
     private boolean indexedPitch = false;
     private byte[] pitchIndex;
+    boolean instrumentPins = false;
     
+    public static final Instrument[] instrument = new Instrument[] {
+    	Instrument.BANJO,
+    	Instrument.BASS_DRUM,
+    	Instrument.BASS_GUITAR,
+    	Instrument.BELL,
+    	Instrument.BIT,
+    	Instrument.CHIME,
+    	Instrument.COW_BELL,
+    	Instrument.DIDGERIDOO,
+    	Instrument.FLUTE,
+    	Instrument.GUITAR,
+    	Instrument.IRON_XYLOPHONE,
+    	Instrument.PIANO,
+    	Instrument.PLING,
+    	Instrument.SNARE_DRUM,
+    	Instrument.STICKS,
+    	Instrument.XYLOPHONE,
+    };
+    public Instrument instruSel (String instruname){
+    	switch(instruname.toUpperCase()) {
+    	case "BANJO":
+    		return(instrument[0]);
+    	case "BASS DRUM":
+    		return(instrument[1]);
+    	case "BASS GUITAR":
+    		return(instrument[2]);
+    	case "BELL":
+    		return(instrument[3]);
+    	case "BIT":
+    		return(instrument[4]);
+    	case "CHIME":
+    		return(instrument[5]);
+    	case "COW BELL":
+    		return(instrument[6]);
+    	case "DIDGERIDOO":
+    		return(instrument[7]);
+    	case "FLUTE":
+    		return(instrument[8]);
+    	case "GUITAR":
+    		return(instrument[9]);
+    	case "IRON XYLOPHONE":
+    		return(instrument[10]);
+    	case "PIANO":
+    		return(instrument[11]);
+    	case "PLING":
+    		return(instrument[12]);
+    	case "SNARE DRUM":
+    		return(instrument[13]);
+    	case "STICKS":
+    		return(instrument[14]);
+    	case "XYLOPHONE":
+    		return(instrument[15]);
+    	}
+    	return(null);
+    }
     private Receiver receiver;
+
+    Instrument inst =  instrument[11]; // set piano as default instrument
     
     public static final Pattern MIDINOTE_PATTERN = Pattern.compile("[a-gA-G][#b]?\\-?[0-8]+");
-
+    
+       
     @Override
     public void input(boolean state, int inIdx) {
         int val;
         
-        if (inputlen==1) {
-            val = (int)BooleanArrays.toUnsignedInt(inputs, 0, 1);
-        } else if (inIdx==0 && state) { // clock pin
-            val = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
-        } else return;
         
-        playNote(val);
+        if (instrumentPins==false && state) {
+        	if (inputlen==1) {
+        		val = (int)BooleanArrays.toUnsignedInt(inputs, 0, 1)-1;
+        		System.out.println("(int)BooleanArrays.toUnsignedInt(inputs, 0, 1) = " + val);
+        	} else if (inIdx==0) { // clock pin
+        		val = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
+        		System.out.println("(int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1) = " + val);
+        	}
+        	else return;
+        	playNote2(val);
+        }
+        if (instrumentPins==true && state) {
+        	if (inIdx==0) { // clock pin
+        		val = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-5);        		
+        		inst = instrument[((int)BooleanArrays.toUnsignedInt(inputs, inputlen-4, 4))];
+        		System.out.println("(int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-5) = " + val);
+        	}
+        	else return;
+        	playNote2(val);
+        }
     }
 
     class SynthReceiver extends Receiver {
         @Override
         public void receive(BooleanSubset bits) {
-            playNote((int)bits.toUnsignedInt());
+        	System.out.println("bits.length() = " + bits.length());
+            if (instrumentPins==false) playNote2((int)bits.toUnsignedInt());
+            else {
+            	inst = instrument[(int)bits.toUnsignedInt(bits.length()-4, 4)];
+            	playNote2((int)bits.toUnsignedInt(0, bits.length()-4));                        
+            }
         }
     }
 
@@ -48,33 +136,79 @@ public class synth extends Circuit {
     public Circuit init(String[] args) {
         // needs to have 5 inputs 1 clock 4 data
         String channel = null;
+        boolean instrumentarg = false;
         
-        if (args.length>0) {            
+        inst = instrument[11];
+        
+        if (args.length>0) { 
             if (args[args.length-1].startsWith("#")) { // channel arg
                 channel = args[args.length-1].substring(1);
             }
-            
-            if (args.length>=(channel!=null?2:1)) {
-                indexedPitch = true;
-                pitchIndex = new byte[(channel==null?args.length:args.length-1)];
-                for (int i=0; i<pitchIndex.length; i++) {
-                    try {
-                        pitchIndex[i] = (byte)noteStringToData(args[i]);
-                    } catch (IllegalArgumentException ie) {
-                        return error(ie.getMessage());
-                    }
-                }                
-            } 
-        }
+            for (byte i=0; i<args.length; i++) {
+            	if (args[i].startsWith("$")) { // channel arg
+            		            		
+            		if (args[i].toUpperCase().substring(args[i].indexOf("$")+1).equals("INSTRUMENT")) {
+            			instrumentPins = true;
+            		}
+            		else {
+            			inst = instruSel(args[i].substring(args[i].indexOf("$")+1));
+            			if (inst==null) return error("Not a valid instrument");
+            		}        		
                 
-        if (inputlen>6 && !indexedPitch) 
+                instrumentarg = true;
+            	}
+            }
+            if (instrumentarg==false) {
+                if (args.length>=(channel!=null?2:1)) {
+                   indexedPitch = true;
+                   pitchIndex = new byte[(channel==null?args.length:args.length-1)];
+                   for (int i=0; i<pitchIndex.length; i++) {
+                       try {
+                           pitchIndex[i] = (byte)noteStringToData(args[i]);
+                        } catch (IllegalArgumentException ie) {
+                           return error(ie.getMessage());
+                        }
+                   }                
+               } 
+           }
+            else {
+            	if (args.length>=(channel!=null?3:2)) {
+                	indexedPitch = true;
+                    pitchIndex = new byte[(channel==null?args.length-1:args.length-2)];
+                    for (int i=0; i<pitchIndex.length; i++) {
+                        try {
+                            pitchIndex[i] = (byte)noteStringToData(args[i]);
+                         } catch (IllegalArgumentException ie) {
+                        return error(ie.getMessage());
+                         }
+                    }           
+            	}    
+            }
+        }
+    
+        if (channel==null && indexedPitch && instrumentPins==true) {
+        	if (inputlen<(5+Math.ceil(Math.log(pitchIndex.length)/Math.log(2)))) {
+        		return error("Not enough inputs. Indexed mode with instrument selection requires 1 clock pin, 4 instrument pins and " + (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2)) + " pitch index pins");        			
+        	}
+        	if (inputlen>(5+Math.ceil(Math.log(pitchIndex.length)/Math.log(2)))) {
+    			return error("Too many inputs. Indexed mode with instrument selection requires 1 clock pin, 4 instrument pins and " + (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2)) + " pitch index pins");        			
+        	}
+        }
+        
+        else if (channel==null && inputlen>6 && !indexedPitch && instrumentPins==false) 
             return error("Too many inputs. Direct mode requires 1 clock pin and no more than 5 data pins.");
+        else if (channel==null && inputlen>10 && !indexedPitch && instrumentPins==true)
+        	return error("Too many inputs. Direct mode with instrument selection requires 1 clock pin and no more than 9 data pins.");
+        else if (channel==null && inputlen<6 && !indexedPitch && instrumentPins==true)
+        	return error("Not enough inputs. Expecting 1 clock pin and at 4 instrument pins.");
         else if (channel==null && inputlen==0)
             return error("Expecting at least 1 input pin.");
 
         if (channel!=null) {
             int len;
-            if (indexedPitch) len = (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2));
+            if (indexedPitch && !instrumentPins) len = (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2));
+            else if (indexedPitch && instrumentPins) len = (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2) + 4);
+            else if (instrumentPins) len = 9;
             else len = 5;
             
             try {
@@ -88,7 +222,7 @@ public class synth extends Circuit {
         return this;
     }
 
-    private void playNote(int val) {
+    private void playNote2(int val) {
         byte pitch;
 
         if (indexedPitch) {
@@ -124,12 +258,10 @@ public class synth extends Circuit {
     }
 
     private void tryToPlay(Block block, byte pitch) {
-        if (block.getType()==Material.NOTE_BLOCK) {
-            NoteBlock n = (NoteBlock)block.getState();
-            try {
-                n.setNote(new Note(pitch));
-                n.play();
-            } catch (NullPointerException npe) {}
+    	if (block.getType()==Material.NOTE_BLOCK) {
+            for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+        	   player.playNote(block.getLocation(), inst, new Note(pitch));
+            }
         }
     }
 
