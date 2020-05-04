@@ -139,7 +139,7 @@ public class display extends Circuit {
             
             for (int i=start; i<args.length; i++) {
                 try {
-                    colorList.add(DyeColor.valueOf(args[i].toUpperCase()).getData());
+                    colorList.add(DyeColor.valueOf(args[i].toUpperCase()).getDyeData());
                 } catch (IllegalArgumentException ie) {
                     // not dye color
                     try {

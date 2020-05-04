@@ -101,10 +101,8 @@ public class synth extends Circuit {
         if (instrumentPins==false && state) {
         	if (inputlen==1) {
         		val = (int)BooleanArrays.toUnsignedInt(inputs, 0, 1)-1;
-        		System.out.println("(int)BooleanArrays.toUnsignedInt(inputs, 0, 1) = " + val);
         	} else if (inIdx==0) { // clock pin
         		val = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1);
-        		System.out.println("(int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-1) = " + val);
         	}
         	else return;
         	playNote2(val);
@@ -113,7 +111,6 @@ public class synth extends Circuit {
         	if (inIdx==0) { // clock pin
         		val = (int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-5);        		
         		inst = instrument[((int)BooleanArrays.toUnsignedInt(inputs, inputlen-4, 4))];
-        		System.out.println("(int)BooleanArrays.toUnsignedInt(inputs, 1, inputlen-5) = " + val);
         	}
         	else return;
         	playNote2(val);
@@ -123,7 +120,6 @@ public class synth extends Circuit {
     class SynthReceiver extends Receiver {
         @Override
         public void receive(BooleanSubset bits) {
-        	System.out.println("bits.length() = " + bits.length());
             if (instrumentPins==false) playNote2((int)bits.toUnsignedInt());
             else {
             	inst = instrument[(int)bits.toUnsignedInt(bits.length()-4, 4)];
@@ -186,24 +182,32 @@ public class synth extends Circuit {
             }
         }
     
-        if (channel==null && indexedPitch && instrumentPins==true) {
-        	if (inputlen<(5+Math.ceil(Math.log(pitchIndex.length)/Math.log(2)))) {
-        		return error("Not enough inputs. Indexed mode with instrument selection requires 1 clock pin, 4 instrument pins and " + (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2)) + " pitch index pins");        			
-        	}
-        	if (inputlen>(5+Math.ceil(Math.log(pitchIndex.length)/Math.log(2)))) {
-    			return error("Too many inputs. Indexed mode with instrument selection requires 1 clock pin, 4 instrument pins and " + (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2)) + " pitch index pins");        			
-        	}
-        }
+        if (chip.interfaceBlocks.length==0) return error("Expecting at least 1 interface block.");
+        if (inputlen!=0) {    	
         
-        else if (channel==null && inputlen>6 && !indexedPitch && instrumentPins==false) 
+        	if (indexedPitch && instrumentPins==true) {
+        		if (inputlen<(5+Math.ceil(Math.log(pitchIndex.length)/Math.log(2)))) {
+        			if (channel!=null) return error("Not enough inputs. Indexed mode with instrument selection requires 1 clock pin, 4 instrument pins and " + (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2)) + " pitch index pins.  You have a channel listed, this mode will run with 0 inputs");
+        			else return error("Not enough inputs. Indexed mode with instrument selection requires 1 clock pin, 4 instrument pins and " + (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2)) + " pitch index pins");        			
+        		}
+        		if (inputlen>(5+Math.ceil(Math.log(pitchIndex.length)/Math.log(2)))) {
+        			return error("Too many inputs. Indexed mode with instrument selection requires 1 clock pin, 4 instrument pins and " + (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2)) + " pitch index pins");        			
+        		}
+        	}
+        
+        else if (inputlen>6 && !indexedPitch && instrumentPins==false) 
             return error("Too many inputs. Direct mode requires 1 clock pin and no more than 5 data pins.");
-        else if (channel==null && inputlen>10 && !indexedPitch && instrumentPins==true)
+        else if (inputlen>10 && !indexedPitch && instrumentPins==true)
         	return error("Too many inputs. Direct mode with instrument selection requires 1 clock pin and no more than 9 data pins.");
-        else if (channel==null && inputlen<6 && !indexedPitch && instrumentPins==true)
-        	return error("Not enough inputs. Expecting 1 clock pin and at 4 instrument pins.");
-        else if (channel==null && inputlen==0)
-            return error("Expecting at least 1 input pin.");
+        else if (inputlen<6 && !indexedPitch && instrumentPins==true) {
+        	if (channel!=null) return error("Not enough inputs. Expecting 1 clock pin and at 4 instrument pins. You have a channel listed, this mode will run with 0 inputs");
+        	else return error("Not enough inputs. Expecting 1 clock pin and at 4 instrument pins.");
+        	}
 
+        }
+        if (channel==null && inputlen==0) { // if no channel and no clock pin
+            return error("Expecting at least 1 input pin.");
+        }
         if (channel!=null) {
             int len;
             if (indexedPitch && !instrumentPins) len = (int)Math.ceil(Math.log(pitchIndex.length)/Math.log(2));
@@ -216,9 +220,10 @@ public class synth extends Circuit {
                 receiver.init(activator, channel, len, this);
             } catch (IllegalArgumentException e) {
                 return error(e.getMessage());
-            }            
+            }
+            
         }
-        
+            
         return this;
     }
 
