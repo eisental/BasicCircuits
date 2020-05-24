@@ -7,6 +7,7 @@ import org.redstonechips.circuit.Circuit;
 import org.redstonechips.memory.Memory;
 import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;
+import org.redstonechips.util.BooleanArrays;
 
 /**
  *
@@ -27,11 +28,15 @@ public class dregister extends Circuit {
         if (inIdx==resetIdx && state) {
             if (ram != null)
                 ram.write(ramaddr, clearRegister); //this will update the output
+            
             else this.writeBits(clearRegister);
+            if (chip.hasListeners()) {
+            	debug("Cleared");
+            }
         } else if (inputs[clockIdx]) {
-            if (ram != null)
-                ram.write(ramaddr, Arrays.copyOfRange(inputs, 2, inputlen)); //this will update the output
+            if (ram != null) ram.write(ramaddr, Arrays.copyOfRange(inputs, 2, inputlen)); //this will update the output
             else this.writeBits(inputs, 2, outputlen);
+            if (chip.hasListeners()) debug("Output: " + BooleanArrays.toPrettyString(outputs) + " (0x" + Long.toHexString(BooleanArrays.toUnsignedInt(outputs)) + ")");
         }
     }
     
