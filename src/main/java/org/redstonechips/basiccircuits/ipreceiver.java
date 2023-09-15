@@ -13,6 +13,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BitSetUtils;
 
@@ -39,9 +40,9 @@ public class ipreceiver extends Circuit {
                     byte[] bytes = packet.getData();
                     BitSet bits = BitSet.valueOf(bytes);
                     writeBitSet(bits, 1, outputlen-1);
-                    
+
                     if (chip.hasListeners()) debug("Received " + BitSetUtils.bitSetToBinaryString(bits, 0, outputlen-1) + " from " + packet.getAddress() + ":" + packet.getPort());
-                    
+
                     // pulse the output clock pin.
                     write(true, 0);
                     write(false, 0);
@@ -60,8 +61,8 @@ public class ipreceiver extends Circuit {
     public Circuit init(String[] args) {
         if (outputlen<2) return error("Expecting at least 2 outputs. 1 output clock pin and 1 or more data pins.");
         if (inputlen!=1) return error("Expecting 1 clock input.");
-        if (args.length<2) return error("Expecting a port sign argument and at least one authorized incoming address.");            
-        
+        if (args.length<2) return error("Expecting a port sign argument and at least one authorized incoming address.");
+
         try {
             int port = Integer.decode(args[0]);
             try {

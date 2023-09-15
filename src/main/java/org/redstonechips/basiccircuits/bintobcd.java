@@ -16,7 +16,7 @@ public class bintobcd extends Circuit {
         value = Long.toString(BooleanArrays.toUnsignedInt(inputs, 0, inputlen));
         for (int i=0; i<digits; i++) {
             String d;
-            int digit;         
+            int digit;
             if (i<value.length()) {
                 d = Character.toString(value.charAt(value.length()-i-1));
                 digit = Integer.decode(d);

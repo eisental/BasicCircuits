@@ -2,6 +2,7 @@ package org.redstonechips.basiccircuits;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.redstonechips.circuit.Circuit;
 
 /**
@@ -138,7 +139,7 @@ public class counter extends Circuit {
 
     @Override
     public Map<String, String> getInternalState() {
-        Map<String,String> state = new HashMap<String, String>();
+        Map<String,String> state = new HashMap<>();
         state.put("count", Integer.toString(count));
         state.put("direction", Integer.toString(direction));
         return state;

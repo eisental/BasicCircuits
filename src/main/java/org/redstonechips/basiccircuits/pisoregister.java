@@ -3,6 +3,7 @@ package org.redstonechips.basiccircuits;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.redstonechips.Serializer;
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
@@ -46,7 +47,7 @@ public class pisoregister extends Circuit {
         if (outputlen!=1) return error("Expecting exactly 1 output. ");
 
         register = new boolean[inputlen-2];
-        
+
         if (activator!=null) clearOutputs();
         return this;
     }

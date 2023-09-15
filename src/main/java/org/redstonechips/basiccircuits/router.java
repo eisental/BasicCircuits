@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.redstonechips.circuit.Circuit;
 
 /**
@@ -41,7 +42,7 @@ public class router extends Circuit {
 
             writeBits(register, 0, outputlen);
         }
-        
+
     }
 
     @Override
@@ -56,7 +57,7 @@ public class router extends Circuit {
             if (split.length!=2) return error("Bad routing entry: " + arg);
 
             try {
-                Integer input = Integer.decode(split[0]);                
+                Integer input = Integer.decode(split[0]);
                 Integer output;
                 if (split[1].equalsIgnoreCase("all")) {
                     output = -1;

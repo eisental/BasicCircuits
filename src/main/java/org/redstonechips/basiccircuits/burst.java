@@ -1,8 +1,8 @@
 
 package org.redstonechips.basiccircuits;
 
-import org.redstonechips.parsing.UnitParser;
 import org.redstonechips.circuit.Circuit;
+import org.redstonechips.parsing.UnitParser;
 import org.redstonechips.util.BooleanArrays;
 
 /**
@@ -65,7 +65,7 @@ public class burst extends Circuit {
                 } catch (NumberFormatException ne) {
                     return error("Bad pulse count argument: " + args[0]);
                 }
-                
+
                 try {
                     frequency = Math.round(UnitParser.parse(args[1]));
                 } catch (IllegalArgumentException e) {
@@ -78,7 +78,7 @@ public class burst extends Circuit {
         if (inputlen==0) return error("Expecting at least 1 input pin.");
 
         if (activator!=null) clearOutputs();
-        
+
         burstTask = new BurstTask();
         return this;
     }
@@ -87,7 +87,7 @@ public class burst extends Circuit {
     public boolean isStateless() {
         return false;
     }
-    
+
     private void startBurst() {
         if (bursting) return;
 
@@ -101,7 +101,7 @@ public class burst extends Circuit {
             bursting = false;
         }
     }
-    
+
     private void stopBurst() {
         if (!bursting) return;
 
@@ -110,18 +110,18 @@ public class burst extends Circuit {
         rc.getServer().getScheduler().cancelTask(taskId);
         bursting = false;
     }
-    
+
     @Override
     public void disable() {
         stopBurst();
     }
-    
+
     @Override
     public void shutdown() {
         stopBurst();
     }
-    
-    private class BurstTask implements Runnable {        
+
+    private class BurstTask implements Runnable {
         @Override
         public void run() {
             if (!bursting) return;

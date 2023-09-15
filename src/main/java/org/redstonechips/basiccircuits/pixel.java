@@ -3,14 +3,15 @@ package org.redstonechips.basiccircuits;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.redstonechips.RCPrefs;
-import org.redstonechips.circuit.Circuit;
 import org.redstonechips.chip.io.InterfaceBlock;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.util.BooleanSubset;
 import org.redstonechips.util.Locations;
@@ -18,8 +19,8 @@ import org.redstonechips.wireless.Receiver;
 
 
 public class pixel extends Circuit {
-	
-    	
+
+
 	public byte ColorToNum(String colornametext) {
 		switch(colornametext)
 		{
@@ -55,10 +56,10 @@ public class pixel extends Circuit {
 			return(14);
 		case "BLACK":
 			return(15);
-		}		
+		}
 		return 16;
 	}
-	public Material ColorSel(byte colornum) {  
+	public Material ColorSel(byte colornum) {
     	switch(colornum)
     	{
     	case 0 :
@@ -92,13 +93,13 @@ public class pixel extends Circuit {
     	case 14 :
     		return(Material.RED_WOOL);
     	case 15 :
-    		return(Material.BLACK_WOOL);  	
-    	}	
-    
+    		return(Material.BLACK_WOOL);
+    	}
+
     	return(Material.WHITE_WOOL);
     }
-	
-	public String ColortoString(byte colornum) {  
+
+	public String ColortoString(byte colornum) {
     	switch(colornum)
     	{
     	case 0 :
@@ -132,20 +133,20 @@ public class pixel extends Circuit {
     	case 14 :
     		return("Red");
     	case 15 :
-    		return("Black");  	
-    	}    
+    		return("Black");
+    	}
     	return("White");
     }
-	
+
 	private boolean indexedColor = false;
     private byte[] colorIndex;
     private int distance = 3;
-    private static final BlockFace[] faces = new BlockFace[] { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
-    
+    private static final BlockFace[] faces = new BlockFace[] { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+
     private Location[] colorBlocks;
-    
+
     private Receiver receiver;
-            
+
     @Override
     public void input(boolean state, int inIdx) {
         if (inputlen==1) {
@@ -159,15 +160,15 @@ public class pixel extends Circuit {
     public Circuit init(String[] args) {
         if (inputlen>5) return error("Too many inputs. Expecting 1 clock pin and no more than 4 data pins.");
         else if (chip.interfaceBlocks.length==0) return error("Expecting at least 1 interface block.");
-        
+
         if (args.length>0) {
             String channelString = null;
 
             List<Byte> colorList = new ArrayList<>();
-            for (int i=0; i<args.length; i++) {      	
-            	if (ColorToNum(args[i].toUpperCase()) != 16) colorList.add(ColorToNum(args[i].toUpperCase())); //check dye color text and add            	
-            	else { 	// no color text         			
-            		
+            for (int i=0; i<args.length; i++) {
+            	if (ColorToNum(args[i].toUpperCase()) != 16) colorList.add(ColorToNum(args[i].toUpperCase())); //check dye color text and add
+            	else { 	// no color text
+
             	    try {
                         int val = Integer.decode(args[i]);
                         colorList.add((byte)val);
@@ -179,7 +180,7 @@ public class pixel extends Circuit {
                                 int maxDistance = getMaxDistance();
                                 if (maxDistance>=0 && distance>maxDistance)
                                     return error("A distance value of " + distance + " is not allowed. The maximum value is " + maxDistance + ".");
-                                
+
                             } catch (NumberFormatException ne2) {
                                 return error("Bad distance argument: " + args[i] + ". Expecting d{<distance>} or dist{<distance>}.");
                             }
@@ -189,7 +190,7 @@ public class pixel extends Circuit {
                             return error("Unknown color name: " + args[i]);
                     }
                 }
-            
+
             }
 
             // color index
@@ -224,15 +225,15 @@ public class pixel extends Circuit {
         for (InterfaceBlock i : chip.interfaceBlocks) {
             findColorBlocksAround(i.getLocation(), i.getLocation(), blockList, distance, 0);
         }
-        
+
         colorBlocks = blockList.toArray(new Location[0]);
-        
+
         // add color blocks to chip structure.
         blockList.addAll(Arrays.asList(chip.structure));
         chip.structure = blockList.toArray(new Location[0]);
 
-        
-        
+
+
         return this;
     }
 
@@ -253,14 +254,14 @@ public class pixel extends Circuit {
             }
             color = colorIndex[index];
         }   else color = (byte)val;
-              
+
         if (chip.hasListeners()) debug("Setting pixel color to " + ColortoString(color));
 
         for (Location l : colorBlocks) {
         	Block b = l.getBlock();
             BlockState bState = b.getState();
             bState.setType(ColorSel(color));
-            bState.update(true, false);        	
+            bState.update(true, false);
         }
 
     }
@@ -291,7 +292,7 @@ public class pixel extends Circuit {
             	case BLACK_WOOL:
                     if (!coloredBlocks.contains(attached) && !attached.equals(origin) && inCube(origin, attached, range))
                         coloredBlocks.add(attached);
-                    findColorBlocksAround(origin, attached, coloredBlocks, range, curDist);                   
+                    findColorBlocksAround(origin, attached, coloredBlocks, range, curDist);
             }
         }
     }
@@ -312,11 +313,11 @@ public class pixel extends Circuit {
         if (oMaxDist != null && oMaxDist instanceof Integer) return (Integer)oMaxDist;
         else return -1;
     }
-    
+
     class PixelReceiver extends Receiver {
         @Override
         public void receive(BooleanSubset bits) {
-            // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.        
+            // if we have 0 or 1 inputs there's no clock to adjust. just use the incoming bits.
             boolean[] valbits;
             if (inputlen<=1) {
                 valbits = bits.copy(0, bits.length());
@@ -327,6 +328,6 @@ public class pixel extends Circuit {
                 valbits[0] = false;
             }
             updatePixel(valbits);
-        }        
+        }
     }
 }

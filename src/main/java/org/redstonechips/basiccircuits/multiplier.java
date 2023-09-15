@@ -33,7 +33,7 @@ public class multiplier extends BitSetCircuit {
         try {
             wordlength = Integer.decode(args[0]);
 
-            if (wordlength<=0) 
+            if (wordlength<=0)
                 return error("Bad wordlength sign argument: " + args[0] + ". Expecting a number greater than 0.");
         } catch (NumberFormatException ne) {
             return error("Bad wordlength sign argument: " + args[0] + ". Expecting a number greater than 0.");
@@ -57,10 +57,10 @@ public class multiplier extends BitSetCircuit {
 
         long maxResult = (long)Math.pow(Math.pow(2, wordlength)-1, inputBitSets.length) * constant;
         int expectedOutputs = (int)Math.ceil(Math.log(maxResult)/Math.log(2));
-        
+
         if (outputlen<expectedOutputs)
             info (ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. To prevent this, the circuit should have " + expectedOutputs + " output bits.");
-        
+
         return this;
     }
 }

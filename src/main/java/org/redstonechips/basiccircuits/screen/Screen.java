@@ -11,7 +11,7 @@ import org.bukkit.block.BlockState;
  * @author Tal Eisenberg
  */
 public class Screen {
-    
+
     public static final Material[] materials = new Material[] {
         Material.WHITE_WOOL,
         Material.ORANGE_WOOL,
@@ -31,9 +31,9 @@ public class Screen {
         Material.BLACK_WOOL,
     };
 
-    public enum Axis {X,Y,Z};
-    
-    public Material ColorSel(int colornum) {  
+    public enum Axis {X,Y,Z}
+
+    public Material ColorSel(int colornum) {
     	switch(colornum)
     	{
     	case 0 :
@@ -67,24 +67,24 @@ public class Screen {
     	case 14 :
     		return(Material.RED_WOOL);
     	case 15 :
-    		return(Material.BLACK_WOOL);  	
-    	}	
-    
+    		return(Material.BLACK_WOOL);
+    	}
+
     	return(Material.WHITE_WOOL);
     }
 
     private final ScreenDescription ds;
-    
+
     private byte[] colorIndex = null;
-    
+
     private int colorLength = 4;
-    
+
     private final Location[][][] pixels;
     private final byte[][] memory;
 
     private Screen(ScreenDescription ds) {
         this.ds = ds;
-        
+
         int pixelWidth = (int)Math.ceil(ds.physicalWidth/ds.addrWidth);
         int pixelHeight = (int)Math.ceil(ds.physicalHeight/ds.addrHeight);
         pixels = new Location[ds.addrWidth][ds.addrHeight][Math.abs(pixelWidth*pixelHeight)];
@@ -94,41 +94,41 @@ public class Screen {
                 pixels[x][y] = findPixelBlocks(ds.origin, x, y, ds.widthAxis, ds.heightAxis, pixelWidth, pixelHeight);
             }
         }
-        
+
         ds.pixelWidth = pixelWidth;
         ds.pixelHeight = pixelHeight;
-        memory = new byte[ds.addrWidth][ds.addrHeight];        
+        memory = new byte[ds.addrWidth][ds.addrHeight];
     }
-    
-    public void setColorIndex(byte[] index) { 
+
+    public void setColorIndex(byte[] index) {
         this.colorIndex = index;
         if (colorIndex==null) colorLength = 4;
-        else colorLength = calculateBitLength(colorIndex.length);        
+        else colorLength = calculateBitLength(colorIndex.length);
     }
-    
+
     public ScreenDescription getDescription() {
         return ds;
     }
-    
+
     public int getColorLength() {
         return colorLength;
     }
-    
+
     public int getXLength() {
         return calculateBitLength(ds.addrWidth);
     }
-    
+
     public int getYLength() {
         return calculateBitLength(ds.addrHeight);
     }
-    
+
     public Location[][][] getPixelBlocks() {
         return pixels;
     }
-    
+
     public void setPixel(int x, int y, int data, boolean checkMemory) {
         byte color;
-        
+
         if (colorIndex!=null) {
             if (data>=colorIndex.length) {
                 throw new IllegalArgumentException("Color index " + data + " is out of bounds.");
@@ -140,7 +140,7 @@ public class Screen {
         if (x>=ds.addrWidth || y>=ds.addrHeight) {
             throw new IllegalArgumentException("Pixel (" + x + ", " + y + ") is out of bounds.");
         }
-        
+
         Location[] pixel = pixels[x][y];
 
         if (!checkMemory || memory[x][y]!=color) {
@@ -151,42 +151,42 @@ public class Screen {
                     if (b.getType()==m) {
                         bState.setType(ColorSel(color));
                         bState.update(true, true);
-                        break;  
+                        break;
                     }
                 }
             }
             memory[x][y] = color;
-        } 
+        }
     }
-    
+
     public void clear() {
         for (int y=0; y<ds.addrHeight; y++) {
             for (int x=0; x<ds.addrWidth; x++) {
                 this.setPixel(x, y, 0, false);
             }
-        }        
+        }
     }
-    
+
     public static Screen generateScreen(Location l0, Location l1) {
-        ScreenDescription ds = scanScreen(l0, l1);        
+        ScreenDescription ds = scanScreen(l0, l1);
         ds.addrWidth = Math.abs(ds.physicalWidth);
         ds.addrHeight = Math.abs(ds.physicalHeight);
-                
-        return new Screen(ds);        
-    }
-    
-    public static Screen generateScreen(Location l0, Location l1, int addrWidth, int addrHeight) {
-        ScreenDescription ds = scanScreen(l0, l1);        
-        ds.addrWidth = addrWidth;
-        ds.addrHeight = addrHeight;
-                
+
         return new Screen(ds);
     }
-    
-    public static ScreenDescription scanScreen(Location l0, Location l1) {        
+
+    public static Screen generateScreen(Location l0, Location l1, int addrWidth, int addrHeight) {
+        ScreenDescription ds = scanScreen(l0, l1);
+        ds.addrWidth = addrWidth;
+        ds.addrHeight = addrHeight;
+
+        return new Screen(ds);
+    }
+
+    public static ScreenDescription scanScreen(Location l0, Location l1) {
         if (!l0.getWorld().equals(l1.getWorld()))
             throw new IllegalArgumentException("Both screen corners must be on the same world.");
-        
+
         World world = l0.getWorld();
         int x1 = l0.getBlockX();
         int x2 = l1.getBlockX();
@@ -212,7 +212,7 @@ public class Screen {
             phyHeight = (dy+1)*ysign;
             widthAxis = Axis.Z;
             heightAxis = Axis.Y;
-            
+
             for (Material m : Screen.materials) {
                 if (world.getBlockAt(x1+1,y1,z1).getType()==m) {
                     origin = new Location(world, x1+1, y1, z1);
@@ -220,8 +220,8 @@ public class Screen {
                 } else if (world.getBlockAt(x1-1,y1,z1).getType()==m) {
                     origin = new Location(world, x1-1, y1, z1);
                     break;
-                } 
-            }            
+                }
+            }
             if (origin == null)
                 throw new IllegalArgumentException("Can't find origin screen block.");
 
@@ -245,11 +245,11 @@ public class Screen {
                 } else if (world.getBlockAt(x1,y1-1,z1).getType()==m) {
                     origin = new Location(world, x1, y1-1, z1);
                     break;
-                } 
-            }            
+                }
+            }
             if (origin == null)
                 throw new IllegalArgumentException("Can't find origin screen block.");
-            
+
         } else if (dx!=0 && dy!=0 && dz==0) { // xy plane
             phyWidth = (dx+1)*xsign;
             phyHeight = (dy+1)*ysign;
@@ -263,16 +263,16 @@ public class Screen {
                 } else if (world.getBlockAt(x1,y1,z1-1).getType()==m) {
                     origin = new Location(world, x1, y1, z1-1);
                     break;
-                } 
-            }            
+                }
+            }
             if (origin == null)
                 throw new IllegalArgumentException("Can't find origin screen block.");
-            
+
         } else if (dx==0 && dy!=0 && dz==0) { // y line
             phyWidth = (dy+1)*ysign;
             phyHeight = 1;
             widthAxis = Axis.Y;
-            
+
             for (Material m : Screen.materials) {
                 if (world.getBlockAt(x1+1,y1,z1).getType()==m) {
                     heightAxis = Axis.Z;
@@ -291,10 +291,10 @@ public class Screen {
                     origin = new Location(world, x1, y1, z1-1);
                     break;
                 }
-            }            
+            }
             if (origin == null)
                 throw new IllegalArgumentException("Can't find origin screen block.");
-            
+
         } else if (dx!=0 && dy==0 && dz==0) { // x line
             phyWidth = (dx+1)*xsign;
             phyHeight = 1;
@@ -318,7 +318,7 @@ public class Screen {
                     origin = new Location(world, x1, y1, z1-1);
                     break;
                 }
-            }            
+            }
             if (origin == null)
                 throw new IllegalArgumentException("Can't find origin screen block.");
 
@@ -326,7 +326,7 @@ public class Screen {
             phyWidth = (dz+1)*zsign;
             phyHeight = 1;
             widthAxis = Axis.Z;
-            
+
          for (Material m : Screen.materials) {
                 if (world.getBlockAt(x1,y1+1,z1).getType()==m) {
                     heightAxis = Axis.X;
@@ -345,11 +345,11 @@ public class Screen {
                     origin = new Location(world, x1-1, y1, z1);
                     break;
                 }
-            }            
+            }
             if (origin == null)
-                throw new IllegalArgumentException("Can't find origin screen block.");            
-        } else throw new IllegalArgumentException("Both interface blocks must be on the same plane.");        
-        
+                throw new IllegalArgumentException("Can't find origin screen block.");
+        } else throw new IllegalArgumentException("Both interface blocks must be on the same plane.");
+
         ScreenDescription ds = new ScreenDescription();
         ds.origin = origin;
         ds.physicalHeight = phyHeight;
@@ -358,7 +358,7 @@ public class Screen {
         ds.widthAxis = widthAxis;
         return ds;
     }
-    
+
     private static Location[] findPixelBlocks(Location origin, int x, int y, Axis widthAxis, Axis heightAxis, int pixelWidth, int pixelHeight) {
         int x1 = origin.getBlockX();
         int y1 = origin.getBlockY();
@@ -428,8 +428,8 @@ public class Screen {
 
         return ret;
     }
-    
+
     public static int calculateBitLength(int numOfValues) {
         return (int)Math.ceil(Math.log(numOfValues)/Math.log(2));
-    }        
+    }
 }

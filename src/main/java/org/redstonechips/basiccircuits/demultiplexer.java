@@ -2,6 +2,7 @@ package org.redstonechips.basiccircuits;
 
 
 import java.util.Arrays;
+
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 
@@ -26,13 +27,13 @@ public class demultiplexer extends Circuit {
             bitCount = outputlen/outcount;
             int expectedInputs = bitCount + selectSize;
 
-            if (inputlen!=expectedInputs) 
+            if (inputlen!=expectedInputs)
                 return error("Wrong number of inputs. expecting " + expectedInputs + " inputs (including "+ selectSize + " select pins)");
 
             output = new boolean[outputlen];
             select = new boolean[selectSize];
             inputBitSet = new boolean[bitCount];
-            
+
             return this;
         } catch (NumberFormatException ne) {
             return error("Bad argument: " + args[0] + " expecting a number.");
