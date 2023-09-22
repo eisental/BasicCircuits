@@ -4,12 +4,13 @@ package org.redstonechips.basiccircuits;
 //import java.util.Collection;
 import java.util.regex.Pattern;
 
-import javax.sound.midi.Instrument;
+//import javax.sound.midi.Instrument;
 
 //import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Note;
+import org.bukkit.Instrument;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
