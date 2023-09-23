@@ -29,16 +29,16 @@ public class divider extends BitSetCircuit {
         secondOperand = secondOperand * constant;
 
         if (!checkForDivByZero(secondOperand)) return;
-        
+
         long result;
         if (round) {
             result = (int)Math.round((double)firstOperand / (double)secondOperand);
         } else {
             result = firstOperand / secondOperand;
         }
-        
+
         this.writeInt(result, 0, wordlength);
-        
+
         if (mod) {
             long modulus = firstOperand % secondOperand;
             this.writeInt(modulus, wordlength, outputlen-wordlength);
@@ -49,7 +49,7 @@ public class divider extends BitSetCircuit {
     public Circuit init(String[] args) {
         if (args.length==0) return error("wordlength sign argument is missing.");
         if (outputlen==0) return error("Expecting at least 1 output pin.");
-        
+
         if (args[args.length-1].equalsIgnoreCase("round"))
             round = true;
         else if (args[args.length-1].equalsIgnoreCase("mod"))
@@ -87,8 +87,8 @@ public class divider extends BitSetCircuit {
         if (outputlen<expectedOutputs && activator!=null) {
             info(ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. To prevent this, the circuit should have " + expectedOutputs + " output bits.");
         }
-        
-        return this;    
+
+        return this;
     }
 
     private boolean checkForDivByZero(long secondOperand) {

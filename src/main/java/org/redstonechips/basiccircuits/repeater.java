@@ -10,7 +10,7 @@ import org.redstonechips.circuit.Circuit;
 public class repeater extends Circuit {
     int outputSets;
     int outputSetSize;
-    
+
     @Override
     public void input(boolean state, int inIdx) {
         if (outputSets==0)
@@ -21,15 +21,15 @@ public class repeater extends Circuit {
     }
 
     @Override
-    public Circuit init(String[] args) { 
+    public Circuit init(String[] args) {
         if (inputlen<1) return error("Expecting at least 1 input pin.");
         if (outputlen<1) return error("Expecting at least 1 output pin.");
-        
+
         if (inputlen == 1)
             outputSets = 0; //optimize for original function
         else
             outputSets = outputlen/inputlen;
-        
+
         if (outputSets != 0) {
             if (outputlen != inputlen*outputSets)
                 return error("Tried to split "+outputlen+" into "+outputSets+", expected "+(inputlen*outputSets)+" outputs.");
@@ -46,7 +46,7 @@ public class repeater extends Circuit {
             else
                 info("Splitting 1 bit into "+outputlen+".");
         }
-        
+
         return this;
     }
 }

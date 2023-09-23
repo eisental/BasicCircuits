@@ -3,8 +3,7 @@ package org.redstonechips.basiccircuits;
 
 import java.io.IOException;
 import java.util.logging.Level;
-import org.redstonechips.paging.LineSource;
-import org.redstonechips.parsing.Range;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,7 +13,9 @@ import org.redstonechips.circuit.Circuit;
 import org.redstonechips.memory.Memory;
 import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;
+import org.redstonechips.paging.LineSource;
 import org.redstonechips.paging.Pager;
+import org.redstonechips.parsing.Range;
 import org.redstonechips.util.BooleanArrays;
 
 /**
@@ -30,14 +31,14 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
     int disablePin;
     int addressPin;
     int dataPin;
-    
+
     boolean readOnlyMode;
 
     boolean sramDisable = false;
     boolean readWrite = false;
 
     boolean anonymous = true;
-    
+
     @Override
     public void input(boolean state, int inIdx) {
         if (inIdx==readWritePin) {
@@ -98,10 +99,10 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         if (outputlen==0) return error("Expecting at least 1 output pin.");
 
         if (addressLength<1) {
-            if (readOnlyMode) return error("Expecting at least 1 control pin, and 1 address input pin.");                
+            if (readOnlyMode) return error("Expecting at least 1 control pin, and 1 address input pin.");
             else return error("Expecting at least 2 control pins, 1 address input pin, and " + wordLength + " data pins.");
         }
-        
+
         try {
             if (args.length>0) {
                 anonymous = false;
@@ -116,22 +117,22 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         } catch (IllegalArgumentException e) {
             return error(e.getMessage());
         }
-        
+
         if (!readOnlyMode) {
             readWrite = inputs[readWritePin];
         }
-        
+
         sramDisable = inputs[disablePin];
-        
+
         rc.addRCTypeReceiver(chip.activationBlock, this);
         if (activator!=null) clearOutputs();
         if (readWrite && !sramDisable) {
             readMemory();
         }
-        
+
         memory.addListener(this);
         info("This sram chip can hold up to " + Math.pow(2, addressLength) + "x" + wordLength + " bits. Memory data will be stored at " + ChatColor.YELLOW + memory.getFile().getPath());
-        
+
         return this;
     }
 
@@ -159,7 +160,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         if (chip.hasListeners()) debug("Reading " + BooleanArrays.toPrettyString(data, wordLength) + " from address " + address);
         writeBits(data, 0, wordLength);
     }
-    
+
     @Override
     public void type(String[] words, Player player) {
         if (words.length==0) return;
@@ -173,9 +174,9 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
             String ascii = b.toString();
             for (int i=0; i<ascii.length(); i++)
                 memory.write(i, BooleanArrays.fromInt(ascii.charAt(i), wordLength));
-            
+
         } else if (words[0].equalsIgnoreCase("notes")) { // notes notation (unsupported).
-            
+
         } else if (words[0].equalsIgnoreCase("dump")) { // print memory contents.
             if (words.length==1) {
                 dumpMemory(player, null);
@@ -246,15 +247,15 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
             if (firstAddress==lastAddress)
                 titleRange = Integer.toString(firstAddress);
             else titleRange = firstAddress + "-" + lastAddress;
-            
+
             MemoryLineSource l = new MemoryLineSource(firstAddress, lastAddress-firstAddress+1);
-            
-            Pager.beginPaging(player, "sram " + memory.getId() + " memory (" + titleRange + ")", 
+
+            Pager.beginPaging(player, "sram " + memory.getId() + " memory (" + titleRange + ")",
                     l, RCPrefs.getInfoColor(), RCPrefs.getErrorColor());
-        } else 
+        } else
             errorForSender(player, "Invalid address range: " + firstAddress + ".." + lastAddress);
     }
-            
+
     @Override
     public boolean isStateless() {
         return false;
@@ -263,7 +264,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
     @Override
     public void dataChanged(Ram ram, long address, boolean[] data) {
         if (sramDisable) return;
-                
+
         long curaddr = getInputAddress();
         if (readWrite && curaddr == address) readMemory();
     }
@@ -273,30 +274,30 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         memory.getListeners().remove(this);
 	memory.release();
     }
-    
 
-    
+
+
     private long getInputAddress() {
         boolean[] address = new boolean[addressLength];
         System.arraycopy(inputs, addressPin, address, 0, addressLength);
         return BooleanArrays.toUnsignedInt(inputs, addressPin, addressLength);
     }
-    
+
     private boolean[] getInputData() {
         boolean[] data = new boolean[wordLength];
         System.arraycopy(inputs, dataPin, data, 0, wordLength);
         return data;
     }
-    
+
     class MemoryLineSource implements LineSource {
         int offset;
         int length;
-        
+
         public MemoryLineSource(int offset, int length) {
             this.offset = offset;
             this.length = length;
         }
-        
+
         @Override
         public String getLine(int idx) {
             String value;
@@ -311,7 +312,7 @@ public class sram extends Circuit implements RCTypeReceiver, RamListener {
         public int getLineCount() {
             return length;
         }
-        
+
         private String zeroPad(int a, int max) {
             String pad = "";
             String address = Integer.toString(a);

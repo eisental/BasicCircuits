@@ -4,6 +4,7 @@ package org.redstonechips.basiccircuits;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.redstonechips.Serializer;
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
@@ -16,9 +17,9 @@ public class shiftregister extends Circuit {
     final static int ClockPin = 0;
     final static int ResetPin = 2;
     final static int DataPin = 1;
-    
+
     private boolean shiftRight = false;
-    
+
     private boolean[] register;
 
     @Override
@@ -32,7 +33,7 @@ public class shiftregister extends Circuit {
                 register[0] = inputs[DataPin];
             }
             writeBits(register);
-            
+
         } else if (inIdx==2 && state) { // reset
             Arrays.fill(register, false);
             writeBits(register);
@@ -44,14 +45,14 @@ public class shiftregister extends Circuit {
         if (inputlen!=2 && inputlen!=3) return error("Expecting 2 or 3 inputs. ");
 
         if (args.length>0) {
-            if (args[0].equalsIgnoreCase("right")) shiftRight = true;                
-            else if (args[0].equalsIgnoreCase("left")) shiftRight = false;                
-            else return error("Invalid argument: " + args[0] + " expecting right|aright|left."); 
+            if (args[0].equalsIgnoreCase("right")) shiftRight = true;
+            else if (args[0].equalsIgnoreCase("left")) shiftRight = false;
+            else return error("Invalid argument: " + args[0] + " expecting right|aright|left.");
         }
-        
+
         if (activator!=null) clearOutputs();
         register = new boolean[outputlen];
-        
+
         return this;
 
     }

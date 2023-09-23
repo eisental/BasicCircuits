@@ -9,7 +9,7 @@ import org.redstonechips.parsing.UnitParser;
  */
 public class pulse extends Circuit {
 
-    public enum EdgeTriggering { positive, negative, doubleEdge };
+    public enum EdgeTriggering { positive, negative, doubleEdge }
 
     private EdgeTriggering trigger = EdgeTriggering.positive;
 
@@ -36,12 +36,12 @@ public class pulse extends Circuit {
         if (inputlen!=outputlen && inputlen!=1)
             return error("Expecting the same number of inputs and outputs or 1 input.");
 
-        if (inputlen==0) 
+        if (inputlen==0)
             return error("Expecting at least one input and one output.");
-        
+
 
         if (args.length==0) interval = 1000; // 1 sec default
-        
+
         if (args.length>=1) {
             try {
                 interval = Math.round(UnitParser.parse(args[0]));

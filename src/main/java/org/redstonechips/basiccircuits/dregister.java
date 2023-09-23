@@ -3,10 +3,12 @@ package org.redstonechips.basiccircuits;
 
 import java.io.IOException;
 import java.util.Arrays;
+
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.memory.Memory;
 import org.redstonechips.memory.Ram;
 import org.redstonechips.memory.RamListener;
+import org.redstonechips.util.BooleanArrays;
 
 /**
  *
@@ -15,26 +17,30 @@ import org.redstonechips.memory.RamListener;
 public class dregister extends Circuit {
     private static final int clockIdx = 0;
     private static final int resetIdx = 1;
-    
+
     private Ram ram;
     private RamListener ramListener;
     private long ramaddr;
     private boolean[] register;
     private boolean[] clearRegister;
-    
+
     @Override
     public void input(boolean state, int inIdx) {
         if (inIdx==resetIdx && state) {
             if (ram != null)
                 ram.write(ramaddr, clearRegister); //this will update the output
+
             else this.writeBits(clearRegister);
+            if (chip.hasListeners()) {
+            	debug("Cleared");
+            }
         } else if (inputs[clockIdx]) {
-            if (ram != null)
-                ram.write(ramaddr, Arrays.copyOfRange(inputs, 2, inputlen)); //this will update the output
+            if (ram != null) ram.write(ramaddr, Arrays.copyOfRange(inputs, 2, inputlen)); //this will update the output
             else this.writeBits(inputs, 2, outputlen);
+            if (chip.hasListeners()) debug("Output: " + BooleanArrays.toPrettyString(outputs) + " (0x" + Long.toHexString(BooleanArrays.toUnsignedInt(outputs)) + ")");
         }
     }
-    
+
     class dregisterRamListener implements RamListener {
         @Override
         public void dataChanged(Ram ram, long address, boolean[] data) {
@@ -42,7 +48,7 @@ public class dregister extends Circuit {
                 writeBits(data);
         }
     }
-    
+
     @Override
     public Circuit init(String[] args) {
         if (inputlen!=outputlen+2)
@@ -55,19 +61,19 @@ public class dregister extends Circuit {
                         ramaddr = Long.decode(args[1]);
                     else
                         ramaddr = 0;
-                    
+
                     ram = (Ram)Memory.getMemory(args[0].substring(1), Ram.class);
                 } catch (NumberFormatException | IOException e) {
                     return error(e.getMessage());
                 }
             } else return error("Invalid argument: " + args[0]);
         }
-                
+
         register = new boolean[outputlen];
         clearRegister = new boolean[outputlen];
-        
+
         if (activator!=null) clearOutputs();
-        
+
         if (ram != null) {
             ramListener = new dregisterRamListener();
             ram.addListener(ramListener);
@@ -75,7 +81,7 @@ public class dregister extends Circuit {
             info("Created "+outputlen+"-bit register backed by memory: "+ram.getId()+"@"+Long.toHexString(ramaddr));
         } else
             info("Created "+outputlen+"-bit register.");
-        
+
         return this;
     }
     @Override

@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.BitSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.redstonechips.RCPrefs;
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.parsing.Range;
@@ -42,13 +43,13 @@ public class iptransmitter extends Circuit {
             address = InetAddress.getByName(args[0]);
             port = Integer.decode(args[1]);
             Object oRange = RCPrefs.getPref("iptransmitter.ports");
-            if (oRange==null) 
+            if (oRange==null)
                 return error("No ports are allowed. Please set a port range by changing the iptransmitter.ports preferences key.");
 
             String sRange = oRange.toString();
             Range portRange = new Range(sRange, Range.Type.OPEN_ALLOWED);
             if (!portRange.isInRange(port)) {
-                return error("Port " + port + " is not allowed. Use ports in the range of " + portRange.toString() 
+                return error("Port " + port + " is not allowed. Use ports in the range of " + portRange.toString()
                         + ". You can change the port range by changing the iptransmitter.ports preferences key.");
             }
 
@@ -68,8 +69,8 @@ public class iptransmitter extends Circuit {
 
     private void udpBits(boolean[] bits, int start, int length) {
         BitSet out = new BitSet(length);
-        for (int i=0; i<length; i++) out.set(i, bits[start+i]);        
-        byte[] buf = out.toByteArray(); 
+        for (int i=0; i<length; i++) out.set(i, bits[start+i]);
+        byte[] buf = out.toByteArray();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
         try {
             if (chip.hasListeners()) debug("Sending " + BooleanArrays.toPrettyString(bits, start, length));

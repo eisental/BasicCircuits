@@ -2,6 +2,7 @@ package org.redstonechips.basiccircuits;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -24,48 +25,48 @@ public class SignWriter {
     }
 
     public static final int LineWidth = 15;
-    
+
     private final Type type;
     private final DisplayMode display;
-    
+
     private final StringBuffer textBuffer = new StringBuffer();
 
     private String[] lines = new String[] { "", "", "", "" };
     private int scrollPos = 0;
     private final List<Location> signList;
-    
+
     public SignWriter(DisplayMode displayMode, Type type, List<Location> signList) {
         this.type = type;
         this.display = displayMode;
         this.signList = signList;
     }
-    
+
     public DisplayMode getDisplayMode() {
         return display;
     }
-    
+
     public String[] getLines() { return lines; }
-    
-    public void setLines(String[] lines) { 
+
+    public void setLines(String[] lines) {
         this.lines = lines;
     }
-    
+
     public String getText() {
         return textBuffer.toString();
     }
-    
+
     public void setText(String text) {
         textBuffer.setLength(0);
         textBuffer.append(text.toString());
-        
+
         if (display==DisplayMode.scroll)
             prepScrollLines();
         else prepWrapLines();
         updateSigns();
     }
-    
+
     List<Location> getSigns() { return signList; }
-    
+
     public void write(String text) {
         if (display==DisplayMode.add) {
             add(text);
@@ -79,14 +80,14 @@ public class SignWriter {
             add(text);
             prepScrollLines();
         }
-        
+
         updateSigns();
     }
-    
+
     public void write(boolean[] bits, int start, int length) {
         write(convertBits(bits, start, length));
     }
-    
+
     public void clear() {
         textBuffer.setLength(0);
         scrollPos = 0;
@@ -94,7 +95,7 @@ public class SignWriter {
         lines[1] = "";
         lines[2] = "";
         lines[3] = "";
-        updateSigns();        
+        updateSigns();
     }
 
     public void scroll(int amount) {
@@ -105,9 +106,9 @@ public class SignWriter {
 
         prepScrollLines();
 
-        updateSigns();        
+        updateSigns();
     }
-               
+
     private void add(String text) {
         if (type==Type.ascii || textBuffer.length()==0) {
             textBuffer.append(text);
@@ -123,9 +124,9 @@ public class SignWriter {
             s.setLine(2, lines[2]);
             s.setLine(3, lines[3]);
             s.update();
-        }        
+        }
     }
-    
+
     private void prepScrollLines() {
         String window;
 
@@ -142,7 +143,7 @@ public class SignWriter {
         lines[2] = "";
         lines[3] = "";
     }
-    
+
     private void prepWrapLines() {
         if (textBuffer.length()>LineWidth*3) {
             String line4 = textBuffer.substring(LineWidth*3);
@@ -160,7 +161,7 @@ public class SignWriter {
         } else if (textBuffer.length()>LineWidth) {
             lines[0] = textBuffer.substring(0,LineWidth);
             lines[1] = textBuffer.substring(LineWidth);
-            lines[2] = "";            
+            lines[2] = "";
             lines[3] = "";
         } else {
             lines[0] = textBuffer.toString();
@@ -169,7 +170,7 @@ public class SignWriter {
             lines[3] = "";
         }
     }
-    
+
     private String convertBits(boolean[] bits, int start, int length) {
         String text = null;
 
@@ -191,7 +192,7 @@ public class SignWriter {
 
         return text;
     }
-    
+
     public static SignWriter getSignWriter(DisplayMode mode, Type type, Location... aroundBlocks) {
         List<Location> signs = new ArrayList<>();
 
@@ -209,10 +210,10 @@ public class SignWriter {
             if (checkBlock(i, east)) { signs.add(east); }
             if (checkBlock(i, up)) { signs.add(up); }
         }
-        
-        return new SignWriter(mode, type, signs);        
+
+        return new SignWriter(mode, type, signs);
     }
-    
+
     private static boolean checkBlock(Block i, Location s) {
         // TODO: Check whether this method loads the chunk or not.
         Block sign = s.getBlock();
@@ -223,5 +224,5 @@ public class SignWriter {
 
         } else return false;
     }
-    
+
 }

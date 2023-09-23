@@ -12,14 +12,14 @@ import org.redstonechips.wireless.Receiver;
 public class receiver extends Circuit {
     private int dataPin;
     private Receiver rec;
-    
+
     @Override
     public void input(boolean state, int inIdx) {}
 
     @Override
     public Circuit init(String[] args) {
         if (outputlen==0) return error("Expecting at least 1 output pin.");
-        
+
         if (args.length>0) {
             try {
                 dataPin = (outputlen==1?0:1);
@@ -35,14 +35,14 @@ public class receiver extends Circuit {
 
     class ReceiverImpl extends Receiver {
         @Override
-        public void receive(BooleanSubset bits) {        
+        public void receive(BooleanSubset bits) {
             if (chip.hasListeners()) debug("Received " + bits.toString());
             writeBooleanSubset(bits, dataPin, outputlen-dataPin);
             if (outputlen>1) {
                 write(true, 0);
                 write(false, 0);
             }
-        }        
+        }
     }
 
     @Override

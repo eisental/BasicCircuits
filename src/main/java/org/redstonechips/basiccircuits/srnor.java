@@ -3,6 +3,7 @@ package org.redstonechips.basiccircuits;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.redstonechips.Serializer;
 import org.redstonechips.circuit.Circuit;
 
@@ -27,9 +28,9 @@ public class srnor extends Circuit {
     public Circuit init(String[] args) {
         if (inputlen!=outputlen) return error("Expecting the same number of inputs and outputs.");
         if (activator!=null) clearOutputs();
-        
+
         register = new boolean[outputlen];
-        
+
         return this;
     }
 

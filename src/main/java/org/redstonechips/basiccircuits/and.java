@@ -17,7 +17,7 @@ public class and extends BitSetCircuit {
         for (int i=1; i<this.inputBitSets.length; i++) {
             BooleanArrays.and(buf, buf, inputBitSets[i]);
         }
-        
+
         this.writeBits(buf);
     }
 }

@@ -35,7 +35,7 @@ public class adder extends BitSetCircuit {
         if (constant != 0) {
             output = BooleanArrays.add(output, constant, outputlen);
         }
-        
+
         // write result
         this.writeBits(output);
     }
@@ -53,13 +53,13 @@ public class adder extends BitSetCircuit {
         }
 
         if ((inputlen % wordlength)==0) {
-            int inBitSetCount = inputlen / wordlength;            
-            inputBitSets = new boolean[inBitSetCount][wordlength];            
+            int inBitSetCount = inputlen / wordlength;
+            inputBitSets = new boolean[inBitSetCount][wordlength];
         } else return error("Invalid number of inputs (" + inputlen + "). Number of inputs must be a multiple of the word length.");
 
         if (args[args.length-1].equalsIgnoreCase("subtract"))
             subtract = true;
-        
+
         if ((args.length>1 && !subtract) || (args.length>2)) {
             try {
                 constant = Integer.decode(args[1]);
@@ -68,14 +68,14 @@ public class adder extends BitSetCircuit {
                 return error("Bad constant argument: " + args[1] + " expecting a number.");
             }
         }
-        
+
         int maxResult = ((int)Math.pow(2, wordlength)-1) * inputBitSets.length + constant;
         int expectedOutputs = (int)Math.ceil(Math.log(maxResult)/Math.log(2));
 
-        if (outputlen<expectedOutputs) 
+        if (outputlen<expectedOutputs)
             info(ChatColor.LIGHT_PURPLE + "Warning: Output might overflow. Circuit should have " + expectedOutputs + " output bits.");
-        
-        info("Activating adder with " + inputBitSets.length + " input set(s) of " + wordlength + 
+
+        info("Activating adder with " + inputBitSets.length + " input set(s) of " + wordlength +
                 " bits each. The chip is running in " + (subtract?"subtract":"add") + " mode" + (constant!=0? ", with a constant value of " + constant:"") + ".");
         return this;
     }

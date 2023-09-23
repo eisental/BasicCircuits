@@ -3,6 +3,7 @@ package org.redstonechips.basiccircuits;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.util.BooleanSubset;
@@ -18,9 +19,9 @@ public class transmitter extends Circuit {
     private int[] baseStartBit;
 
     private Transmitter[] modules;
-    
+
     private BooleanSubset transmission;
-    
+
     @Override
     public void input(boolean state, int inIdx) {
         if (inputlen==1) { // no clock pin and no select
@@ -31,9 +32,9 @@ public class transmitter extends Circuit {
                 for (int i=0; i<modules.length; i++) {
                     modules[i].setStartBit(baseStartBit[i] + select*modules[i].getLength());
                 }
-                
+
             }
-            
+
             if (inputs[0]) {
                 transmitInputs();
             }
@@ -52,7 +53,7 @@ public class transmitter extends Circuit {
 
         if (args.length>0) {
             List<String> smodules = new ArrayList<>();
-                    
+
             try {
                 for (String arg : args) {
                     if (arg.toLowerCase().startsWith("select(") && arg.toLowerCase().endsWith(")")) {
@@ -63,18 +64,18 @@ public class transmitter extends Circuit {
                                 return error("Expecting at least " + (2+selectLength) + " inputs for select mode.");
                         } catch (NumberFormatException ne) {
                             return error("Bad select length argument: " + args[1]);
-                        }                        
+                        }
                         selectMode = true;
-                    } else {                        
+                    } else {
                         smodules.add(arg);
-                    }                    
+                    }
                 }
-                
+
                 if (smodules.isEmpty()) return error("Can't find any channel names.");
 
                 modules = new Transmitter[smodules.size()];
                 baseStartBit = new int[modules.length];
-                
+
                 for (int i=0; i<modules.length; i++) {
                     try {
                         Transmitter t = new Transmitter();
@@ -88,16 +89,16 @@ public class transmitter extends Circuit {
                         return error(ie.getMessage());
                     }
                 }
-                
-                                
+
+
                 if (selectMode) {
                     info("Inputs 1-" + (selectLength) + " are channel bit select pins.");
                 }
 
-                if (inputlen==1) 
+                if (inputlen==1)
                     transmission = new BooleanSubset(inputs, 0, 1);
                 else transmission = new BooleanSubset(inputs, 1+selectLength, inputlen-1-selectLength);
-                
+
                 return this;
             } catch (IllegalArgumentException ie) {
                 return error(ie.getMessage());
@@ -105,15 +106,15 @@ public class transmitter extends Circuit {
         } else
             return error("Channel sign argument is missing.");
     }
-    
+
     private String getChannelString() {
         StringBuilder b = new StringBuilder();
-        
+
         for (Transmitter t : modules) {
             b.append(t.getChannel().name).append(":").append(t.getStartBit()).append(", ");
         }
         b.delete(b.length()-2, b.length()-1);
-        
+
         return b.toString();
     }
 }

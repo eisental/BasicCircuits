@@ -25,9 +25,9 @@ public class flipflop extends Circuit {
 
     @Override
     public Circuit init(String[] args) {
-        if (outputlen!=inputlen && inputlen!=outputlen+1) 
+        if (outputlen!=inputlen && inputlen!=outputlen+1)
             return error("Expecting the same number of inputs and outputs or one extra input reset pin.");
-        
+
         resetPinMode = (inputlen==outputlen+1);
 
         if (activator!=null) clearOutputs();

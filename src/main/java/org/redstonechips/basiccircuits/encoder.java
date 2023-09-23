@@ -19,9 +19,9 @@ public class encoder extends Circuit {
 
     @Override
     public Circuit init(String[] args) {
-        if (inputlen > Math.pow(2, outputlen)) 
+        if (inputlen > Math.pow(2, outputlen))
             return error("Number of inputs must be no more than 2 to the power of the number of outputs.");
-        else 
+        else
             return this;
     }
 }

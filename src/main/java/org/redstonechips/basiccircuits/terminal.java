@@ -3,8 +3,8 @@ package org.redstonechips.basiccircuits;
 
 import org.bukkit.entity.Player;
 import org.redstonechips.RCTypeReceiver;
-import org.redstonechips.circuit.Circuit;
 import org.redstonechips.chip.io.InterfaceBlock;
+import org.redstonechips.circuit.Circuit;
 import org.redstonechips.util.BooleanArrays;
 import org.redstonechips.wireless.Transmitter;
 
@@ -18,9 +18,9 @@ public class terminal extends Circuit implements RCTypeReceiver {
     private boolean[] register;
     private DataType type = DataType.ascii;
     private boolean eot;
-    
+
     private Transmitter transmitter;
-    
+
     @Override
     public void input(boolean state, int inIdx) {
         if (inIdx==0 && state) {
@@ -33,7 +33,7 @@ public class terminal extends Circuit implements RCTypeReceiver {
     public Circuit init(String[] args) {
         eot = false;
         String channelArg = null;
-        
+
         if (args.length>0 && args[args.length-1].startsWith("#")) {
             // last argument is a channel name
             channelArg = args[args.length-1].substring(1);
@@ -41,10 +41,10 @@ public class terminal extends Circuit implements RCTypeReceiver {
             if (newArgs.length>0)
                 System.arraycopy(args, 0, newArgs, 0, newArgs.length);
 
-            args = newArgs;            
-        } 
+            args = newArgs;
+        }
 
-        
+
         if (args.length>0) {
             try {
                 type = DataType.valueOf(args[0]);
@@ -55,7 +55,7 @@ public class terminal extends Circuit implements RCTypeReceiver {
             if (args.length>1) {
                 if (args[1].equalsIgnoreCase("eot")) {
                     eot = true;
-                } else 
+                } else
                     return error("Unknown argument: " + args[1]);
             }
         }
@@ -64,11 +64,11 @@ public class terminal extends Circuit implements RCTypeReceiver {
             if (type==DataType.ascii && outputlen!=9 && outputlen!=10)
                 return error("Expecting 9-10 outputs. 1 clock output, an optional end-of-text output and 8 data outputs.");
             else if (type==DataType.num && outputlen<2)
-                return error("Expecting at least 2 outputs. 1 clock output and 1 or more data outputs.");            
+                return error("Expecting at least 2 outputs. 1 clock output and 1 or more data outputs.");
         }
 
         if (chip.interfaceBlocks.length==0) return error("Expecting at least one interface block.");
-            
+
 
         for (InterfaceBlock i : chip.interfaceBlocks)
             rc.addRCTypeReceiver(i.getLocation(), this);
@@ -82,11 +82,11 @@ public class terminal extends Circuit implements RCTypeReceiver {
                 if (eot) len = 33;
                 else len = 32;
             }
-            
+
             transmitter = new Transmitter();
             transmitter.init(activator, channelArg, len, this);
         }
-        
+
         return this;
     }
 
@@ -105,14 +105,14 @@ public class terminal extends Circuit implements RCTypeReceiver {
         String typeString = "";
 
         for (String a : words) typeString += a + " ";
-        
+
         if (type==DataType.ascii) {
             int datapin = (outputlen==9?1:2);
 
             for (int i=0; i<typeString.length()-1; i++) {
                 register = BooleanArrays.fromInt(typeString.charAt(i), 8);
-                if (chip.hasListeners()) debug("Sending " + BooleanArrays.toPrettyString(register, 0, 8) + "(" + (char)typeString.charAt(i) + ")");
-                
+                if (chip.hasListeners()) debug("Sending " + BooleanArrays.toPrettyString(register, 0, 8) + "(" + typeString.charAt(i) + ")");
+
                 if (transmitter!=null) transmitter.transmit(register, 8);
                 else {
                     this.writeBits(register, datapin, 8);
@@ -120,19 +120,19 @@ public class terminal extends Circuit implements RCTypeReceiver {
                     this.write(false, 0);
                 }
             }
-           
+
             if (eot) {
-                // send an EOT (end of text character - 0x3)                
+                // send an EOT (end of text character - 0x3)
                 if (transmitter!=null) transmitter.transmit(0x3, 0, 8);
                 else {
                     this.writeInt(0x3, datapin, 8);
                     this.write(true, 0);
-                    this.write(false, 0);                    
+                    this.write(false, 0);
                 }
             }
 
             if (datapin==2 && transmitter==null) {
-                // pulse the EOT output pin if exists.                
+                // pulse the EOT output pin if exists.
                 this.write(true, 1);
                 this.write(false, 1);
             }
@@ -142,14 +142,14 @@ public class terminal extends Circuit implements RCTypeReceiver {
                 register = BooleanArrays.fromInt(i);
                 if (chip.hasListeners()) debug("Sending " + BooleanArrays.toPrettyString(register, 0, outputlen-1));
                 this.writeBits(register, 1, outputlen-1);
-                
-                if (transmitter!=null) 
+
+                if (transmitter!=null)
                     transmitter.transmit(register, transmitter.getLength());
                 else {
                     this.write(true, 0);
-                    this.write(false, 0);                    
+                    this.write(false, 0);
                 }
-                
+
             } catch (NumberFormatException ne) {
                 errorForSender(player, "Not a number: " + typeString.trim() + ". Use a 'ascii' sign argument to sending ascii characters.");
             }

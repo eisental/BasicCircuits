@@ -95,7 +95,7 @@ public class segdriver extends Circuit {
         }
         writeBits(segments);
     }
-    
+
     private String toSegmentLetters(boolean[] segments) {
         String letters = "";
         for (int i=0; i<7; i++)
@@ -116,5 +116,5 @@ public class segdriver extends Circuit {
             default: throw new IllegalArgumentException("Bad segment id " + i);
         }
     }
-    
+
 }

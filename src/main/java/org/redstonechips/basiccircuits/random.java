@@ -2,6 +2,7 @@ package org.redstonechips.basiccircuits;
 
 
 import java.util.Random;
+
 import org.redstonechips.circuit.Circuit;
 
 
@@ -38,7 +39,7 @@ public class random extends Circuit {
             setAll = false;
         } else
             return error("Expecting either the same amount of inputs and outputs, or exactly 1 input.");
-        
+
         return this;
     }
 }

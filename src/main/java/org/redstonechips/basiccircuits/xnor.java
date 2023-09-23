@@ -16,7 +16,7 @@ public class xnor extends BitSetCircuit {
         for (int i=1; i<this.inputBitSets.length; i++) {
             BooleanArrays.xor(buf, buf, inputBitSets[i]);
         }
-        
+
         BooleanArrays.not(buf, buf);
 
         this.writeBits(buf);

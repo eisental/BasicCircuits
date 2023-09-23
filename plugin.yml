@@ -1,6 +1,7 @@
 name: BasicCircuits
 main: org.redstonechips.basiccircuits.BasicCircuits
 version: 0.97
+api-version: 1.15
 author: eisental
 description: Basic circuit library for RedstoneChips integrated circuits plugin.
 website: eisental.github.com/RedstoneChips

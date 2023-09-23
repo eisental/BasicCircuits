@@ -18,7 +18,7 @@ public class comparator extends Circuit {
 
     private int dataPin;
     private boolean clocked;
-    
+
     private static final boolean[] lessThan = BooleanArrays.fromInt(1, 3);
     private static final boolean[] equals = BooleanArrays.fromInt(2, 3);
     private static final boolean[] greaterThan = BooleanArrays.fromInt(4, 3);
@@ -36,9 +36,9 @@ public class comparator extends Circuit {
         } else {
             compare(BooleanArrays.toUnsignedInt(inputs, dataPin, wordLength),
                     BooleanArrays.toUnsignedInt(inputs, dataPin+wordLength, wordLength));
-        }        
+        }
     }
-    
+
     private void compare(long a, long b) {
         if (identityMode) {
             if (chip.hasListeners()) debug(a + " is " + (a==b?"":"not ") + "equal to " + b);
@@ -65,7 +65,7 @@ public class comparator extends Circuit {
 
         clocked = hasConstant = false;
         dataPin = 0;
-        
+
         if (args.length>0) {
             clocked = args[args.length-1].equalsIgnoreCase("clockpin");
             dataPin = (clocked?1:0);
@@ -79,12 +79,12 @@ public class comparator extends Circuit {
                     return error("Bad constant argument: " + args[0]);
                 }
             }
-        } 
+        }
 
         if (!hasConstant) {
-            if ((inputlen-dataPin)%2!=0) 
+            if ((inputlen-dataPin)%2!=0)
                 return error("Expecting an even number of inputs when a constant is not used.");
-            
+
             wordLength = (inputlen-dataPin)/2;
         } else wordLength = inputlen - dataPin;
 

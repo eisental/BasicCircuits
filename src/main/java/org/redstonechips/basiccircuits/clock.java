@@ -2,6 +2,7 @@
 package org.redstonechips.basiccircuits;
 
 import java.util.BitSet;
+
 import org.redstonechips.circuit.Circuit;
 import org.redstonechips.parsing.UnitParser;
 import org.redstonechips.wireless.Transmitter;
@@ -20,7 +21,7 @@ public class clock extends Circuit {
     private int taskId = -1;
 
     private Transmitter transmitter;
-    
+
     @Override
     public void input(boolean state, int inIdx) {
         if (masterToggle) {
@@ -91,7 +92,7 @@ public class clock extends Circuit {
         }
 
         if ((onDuration<50 && onDuration>0) || (offDuration<50 && offDuration>0))
-            return error("Clock frequency is currently limited to 50ms per state. Use a lower freq argument or try setting pulse-width to 0.");        
+            return error("Clock frequency is currently limited to 50ms per state. Use a lower freq argument or try setting pulse-width to 0.");
 
         if (channelArg!=null) {
             try {
@@ -123,7 +124,7 @@ public class clock extends Circuit {
 
         ticking = true;
         currentState = true;
-        
+
         taskId = rc.getServer().getScheduler().scheduleSyncDelayedTask(rc, tickTask);
         if (taskId==-1) {
             if (chip.hasListeners()) debug("Tick task schedule failed!");
@@ -144,7 +145,7 @@ public class clock extends Circuit {
     public void disable() {
         super.disable();
         stopClock();
-    }   
+    }
 
     @Override
     public void enable() {
@@ -154,16 +155,16 @@ public class clock extends Circuit {
         } else if (!onBits.isEmpty())
             startClock();
     }
-    
+
     @Override
     public void shutdown() {
         stopClock();
     }
 
     boolean currentState = true;
-    
+
     private class TickTask implements Runnable {
-        
+
 
         @Override
         public void run() {
